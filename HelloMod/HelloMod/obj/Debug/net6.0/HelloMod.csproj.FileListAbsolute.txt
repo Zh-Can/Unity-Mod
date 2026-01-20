@@ -1,0 +1,13 @@
+C:\Users\zby03\Desktop\Fickle Card Legend\Mods\net6.0\HelloMod.deps.json
+C:\Users\zby03\Desktop\Fickle Card Legend\Mods\net6.0\HelloMod.dll
+C:\Users\zby03\Desktop\Fickle Card Legend\Mods\net6.0\HelloMod.pdb
+C:\Users\zby03\Desktop\mod\HelloMod\HelloMod\obj\Debug\net6.0\HelloMod.csproj.AssemblyReference.cache
+C:\Users\zby03\Desktop\mod\HelloMod\HelloMod\obj\Debug\net6.0\HelloMod.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\zby03\Desktop\mod\HelloMod\HelloMod\obj\Debug\net6.0\HelloMod.AssemblyInfoInputs.cache
+C:\Users\zby03\Desktop\mod\HelloMod\HelloMod\obj\Debug\net6.0\HelloMod.AssemblyInfo.cs
+C:\Users\zby03\Desktop\mod\HelloMod\HelloMod\obj\Debug\net6.0\HelloMod.csproj.CoreCompileInputs.cache
+C:\Users\zby03\Desktop\mod\HelloMod\HelloMod\obj\Debug\net6.0\HelloMod.csproj.CopyComplete
+C:\Users\zby03\Desktop\mod\HelloMod\HelloMod\obj\Debug\net6.0\HelloMod.dll
+C:\Users\zby03\Desktop\mod\HelloMod\HelloMod\obj\Debug\net6.0\refint\HelloMod.dll
+C:\Users\zby03\Desktop\mod\HelloMod\HelloMod\obj\Debug\net6.0\HelloMod.pdb
+C:\Users\zby03\Desktop\mod\HelloMod\HelloMod\obj\Debug\net6.0\ref\HelloMod.dll

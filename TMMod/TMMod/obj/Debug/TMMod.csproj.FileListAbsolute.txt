@@ -1,0 +1,9 @@
+C:\Program Files (x86)\Steam\steamapps\common\Teamfight Manager\BepInEx\plugins\TMMod.dll
+C:\Program Files (x86)\Steam\steamapps\common\Teamfight Manager\BepInEx\plugins\TMMod.pdb
+C:\Users\zby03\Desktop\mod\TMMod\TMMod\obj\Debug\TMMod.csproj.AssemblyReference.cache
+C:\Users\zby03\Desktop\mod\TMMod\TMMod\obj\Debug\TMMod.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\zby03\Desktop\mod\TMMod\TMMod\obj\Debug\TMMod.AssemblyInfoInputs.cache
+C:\Users\zby03\Desktop\mod\TMMod\TMMod\obj\Debug\TMMod.AssemblyInfo.cs
+C:\Users\zby03\Desktop\mod\TMMod\TMMod\obj\Debug\TMMod.csproj.CoreCompileInputs.cache
+C:\Users\zby03\Desktop\mod\TMMod\TMMod\obj\Debug\TMMod.dll
+C:\Users\zby03\Desktop\mod\TMMod\TMMod\obj\Debug\TMMod.pdb

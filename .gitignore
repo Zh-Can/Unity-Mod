@@ -1,0 +1,73 @@
+# ==========================
+# JetBrains Rider/IntelliJ 专属忽略项
+# ==========================
+# Rider/IntelliJ 生成的项目配置目录（核心，必须忽略）
+.idea/
+# 项目文件（Rider旧版本/IntelliJ格式）
+*.iml
+*.ipr
+*.iws
+# Rider 生成的日志/缓存
+*.log
+*.tmp
+*.bak
+# Rider 运行配置（如调试/启动配置，无需提交）
+runConfigurations/
+# Rider 代码风格/检查配置（若团队统一可取消忽略，否则忽略）
+.idea/codeStyles/
+.idea/inspectionProfiles/
+.idea/dictionaries/
+
+# ==========================
+# .NET/C# 项目通用忽略项
+# ==========================
+# 编译输出目录（核心，必须忽略）
+bin/
+obj/
+# Visual Studio 生成的缓存（Rider也会关联）
+.vs/
+# 发布目录
+publish/
+# 测试覆盖报告
+coverage/
+# 临时生成的配置文件
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+# NuGet 缓存/临时文件
+packages/
+*.nupkg
+nuget.exe
+# 环境变量配置文件（如本地开发的appsettings.json）
+appsettings.Development.json
+appsettings.Local.json
+# 调试文件
+*.pdb
+*.vshost.exe
+*.vshost.exe.manifest
+# 代码分析报告
+StyleCopReport.xml
+
+# ==========================
+# 通用忽略项（跨项目）
+# ==========================
+# 操作系统临时文件
+.DS_Store       # MacOS
+Thumbs.db       # Windows
+desktop.ini     # Windows
+# 日志文件
+*.log
+logs/
+# 压缩包/安装包
+*.zip
+*.7z
+*.rar
+*.msi
+# 环境变量文件（敏感信息）
+.env
+.env.local
+.env.development.local
+# Docker 临时文件（若用Docker）
+.dockerignore
+docker-compose.override.yml
