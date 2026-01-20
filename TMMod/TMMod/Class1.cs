@@ -369,18 +369,35 @@ public class TMMod : BaseUnityPlugin
                 _defence = a.Defence;
                 _fan = a.Fan;
                 _athleteProperties = _athlete.Properties;
-                
+                foreach (var c in _athleteProperties)
+                {
+                    Logger.LogInfo(c.Name);
+                }
                 switch (_athleteProperties.Count)
                 {
+                    case 0:
+                        _property1 = "";
+                        _pIndex1 = -1;
+                        _pIndex2 = -1;
+                        _property2 = "";
+                        _property3 = "";
+                        _pIndex3 = -1;
+                        break;
                     case 1:
                         _property1 = _athleteProperties[0].Name;
                         _pIndex1 = _keyProperty.FirstOrDefault(k => k.Value == _property1).Key;
+                        _pIndex2 = -1;
+                        _property2 = "";
+                        _property3 = "";
+                        _pIndex3 = -1;
                         break;
                     case 2:
                         _property1 = _athleteProperties[0].Name;
                         _pIndex1 = _keyProperty.FirstOrDefault(k => k.Value == _property1).Key;
                         _property2 = _athleteProperties[1].Name;
                         _pIndex2 = _keyProperty.FirstOrDefault(k => k.Value == _property2).Key;
+                        _property3 = "";
+                        _pIndex3 = -1;
                         break;
                     case 3:
                         _property1 = _athleteProperties[0].Name;
@@ -396,10 +413,33 @@ public class TMMod : BaseUnityPlugin
                 
                 switch (_championExps.Count)
                 {
+                    case 0:
+                        _champ1 = 0;
+                        _champion1 = "";
+                        _cIndex1 = -1;
+                        _champ2 = 0;
+                        _champion2 = "";
+                        _cIndex2 = -1;
+                        _champ3 = 0;
+                        _champion3 = "";
+                        _cIndex3 = -1;
+                        _champ4 = 0;
+                        _champion4 = "";
+                        _cIndex4 = -1;
+                        break;
                     case 1:
                         _champ1 = _championExps[0].Value.Champ;
                         _champion1 = _championExps[0].Name;
                         _cIndex1 = _championDict.FirstOrDefault(k => k.Value == _champion1).Key;
+                        _champ2 = 0;
+                        _champion2 = "";
+                        _cIndex2 = -1;
+                        _champ3 = 0;
+                        _champion3 = "";
+                        _cIndex3 = -1;
+                        _champ4 = 0;
+                        _champion4 = "";
+                        _cIndex4 = -1;
                         break;
                     case 2:
                         _champ1 = _championExps[0].Value.Champ;
@@ -408,6 +448,12 @@ public class TMMod : BaseUnityPlugin
                         _champ2 = _championExps[1].Value.Champ;
                         _champion2 = _championExps[1].Name;
                         _cIndex2 = _championDict.FirstOrDefault(k => k.Value == _champion2).Key;
+                        _champ3 = 0;
+                        _champion3 = "";
+                        _cIndex3 = -1;
+                        _champ4 = 0;
+                        _champion4 = "";
+                        _cIndex4 = -1;
                         break;
                     case 3:
                         _champ1 = _championExps[0].Value.Champ;
@@ -419,6 +465,9 @@ public class TMMod : BaseUnityPlugin
                         _champ3 = _championExps[2].Value.Champ;
                         _champion3 = _championExps[2].Name;
                         _cIndex3 = _championDict.FirstOrDefault(k => k.Value == _champion3).Key;
+                        _champ4 = 0;
+                        _champion4 = "";
+                        _cIndex4 = 0;
                         break;
                     case 4:
                         _champ1 = _championExps[0].Value.Champ;
@@ -497,7 +546,7 @@ public class TMMod : BaseUnityPlugin
         GUILayout.Label($"天赋1: {pn1}");
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
-        p1 = Mathf.RoundToInt(GUILayout.HorizontalSlider(p1, -1, _keyProperty.Count - 1));
+        p1 = Mathf.RoundToInt(GUILayout.HorizontalSlider(p1, -1, 35));
         _pIndex1 = p1;
         GUILayout.EndHorizontal();
         GUILayout.Space(10);
@@ -524,7 +573,6 @@ public class TMMod : BaseUnityPlugin
         GUILayout.Space(10);
         
         GUILayout.BeginHorizontal();
-        _pIndex3 = _pIndex3 < 0 ?  0 : _pIndex3;
         int p3 = _pIndex3;
         string pn3 = _cnProperty.GetValueOrDefault(_keyProperty.GetValueOrDefault(p3, ""), "");
         GUILayout.Label($"天赋3: {pn3}");
@@ -550,7 +598,7 @@ public class TMMod : BaseUnityPlugin
         if (GUILayout.Button("+")) _athlete?.AddExp(_championDict.GetValueOrDefault(c1, "")); 
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
-        c1 = Mathf.RoundToInt(GUILayout.HorizontalSlider(c1, -1, 38));
+        c1 = Mathf.RoundToInt(GUILayout.HorizontalSlider(c1, -1, 39));
         _cIndex1 = c1;
         GUILayout.EndHorizontal();
         
@@ -563,7 +611,7 @@ public class TMMod : BaseUnityPlugin
         if (GUILayout.Button("+")) _athlete?.AddExp(_championDict.GetValueOrDefault(c2, "")); 
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
-        c2 = Mathf.RoundToInt(GUILayout.HorizontalSlider(c2, -1, 38));
+        c2 = Mathf.RoundToInt(GUILayout.HorizontalSlider(c2, -1, 39));
         _cIndex2 = c2;
         GUILayout.EndHorizontal();
         
@@ -576,7 +624,7 @@ public class TMMod : BaseUnityPlugin
         if (GUILayout.Button("+")) _athlete?.AddExp(_championDict.GetValueOrDefault(c3, "")); 
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
-        c3 = Mathf.RoundToInt(GUILayout.HorizontalSlider(c3, -1, 38));
+        c3 = Mathf.RoundToInt(GUILayout.HorizontalSlider(c3, -1, 39));
         _cIndex3 = c3;
         GUILayout.EndHorizontal();
         
@@ -589,7 +637,7 @@ public class TMMod : BaseUnityPlugin
         if (GUILayout.Button("+")) _athlete?.AddExp(_championDict.GetValueOrDefault(c4, "")); 
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
-        c4 = Mathf.RoundToInt(GUILayout.HorizontalSlider(c4, -1, 38));
+        c4 = Mathf.RoundToInt(GUILayout.HorizontalSlider(c4, -1, 39));
         _cIndex4 = c4;
         GUILayout.EndHorizontal();
         GUILayout.EndVertical();

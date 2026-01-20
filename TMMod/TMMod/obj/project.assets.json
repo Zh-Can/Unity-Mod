@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\zby03\\Desktop\\mod\\TMMod\\TMMod\\TMMod.csproj",
+      "projectUniqueName": "C:\\Users\\zby03\\Desktop\\Unity-Mod\\TMMod\\TMMod\\TMMod.csproj",
       "projectName": "TMMod",
-      "projectPath": "C:\\Users\\zby03\\Desktop\\mod\\TMMod\\TMMod\\TMMod.csproj",
+      "projectPath": "C:\\Users\\zby03\\Desktop\\Unity-Mod\\TMMod\\TMMod\\TMMod.csproj",
       "packagesPath": "C:\\Users\\zby03\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\zby03\\Desktop\\mod\\TMMod\\TMMod\\obj\\",
+      "outputPath": "C:\\Users\\zby03\\Desktop\\Unity-Mod\\TMMod\\TMMod\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\zby03\\AppData\\Roaming\\NuGet\\NuGet.Config"
