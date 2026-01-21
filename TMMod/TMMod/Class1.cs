@@ -64,6 +64,7 @@ public class TMMod : BaseUnityPlugin
         // 按键切换GUI
         if (Input.GetKeyDown(_hotkey.Value)) showMainWindow = !showMainWindow;
         
+        
         // 所有天赋
         // List<PropertyProb> propertyProbs = Store.Global.Config.PropertyTraining.Property.Properties;
         // 所有英雄
@@ -235,13 +236,15 @@ public class TMMod : BaseUnityPlugin
         
         GUILayout.Space(10);
         float testNumF = testNum.Value;
-        var testNumSliderValue = GUILayout.HorizontalSlider(testNumF, 1, 99);
+        float testNumSliderValue = GUILayout.HorizontalSlider(testNumF, 1, 99);
         GUILayout.Label($"{testNumSliderValue:F0}");
         var testNumSliderValueInt = Mathf.RoundToInt(testNumSliderValue);
         if (testNumChangeToggleNow && testNumSliderValueInt != testNum.Value)
         {
             testNum.Value = testNumSliderValueInt;
-            Store.Global.Get<TodayData>(NetworkHandler.PlayerIndex).RemainSimulation = testNumSliderValueInt;
+            var a = Store.Global.Get<TodayData>(NetworkHandler.PlayerIndex);
+            a.RemainSimulation = testNumSliderValueInt;
+            Store.Global.Set<TodayData>(a.ID,a);
             Config.Save();
         }
 
@@ -269,7 +272,10 @@ public class TMMod : BaseUnityPlugin
         if (actNumChangeToggleNow && actNumSliderValueInt != actNum.Value)
         {
             actNum.Value = actNumSliderValueInt;
-            Store.Global.Get<TodayData>(NetworkHandler.PlayerIndex).RemainActivity = actNumSliderValueInt;
+            
+            var a = Store.Global.Get<TodayData>(NetworkHandler.PlayerIndex);
+            a.RemainActivity = actNumSliderValueInt;
+            Store.Global.Set<TodayData>(a.ID,a);
             Config.Save();
         }
 
@@ -298,7 +304,10 @@ public class TMMod : BaseUnityPlugin
         if (trainingChangeToggleNow && trainingNumSliderValueInt != trainingNum.Value)
         {
             trainingNum.Value = trainingNumSliderValueInt;
-            Store.Global.Get<TodayData>(NetworkHandler.PlayerIndex).Facility.TrainingLimit = trainingNumSliderValueInt;
+            
+            var a = Store.Global.Get<TodayData>(NetworkHandler.PlayerIndex);
+            a.Facility.TrainingLimit = trainingNumSliderValueInt;
+            Store.Global.Set<TodayData>(a.ID,a);
             Config.Save();
         }
 
@@ -361,6 +370,7 @@ public class TMMod : BaseUnityPlugin
             {
                 
                 _athlete = a;
+                _potential = a.Potential;
                 _id = a.ID;
                 _name = a.Name;
                 _age = a.Age;
@@ -369,10 +379,7 @@ public class TMMod : BaseUnityPlugin
                 _defence = a.Defence;
                 _fan = a.Fan;
                 _athleteProperties = _athlete.Properties;
-                foreach (var c in _athleteProperties)
-                {
-                    Logger.LogInfo(c.Name);
-                }
+                
                 switch (_athleteProperties.Count)
                 {
                     case 0:
@@ -504,6 +511,8 @@ public class TMMod : BaseUnityPlugin
             
             _athlete.Age = _age;
             _athlete.Salary = _salary;
+            if (_potential > 3) _potential = 3; 
+            _athlete.Potential = _potential;
             _athlete.Properties = list;
 
             if (_champion1 != _championDict.GetValueOrDefault(_cIndex1, ""))
@@ -523,6 +532,8 @@ public class TMMod : BaseUnityPlugin
         GUILayout.Label("姓名："+ new I18nString(_name, I18n.Info.Table).Build());
         GUILayout.Label("年龄：");
         _age = Convert.ToInt32(GUILayout.TextField(Convert.ToString(_age)));
+        GUILayout.Label("资质(0-3)：");
+        _potential = Convert.ToInt32(GUILayout.TextField(Convert.ToString(_potential)));
         GUILayout.Label("薪资：");
         _salary =  Convert.ToInt32(GUILayout.TextField(Convert.ToString(_salary)));
         GUILayout.EndHorizontal();
@@ -652,6 +663,7 @@ public class TMMod : BaseUnityPlugin
     private int _attack = 0;
     private int _defence = 0;
     private int _fan = 0;
+    private int _potential = 0;
     private List<AthleteProperty> _athleteProperties = new();
     private string _property1 = "";
     private string _property2 = "";
