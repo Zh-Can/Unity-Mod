@@ -14,11 +14,9 @@ public class TMMod : BaseUnityPlugin
 
     // 配置项
     private ConfigEntry<KeyCode> _hotkey;
-    private ConfigEntry<int> actNum;
     private ConfigEntry<bool> actNumChangeToggle;
     private ConfigEntry<bool> streamingSuccessToggle;
     private ConfigEntry<bool> specialTrainningSuccessToggle;
-    private ConfigEntry<int> testNum;
     private ConfigEntry<bool> testNumChangeToggle;
     private ConfigEntry<bool> trainingChangeToggle;
     private ConfigEntry<int> trainingNum;
@@ -51,12 +49,10 @@ public class TMMod : BaseUnityPlugin
         Harmony.CreateAndPatchAll(typeof(TMMod));
         _hotkey = Config.Bind("Config", "hotkey", KeyCode.Tab, "开启/关闭窗体快捷键");
         testNumChangeToggle = Config.Bind("Data", "testNumChangeToggle", false, "是否开启修改组合模拟次数");
-        testNum = Config.Bind("Data", "testNum", 1, "组合模拟次数");
         actNumChangeToggle = Config.Bind("Data", "actNumChangeToggle", false, "是否开启修改周活动次数");
-        actNum = Config.Bind("Data", "actNum", 1, "周活动次数");
         trainingChangeToggle = Config.Bind("Data", "trainingChangeToggle", false, "是否开启修改训练积分");
         trainingNum = Config.Bind("Data", "trainingNum", 3, "训练积分");
-        specialTrainningSuccessToggle = Config.Bind("Data", "specialTrainningSuccessToggle", false, "是否开启修改特殊训练必定成功");
+        specialTrainningSuccessToggle = Config.Bind("Data", "specialTrainingSuccessToggle", false, "是否开启修改特殊训练必定成功");
         streamingSuccessToggle = Config.Bind("Data", "streamingSuccessToggle", false, "是否开启修改直播必定成功");
         maxStatusToggle = Config.Bind("Data", "maxStatusToggle", false, "是否开启保持选手最高状态");
     }
@@ -94,14 +90,14 @@ public class TMMod : BaseUnityPlugin
 
         if (_loaded)
         {
-            if (actNumChangeToggle.Value && todayData.RemainActivity != actNum.Value)
+            if (actNumChangeToggle.Value && todayData.RemainActivity < 1)
             {
-                todayData.RemainActivity = actNum.Value;
+                todayData.RemainActivity = 1;
             }
 
-            if (testNumChangeToggle.Value && todayData.RemainSimulation != testNum.Value)
+            if (testNumChangeToggle.Value && todayData.RemainSimulation < 1)
             {
-                todayData.RemainSimulation = testNum.Value;
+                todayData.RemainSimulation = 1;
             }
 
             
@@ -167,10 +163,6 @@ public class TMMod : BaseUnityPlugin
             cacheLable = todayData != null
                 ? "<size=12><color=green>数据加载成功</color></size>"
                 : "<size=12><color=red>数据加载失败，请确认已加载存档</color></size>";
-            if (testNumChangeToggle.Value) 
-                Store.Global.Get<TodayData>(NetworkHandler.PlayerIndex).RemainSimulation = testNum.Value;
-            if (actNumChangeToggle.Value)
-                Store.Global.Get<TodayData>(NetworkHandler.PlayerIndex).RemainActivity = actNum.Value;
             if (trainingChangeToggle.Value)
                 Store.Global.Get<TodayData>(NetworkHandler.PlayerIndex).Facility.TrainingLimit = trainingNum.Value;
             if (specialTrainningSuccessToggle.Value)
@@ -178,7 +170,6 @@ public class TMMod : BaseUnityPlugin
             _athletes = Store.Global.Get<TeamInfo>(NetworkHandler.PlayerIndex).Athletes;
             _loaded = true;
         }
-
         GUILayout.Space(10);
         GUILayout.Label(cacheLable, RichTextStyle());
         GUILayout.EndHorizontal();
@@ -188,7 +179,6 @@ public class TMMod : BaseUnityPlugin
         
         GUILayout.BeginVertical("Box");
         GUILayout.BeginHorizontal();
-        
         maxStatusToggle.Value =  GUILayout.Toggle(maxStatusToggle.Value, "锁定选手全最高状态");
         GUILayout.EndHorizontal();
         GUILayout.EndVertical();
@@ -198,7 +188,6 @@ public class TMMod : BaseUnityPlugin
         // 钱
         GUILayout.BeginVertical("Box");
         GUILayout.Label("<b>金币</b>", RichTextStyle());
-
         GUILayout.BeginHorizontal();
         if (GUILayout.Button("+1000金币", GUILayout.ExpandWidth(true))) todayData?.AddGold(1000);
         GUILayout.Space(10);
@@ -241,62 +230,23 @@ public class TMMod : BaseUnityPlugin
 
         // 组合测试次数
         GUILayout.BeginHorizontal();
-        var testNumChangeToggleNow = GUILayout.Toggle(testNumChangeToggle.Value, " 是否修改组合测试次数", GUILayout.ExpandWidth(true));
+        var testNumChangeToggleNow = GUILayout.Toggle(testNumChangeToggle.Value, " 是否锁定组合测试次数", GUILayout.ExpandWidth(true));
         if (testNumChangeToggleNow != testNumChangeToggle.Value)
         {
             testNumChangeToggle.Value = testNumChangeToggleNow;
             Config.Save();
         }
-
         GUILayout.EndHorizontal();
-
-        GUILayout.BeginHorizontal();
-        
-        GUILayout.Space(10);
-        float testNumF = testNum.Value;
-        float testNumSliderValue = GUILayout.HorizontalSlider(testNumF, 1, 99);
-        GUILayout.Label($"{testNumSliderValue:F0}");
-        var testNumSliderValueInt = Mathf.RoundToInt(testNumSliderValue);
-        if (testNumChangeToggleNow && testNumSliderValueInt != testNum.Value)
-        {
-            testNum.Value = testNumSliderValueInt;
-            var a = Store.Global.Get<TodayData>(NetworkHandler.PlayerIndex);
-            a.RemainSimulation = testNumSliderValueInt;
-            Store.Global.Set<TodayData>(a.ID,a);
-            Config.Save();
-        }
-
-        GUILayout.EndHorizontal();
-        GUILayout.Space(10);
+        GUILayout.Space(10); 
 
         // 周活动次数
         GUILayout.BeginHorizontal();
-        var actNumChangeToggleNow =
-            GUILayout.Toggle(actNumChangeToggle.Value, " 是否修改周活动次数", GUILayout.ExpandWidth(true));
-        if (actNumChangeToggleNow != actNumChangeToggle.Value)
+        var actNumChangeToggleNow = GUILayout.Toggle(actNumChangeToggle.Value, " 是否锁定周活动次数", GUILayout.ExpandWidth(true));
+        if (actNumChangeToggleNow !=  actNumChangeToggle.Value)
         {
             actNumChangeToggle.Value = actNumChangeToggleNow;
             Config.Save();
         }
-
-        GUILayout.EndHorizontal();
-        GUILayout.Space(10);
-
-        GUILayout.BeginHorizontal();
-        float actNumF = actNum.Value;
-        var actNumSliderValue = GUILayout.HorizontalSlider(actNumF, 1, 99);
-        GUILayout.Label($"{actNumSliderValue:F0}", GUILayout.ExpandWidth(true));
-        var actNumSliderValueInt = Mathf.RoundToInt(actNumSliderValue);
-        if (actNumChangeToggleNow && actNumSliderValueInt != actNum.Value)
-        {
-            actNum.Value = actNumSliderValueInt;
-            
-            var a = Store.Global.Get<TodayData>(NetworkHandler.PlayerIndex);
-            a.RemainActivity = actNumSliderValueInt;
-            Store.Global.Set<TodayData>(a.ID,a);
-            Config.Save();
-        }
-
         GUILayout.EndHorizontal();
         GUILayout.Space(10);
 
@@ -309,12 +259,10 @@ public class TMMod : BaseUnityPlugin
             trainingChangeToggle.Value = trainingChangeToggleNow;
             Config.Save();
         }
-
         GUILayout.EndHorizontal();
         GUILayout.Space(10);
 
         GUILayout.BeginHorizontal();
-       
         float trainingNumF = trainingNum.Value;
         var trainingNumSliderValue = GUILayout.HorizontalSlider(trainingNumF, 3, 99);
         GUILayout.Label($"{trainingNumSliderValue:F0}", GUILayout.ExpandWidth(true));
@@ -322,13 +270,9 @@ public class TMMod : BaseUnityPlugin
         if (trainingChangeToggleNow && trainingNumSliderValueInt != trainingNum.Value)
         {
             trainingNum.Value = trainingNumSliderValueInt;
-            
-            var a = Store.Global.Get<TodayData>(NetworkHandler.PlayerIndex);
-            a.Facility.TrainingLimit = trainingNumSliderValueInt;
-            Store.Global.Set<TodayData>(a.ID,a);
+            Store.Global.Get<TodayData>(NetworkHandler.PlayerIndex).Facility.TrainingLimit = trainingNumSliderValueInt;
             Config.Save();
         }
-
         GUILayout.EndHorizontal();
         GUILayout.Space(10);
 
@@ -341,21 +285,18 @@ public class TMMod : BaseUnityPlugin
             streamingSuccessToggle.Value = streamingSuccessToggleNow;
             Config.Save();
         }
-
         GUILayout.EndHorizontal();
         GUILayout.Space(10);
 
         // 特训成功
         GUILayout.BeginHorizontal();
-        var specialTrainningSuccessToggleNow = GUILayout.Toggle(specialTrainningSuccessToggle.Value, " 特训必定大成功",
-            GUILayout.ExpandWidth(true));
-        if (specialTrainningSuccessToggleNow != specialTrainningSuccessToggle.Value)
+        var specialTrainingSuccessToggleNow = GUILayout.Toggle(specialTrainningSuccessToggle.Value, " 特训必定大成功");
+        if (specialTrainingSuccessToggleNow != specialTrainningSuccessToggle.Value)
         {
-            specialTrainningSuccessToggle.Value = specialTrainningSuccessToggleNow;
+            specialTrainningSuccessToggle.Value = specialTrainingSuccessToggleNow;
             Store.Global.Config.SpecialTraining.SuperProb = 1;
             Config.Save();
         }
-
         GUILayout.EndHorizontal();
 
         GUILayout.EndVertical();
@@ -389,7 +330,6 @@ public class TMMod : BaseUnityPlugin
                 
                 _athlete = a;
                 _potential = a.Potential;
-                _id = a.ID;
                 _name = a.Name;
                 _age = a.Age;
                 _salary = a.Salary;
@@ -673,7 +613,6 @@ public class TMMod : BaseUnityPlugin
     }
     
 
-    private int _id = 0;
     private string _name = "";
     private int _age = 0;
     private int _salary = 0;
