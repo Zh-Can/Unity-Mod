@@ -62,7 +62,36 @@ public class TMMod : BaseUnityPlugin
         // 按键切换GUI
         if (Input.GetKeyDown(_hotkey.Value)) showMainWindow = !showMainWindow;
         
-        
+        if (_loaded)
+        {
+            if (streamingSuccessToggle.Value)
+            {
+                Store.Global.Config.Streaming.EntertainerDonationCoef = 0.1f;
+                foreach (var a in _athletes)
+                {
+                    a.Entertainer = 100;
+                    Store.Global.Set<Athlete>(a.ID, a);
+                }
+            }
+            
+            if (actNumChangeToggle.Value && todayData.RemainActivity < 1)
+            {
+                todayData.RemainActivity = 1;
+            }
+
+            if (testNumChangeToggle.Value && todayData.RemainSimulation < 1)
+            {
+                todayData.RemainSimulation = 1;
+            }
+
+            if (maxStatusToggle.Value)
+            {
+                foreach (var a in _athletes)
+                {
+                    if (a.Condition <= 30) a.AddCondition(50);
+                }
+            }
+        }
         // 所有天赋
         // List<PropertyProb> propertyProbs = Store.Global.Config.PropertyTraining.Property.Properties;
         // 所有英雄
@@ -88,27 +117,7 @@ public class TMMod : BaseUnityPlugin
             // 主窗口
             mainWindowRect = GUI.Window(0, mainWindowRect, DrawMainWindow, "TMMod by Can");
 
-        if (_loaded)
-        {
-            if (actNumChangeToggle.Value && todayData.RemainActivity < 1)
-            {
-                todayData.RemainActivity = 1;
-            }
-
-            if (testNumChangeToggle.Value && todayData.RemainSimulation < 1)
-            {
-                todayData.RemainSimulation = 1;
-            }
-
-            
-            if (maxStatusToggle.Value)
-            {
-                foreach (var a in _athletes)
-                {
-                    if (a.Condition <= 30) a.AddCondition(50);
-                }
-            }
-        }
+        
     }
 
     /**
@@ -168,6 +177,16 @@ public class TMMod : BaseUnityPlugin
             if (specialTrainningSuccessToggle.Value)
                 Store.Global.Config.SpecialTraining.SuperProb = 1;
             _athletes = Store.Global.Get<TeamInfo>(NetworkHandler.PlayerIndex).Athletes;
+
+            if (streamingSuccessToggle.Value)
+            {
+                foreach (var a in _athletes)
+                {
+                    a.Entertainer = 100;
+                    Store.Global.Set<Athlete>(a.ID, a);
+                }
+            }
+            
             _loaded = true;
         }
         GUILayout.Space(10);
@@ -498,13 +517,25 @@ public class TMMod : BaseUnityPlugin
         
         GUILayout.BeginHorizontal();
         GUILayout.Label($"攻击：{_attack}");
-        if (GUILayout.Button("+")) _athlete?.AddAttack(); 
+        if (GUILayout.Button("+"))
+        {
+            _athlete?.AddAttack();
+            _attack = Store.Global.Get<Athlete>(_athlete.ID).Attack;
+        } 
         GUILayout.Space(10);
         GUILayout.Label($"防御：{_defence}");
-        if (GUILayout.Button("+")) _athlete?.AddDefence();
+        if (GUILayout.Button("+"))
+        {
+            _athlete?.AddDefence();
+            _defence = Store.Global.Get<Athlete>(_athlete.ID).Defence;
+        }
         GUILayout.Space(10);
         GUILayout.Label($"粉丝：{_fan}");
-        if (GUILayout.Button("+")) _athlete?.AddFans(true);
+        if (GUILayout.Button("+"))
+        {
+            _athlete?.AddFans(true);
+            _fan = Store.Global.Get<Athlete>(_athlete.ID).Fan;
+        }
         GUILayout.EndHorizontal();
         GUILayout.Space(10);
         
@@ -563,7 +594,11 @@ public class TMMod : BaseUnityPlugin
         GUILayout.Label($"擅长英雄1: {cn1}");
         GUILayout.Space(10);
         GUILayout.Label($"熟练度: {_champ1}");
-        if (GUILayout.Button("+")) _athlete?.AddExp(_championDict.GetValueOrDefault(c1, "")); 
+        if (GUILayout.Button("+"))
+        {
+            _athlete?.AddExp(_championDict.GetValueOrDefault(c1, ""));
+            _champ1 = Store.Global.Get<Athlete>(_athlete.ID).GetExps()[0].Value.Champ;
+        } 
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
         c1 = Mathf.RoundToInt(GUILayout.HorizontalSlider(c1, -1, 39));
@@ -576,7 +611,11 @@ public class TMMod : BaseUnityPlugin
         GUILayout.Label($"擅长英雄2: {cn2}");
         GUILayout.Space(10);
         GUILayout.Label($"熟练度: {_champ2}");
-        if (GUILayout.Button("+")) _athlete?.AddExp(_championDict.GetValueOrDefault(c2, "")); 
+        if (GUILayout.Button("+"))
+        {
+            _athlete?.AddExp(_championDict.GetValueOrDefault(c2, ""));
+            _champ2 = Store.Global.Get<Athlete>(_athlete.ID).GetExps()[1].Value.Champ;
+        } 
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
         c2 = Mathf.RoundToInt(GUILayout.HorizontalSlider(c2, -1, 39));
@@ -589,7 +628,11 @@ public class TMMod : BaseUnityPlugin
         GUILayout.Label($"擅长英雄3: {cn3}");
         GUILayout.Space(10);
         GUILayout.Label($"熟练度: {_champ3}");
-        if (GUILayout.Button("+")) _athlete?.AddExp(_championDict.GetValueOrDefault(c3, "")); 
+        if (GUILayout.Button("+"))
+        {
+            _athlete?.AddExp(_championDict.GetValueOrDefault(c3, ""));
+            _champ3 = Store.Global.Get<Athlete>(_athlete.ID).GetExps()[2].Value.Champ;
+        } 
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
         c3 = Mathf.RoundToInt(GUILayout.HorizontalSlider(c3, -1, 39));
@@ -602,7 +645,11 @@ public class TMMod : BaseUnityPlugin
         GUILayout.Label($"擅长英雄4: {cn4}");
         GUILayout.Space(10);
         GUILayout.Label($"熟练度: {_champ4}");
-        if (GUILayout.Button("+")) _athlete?.AddExp(_championDict.GetValueOrDefault(c4, "")); 
+        if (GUILayout.Button("+"))
+        {
+            _athlete?.AddExp(_championDict.GetValueOrDefault(c4, ""));
+            _champ4 = Store.Global.Get<Athlete>(_athlete.ID).GetExps()[3].Value.Champ;
+        } 
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
         c4 = Mathf.RoundToInt(GUILayout.HorizontalSlider(c4, -1, 39));
