@@ -22,6 +22,7 @@ public class TMMod : BaseUnityPlugin
     private ConfigEntry<bool> testNumChangeToggle;
     private ConfigEntry<bool> trainingChangeToggle;
     private ConfigEntry<int> trainingNum;
+    private ConfigEntry<bool> maxStatusToggle;
 
 
 
@@ -30,7 +31,7 @@ public class TMMod : BaseUnityPlugin
     private TodayData todayData;
     private List<Athlete> _athletes = new();
     private Athlete _athlete;
-
+    
     
 
     // GUI状态
@@ -57,6 +58,7 @@ public class TMMod : BaseUnityPlugin
         trainingNum = Config.Bind("Data", "trainingNum", 3, "训练积分");
         specialTrainningSuccessToggle = Config.Bind("Data", "specialTrainningSuccessToggle", false, "是否开启修改特殊训练必定成功");
         streamingSuccessToggle = Config.Bind("Data", "streamingSuccessToggle", false, "是否开启修改直播必定成功");
+        maxStatusToggle = Config.Bind("Data", "maxStatusToggle", false, "是否开启保持选手最高状态");
     }
 
     private void Update()
@@ -89,6 +91,28 @@ public class TMMod : BaseUnityPlugin
         if (showMainWindow)
             // 主窗口
             mainWindowRect = GUI.Window(0, mainWindowRect, DrawMainWindow, "TMMod by Can");
+
+        if (_loaded)
+        {
+            if (actNumChangeToggle.Value && todayData.RemainActivity != actNum.Value)
+            {
+                todayData.RemainActivity = actNum.Value;
+            }
+
+            if (testNumChangeToggle.Value && todayData.RemainSimulation != testNum.Value)
+            {
+                todayData.RemainSimulation = testNum.Value;
+            }
+
+            
+            if (maxStatusToggle.Value)
+            {
+                foreach (var a in _athletes)
+                {
+                    if (a.Condition <= 30) a.AddCondition(50);
+                }
+            }
+        }
     }
 
     /**
@@ -152,7 +176,7 @@ public class TMMod : BaseUnityPlugin
             if (specialTrainningSuccessToggle.Value)
                 Store.Global.Config.SpecialTraining.SuperProb = 1;
             _athletes = Store.Global.Get<TeamInfo>(NetworkHandler.PlayerIndex).Athletes;
-            
+            _loaded = true;
         }
 
         GUILayout.Space(10);
@@ -164,13 +188,8 @@ public class TMMod : BaseUnityPlugin
         
         GUILayout.BeginVertical("Box");
         GUILayout.BeginHorizontal();
-        if (GUILayout.Button("全最高状态"))
-        {
-            foreach (var a in _athletes)
-            {
-                a.AddCondition(999);
-            }
-        }
+        
+        maxStatusToggle.Value =  GUILayout.Toggle(maxStatusToggle.Value, "锁定选手全最高状态");
         GUILayout.EndHorizontal();
         GUILayout.EndVertical();
         GUILayout.Space(10);
@@ -222,8 +241,7 @@ public class TMMod : BaseUnityPlugin
 
         // 组合测试次数
         GUILayout.BeginHorizontal();
-        var testNumChangeToggleNow =
-            GUILayout.Toggle(testNumChangeToggle.Value, " 是否修改组合测试次数", GUILayout.ExpandWidth(true));
+        var testNumChangeToggleNow = GUILayout.Toggle(testNumChangeToggle.Value, " 是否修改组合测试次数", GUILayout.ExpandWidth(true));
         if (testNumChangeToggleNow != testNumChangeToggle.Value)
         {
             testNumChangeToggle.Value = testNumChangeToggleNow;
@@ -511,7 +529,6 @@ public class TMMod : BaseUnityPlugin
             
             _athlete.Age = _age;
             _athlete.Salary = _salary;
-            if (_potential > 3) _potential = 3; 
             _athlete.Potential = _potential;
             _athlete.Properties = list;
 
@@ -800,7 +817,10 @@ public class TMMod : BaseUnityPlugin
         { 38, "DarkMage" },
         { 39, "Jiangshi" }
     };
-   
+
+    private bool _loaded = false;
+    
+
     private static Dictionary<int, string> _keyProperty = new Dictionary<int, string>()
     {
         { 0, "target_min_hp" },
