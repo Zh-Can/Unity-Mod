@@ -59,6 +59,7 @@ public class TMMod : BaseUnityPlugin
 
     private void Update()
     {
+       
         // 按键切换GUI
         if (Input.GetKeyDown(_hotkey.Value)) showMainWindow = !showMainWindow;
         
@@ -101,13 +102,6 @@ public class TMMod : BaseUnityPlugin
         // 按首发和后补排序选手信息
         // athletes = athletes.Where((Athlete a) => a.Belong == AthleteBelong.FirstTeam).ToList<Athlete>();
         
-        // 装备
-        // 31个 Headset
-        // 37个 Controller
-        // 29个 Chair
-        // 32个 Uniform
-        // 缺少装备的 int type
-        //todayData.AddItem(0,1, true);
     }
 
     private void OnGUI()
@@ -203,6 +197,23 @@ public class TMMod : BaseUnityPlugin
         GUILayout.EndVertical();
         GUILayout.Space(10);
         
+        GUILayout.BeginVertical("Box");
+        if (GUILayout.Button("添加所有装备") && _loaded)
+        {
+            // Headset, Controller, Chair, Uniform
+            List<int> length =  new List<int>(){31, 37, 29, 32};
+            for (int i = 0; i < length.Count; i++)
+            {
+                for (int j = 0; j < length[i]; j++)
+                {
+                    todayData.AddItem(i,j);
+                }
+            }
+            
+            
+        }
+        GUILayout.EndVertical();
+        GUILayout.Space(10);
 
         // 钱
         GUILayout.BeginVertical("Box");
