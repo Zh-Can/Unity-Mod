@@ -2,6 +2,7 @@
 using BepInEx.Configuration;
 using HarmonyLib;
 using UnityEngine;
+using Ver2;
 
 namespace TMMod;
 
@@ -59,7 +60,10 @@ public class TMMod : BaseUnityPlugin
 
     private void Update()
     {
-       
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            
+        } 
         // 按键切换GUI
         if (Input.GetKeyDown(_hotkey.Value)) showMainWindow = !showMainWindow;
         
@@ -101,6 +105,7 @@ public class TMMod : BaseUnityPlugin
         // List<Athlete> athletes = Store.Global.Get<TeamInfo>(NetworkHandler.PlayerIndex).Athletes;
         // 按首发和后补排序选手信息
         // athletes = athletes.Where((Athlete a) => a.Belong == AthleteBelong.FirstTeam).ToList<Athlete>();
+        
         
     }
 
@@ -727,6 +732,28 @@ public class TMMod : BaseUnityPlugin
         }
         return true;
     }
+    /**
+     * 删除引进选手时刷新
+     */
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(TodayData), nameof(TodayData.RemoveRecruit))]
+    public static void RecruitSlot_Remove(int idx)
+    {
+        TodayData todayData = Store.Global.Get<TodayData>(NetworkHandler.PlayerIndex);
+        RecruitInfo recruitInfo = todayData.Recruits[idx];
+        recruitInfo.Tab = idx;
+        recruitInfo.Wait = 0;
+        recruitInfo.NeedCheck = true;
+        recruitInfo.NowState = RecruitInfo.State.Result;
+        recruitInfo.Result = Store.Global.Config.Recruits[recruitInfo.Tab].CreateAthlete(todayData.Patch, default(UnityRandom));
+        NetworkHandler.Instance.SendToServer<SyncRecruitPacket>(new SyncRecruitPacket
+        {
+            Recruits = todayData.Recruits,
+            ID = todayData.ID
+        });
+    }
+    
+    
 
     Dictionary<string, string> _championCnDict = new Dictionary<string, string>()
     {
