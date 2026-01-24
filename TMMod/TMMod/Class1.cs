@@ -737,11 +737,11 @@ public class TMMod : BaseUnityPlugin
      */
     [HarmonyPostfix]
     [HarmonyPatch(typeof(TodayData), nameof(TodayData.RemoveRecruit))]
-    public static void RecruitSlot_Remove(int idx)
+    public static void RecruitSlot_Remove_post(int idx)
     {
         TodayData todayData = Store.Global.Get<TodayData>(NetworkHandler.PlayerIndex);
         RecruitInfo recruitInfo = todayData.Recruits[idx];
-        recruitInfo.Tab = idx;
+        Debug.Log("post:" +recruitInfo.Tab);
         recruitInfo.Wait = 0;
         recruitInfo.NeedCheck = true;
         recruitInfo.NowState = RecruitInfo.State.Result;
@@ -752,6 +752,7 @@ public class TMMod : BaseUnityPlugin
             ID = todayData.ID
         });
     }
+
     
     
 
