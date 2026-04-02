@@ -93,10 +93,11 @@ public class Plugin : MelonMod
     private Vector2 mainScrollPos;
     private const float Hight = 1000;
     private const int Width = 590;
-    public Rect MainWindowRect = new(50, 50, Width, Hight);
-    public bool ShowMainWindow = false;
+    private Rect _mainWindowRect = new(50, 50, Width, Hight);
+    private bool _showMainWindow;
     private readonly string[] tabNames = { "功能开关", "测试", "属性ID", "门派特性" };
     private int selectedTab;
+    private bool _isCapturingMainWindowPointer;
     
     
     public override void OnInitializeMelon()
@@ -213,21 +214,22 @@ public class Plugin : MelonMod
     }
     public override void OnUpdate()
     {
-        // 左alt + e 打开窗体
+        // Alt+E 切换主面板
         if (IsOpenWindowTriggered())
         {
-            ShowMainWindow = !ShowMainWindow;
+            _showMainWindow = !_showMainWindow;
+            _isCapturingMainWindowPointer = false;
             
             OtherElement.RefreshForceList();
             var hero = HeroDetailController._instance;
-            if (hero != null && ShowMainWindow)
+            if (hero != null && _showMainWindow)
             {
                 TestElement.ReadedHeroData = hero.nowShowHero;
                 TestElement.LoadHorseData();
             }
         }
 
-        // 按R开始Roll
+        // 按 R 重刷几个可复用的 Roll 场景
         if (Input.GetKeyDown(KeyCode.R) && _breakRollFlag.Value)
         {
             TryBreakThoughtRoll();
@@ -269,24 +271,97 @@ public class Plugin : MelonMod
         GUI.skin.button.fontSize = scaledFontSize;
         GUI.skin.toggle.fontSize = scaledFontSize;
         GUI.skin.textField.fontSize = scaledFontSize;
-        
-        if (ShowMainWindow)
+
+        if (!_showMainWindow)
         {
-            var scaledWidth = 590 * scale;
-            var scaledHeight = Hight * scale;
-            MainWindowRect = new Rect(MainWindowRect.x, MainWindowRect.y, scaledWidth, scaledHeight);
-            MainWindowRect = GUI.ModalWindow(0, MainWindowRect, (GUI.WindowFunction)DrawMainWindow, "LYMod " + ModConstants.ModVersion);
+            _isCapturingMainWindowPointer = false;
+            return;
+        }
+
+        var currentEvent = Event.current;
+        // IMGUI 先决定这次鼠标事件是否由 MOD 窗口接管
+        var shouldConsumePointerEvent = UpdateMainWindowPointerCapture(currentEvent);
+        var scaledWidth = Width * scale;
+        var scaledHeight = Hight * scale;
+        _mainWindowRect = new Rect(_mainWindowRect.x, _mainWindowRect.y, scaledWidth, scaledHeight);
+        _mainWindowRect = GUI.ModalWindow(0, _mainWindowRect, (GUI.WindowFunction)DrawMainWindow, "LYMod " + ModConstants.ModVersion);
+
+        if (shouldConsumePointerEvent && currentEvent != null)
+        {
+            // 只消费当前已由 IMGUI 面板接管的鼠标事件，键盘不在这里处理
+            currentEvent.Use();
+        }
+    }
+
+    public bool ShouldBlockGamePointerInput()
+    {
+        return _showMainWindow && (_isCapturingMainWindowPointer || IsPointerInsideMainWindow(ToGuiMousePosition(Input.mousePosition)));
+    }
+
+    private static Vector2 ToGuiMousePosition(Vector3 mousePosition)
+    {
+        return new Vector2(mousePosition.x, Screen.height - mousePosition.y);
+    }
+
+    private bool IsPointerInsideMainWindow(Vector2 guiMousePosition)
+    {
+        return _showMainWindow && _mainWindowRect.Contains(guiMousePosition);
+    }
+
+    private bool UpdateMainWindowPointerCapture(Event currentEvent)
+    {
+        if (!_showMainWindow)
+        {
+            _isCapturingMainWindowPointer = false;
+            return false;
+        }
+
+        if (currentEvent == null)
+        {
+            return false;
+        }
+
+        var isInsideWindow = IsPointerInsideMainWindow(currentEvent.mousePosition);
+        switch (currentEvent.type)
+        {
+            case EventType.MouseDown:
+                // 在窗内按下后，直到 MouseUp 前都持续认为由窗口接管
+                if (isInsideWindow)
+                {
+                    _isCapturingMainWindowPointer = true;
+                    return true;
+                }
+                return false;
+            case EventType.MouseDrag:
+                if (_isCapturingMainWindowPointer || isInsideWindow)
+                {
+                    _isCapturingMainWindowPointer = true;
+                    return true;
+                }
+                return false;
+            case EventType.MouseMove:
+            case EventType.ContextClick:
+            case EventType.ScrollWheel:
+                return _isCapturingMainWindowPointer || isInsideWindow;
+            case EventType.MouseUp:
+            {
+                var shouldBlock = _isCapturingMainWindowPointer || isInsideWindow;
+                _isCapturingMainWindowPointer = false;
+                return shouldBlock;
+            }
+            default:
+                return false;
         }
     }
 
     private void DrawMainWindow(int windowId)
     {
         var scale = WindowScaling.Value;
-        var scaledWidth = 560 * scale;
+        var scaledWidth = (Width - 30) * scale;
         var scaledHeight = (Hight * scale) - (70 * scale);
        
         GUILayout.Space(5 * scale);
-        // 标签页选择
+        // 标签页
         GUILayout.BeginHorizontal();
         for (var i = 0; i < tabNames.Length; i++)
         {
@@ -295,32 +370,29 @@ public class Plugin : MelonMod
         }
 
         GUILayout.EndHorizontal();
-       
-
-        // 滚动区域
+        // 主滚动区域
         mainScrollPos = GUILayout.BeginScrollView(mainScrollPos, GUILayout.Width(scaledWidth), GUILayout.Height(scaledHeight));
         
-        // 根据选择的标签页绘制不同内容
+        // 根据标签页绘制内容
         switch (selectedTab)
         {
-            case 0: // 功能
+            case 0: // 功能开关
                 DrawMainTab();
                 break;
-            case 1:// 测试
+            case 1: // 测试
                 TestElement.TestTab(); 
                 break;
-            case 2: //属性id
+            case 2: // 属性ID
                 OtherElement.Label();
                 break;
-            case 3: //帮派特性选择
+            case 3: // 门派特性
                 OtherElement.ForceSpeFunction();
                 break;
         }
 
         GUILayout.EndScrollView();
-        // 启用窗口拖拽（仅标题栏区域）
-        // GUI.DragWindow(new Rect(0, 0, Screen.width, 20));
-        GUI.DragWindow(new Rect(0, 0, MainWindowRect.width, MainWindowRect.height));
+        // 允许直接拖动 MOD 窗口
+        GUI.DragWindow(new Rect(0, 0, _mainWindowRect.width, _mainWindowRect.height));
     }
 
     private void DrawMainTab()
@@ -984,6 +1056,5 @@ public class Plugin : MelonMod
     //         pc.FindSpeSteleFight();
     //     }
     // }
-  
 }
 
