@@ -3,6 +3,10 @@
 public static class ModConfig
 {
     public const string ModName = "LYMod";     // 插件名
-    public const string ModVersion = "3.9.6";    // 版本号
+    public const string ModVersion = "4.0";    // 版本号
     public const string ModAuthor = "Can";     // 作者
+    
+    public static bool HaveNpcMod; // 是否有NPC管理mod
+    public static bool HaveAucRoll = true; // 是否有Refresh Auction mod
+    public static bool HaveRecruitReRoll = true; // 是否有SelfHouseLover mod
 }

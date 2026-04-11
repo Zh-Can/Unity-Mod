@@ -1,16 +1,17 @@
 ﻿using Il2Cpp;
+using MelonLoader;
+using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace LYMod.Helpers;
 
 public class RollHelper
 {
-    public static bool IsHaveAucRoll = true; 
-    public static bool IsRecruitReRoll = true;
+   
     // 拍卖会Roll
     public static void TryAuctionRoll()
     {
-        if (!IsHaveAucRoll) return;
+        if (ModConfig.HaveAucRoll) return;
         var auc = AuctionController.Instance;
         var plot = PlotController.Instance;
         if (auc != null && plot != null && auc.auctionPanel.activeInHierarchy)
@@ -131,7 +132,7 @@ public class RollHelper
     // roll招募，只有女性角色
     public static void TryRefreshRecruitList()
     {
-        if (!IsRecruitReRoll) return;
+        if (ModConfig.HaveRecruitReRoll) return;
         var ruic = RecruitUIController.Instance;
         if (ruic == null || ruic.recruitUIPanel == null || !ruic.recruitUIPanel.activeInHierarchy) return;
 
@@ -203,4 +204,114 @@ public class RollHelper
         spc.ShowSpePoisonUI();
         
     }
+
+    // 大比/大会奖励重Roll（门派大比、比武大会、辩才大会）
+    public static void TryFightMatchRewardRoll()
+    {
+        var fmc = FightMatchController.Instance;
+        if (fmc == null) return;
+
+        var oldReward = fmc.rewardList;
+        if (oldReward == null || oldReward.Count == 0) return;
+
+        var plot = PlotController.Instance;
+        if (plot == null) return;
+
+        // 检查plotPanel或fightMatchPanel是否打开
+        var plotPanel = plot.plotPanel;
+        var fightPanel = fmc.fightMatchPanel;
+        var isPlotActive = plotPanel != null && plotPanel.activeInHierarchy;
+        var isFightActive = fightPanel != null && fightPanel.activeInHierarchy;
+        
+        if (!isPlotActive && !isFightActive) return;
+
+        // 用当前比赛的参数重新Roll奖励
+        var newReward = FightMatchController.GenerateFightMatchRewardItemList(
+            fmc.fightMatchType, fmc.matchDifficulty, fmc.isForceMatch, fmc.isForceGroupMatch);
+        if (newReward == null || newReward.Count == 0) return;
+
+        // 替换奖励列表
+        fmc.rewardList = newReward;
+
+        // 查找并更新 RewardItem 容器
+        if (fightPanel == null) return;
+
+        var rewardItemTransform = fightPanel.transform.Find("RewardItem");
+        if (rewardItemTransform == null)
+        {
+            // 尝试在 fightPanel 中查找所有包含 "Reward" 的子物体
+            for (var i = 0; i < fightPanel.transform.childCount; i++)
+            {
+                var child = fightPanel.transform.GetChild(i);
+                if (child != null && child.name.Contains("Reward"))
+                {
+                    rewardItemTransform = child;
+                    break;
+                }
+            }
+        }
+        
+        if (rewardItemTransform == null) return;
+
+        // 根据UI结构分析：真正的奖励物体是名为 "0"、"1"、"2" 等，子物体包含 "ItemIcon(Clone)"
+        var rewardItemChildren = new List<Transform>();
+        for (var i = 0; i < rewardItemTransform.childCount; i++)
+        {
+            var child = rewardItemTransform.GetChild(i);
+            if (child != null && int.TryParse(child.name, out _))
+            {
+                rewardItemChildren.Add(child);
+            }
+        }
+        
+        // 处理奖励子物体
+        for (var i = 0; i < Mathf.Min(newReward.Count, rewardItemChildren.Count); i++)
+        {
+            var child = rewardItemChildren[i];
+            if (child == null) continue;
+            
+            // 查找 ItemIcon(Clone)
+            ItemIconController? icon = null;
+            
+            // 直接查找 "ItemIcon(Clone)"
+            var itemIconObj = child.Find("ItemIcon(Clone)");
+            if (itemIconObj != null)
+            {
+                icon = itemIconObj.GetComponent<ItemIconController>();
+            }
+            
+            // 如果找不到，尝试不带 (Clone)
+            if (icon == null)
+            {
+                itemIconObj = child.Find("ItemIcon");
+                if (itemIconObj != null)
+                {
+                    icon = itemIconObj.GetComponent<ItemIconController>();
+                }
+            }
+            
+            // 如果还是找不到，在整个子树中查找
+            if (icon == null)
+            {
+                icon = child.GetComponentInChildren<ItemIconController>();
+            }
+
+            if (icon != null)
+            {
+                icon.needRefreshPriceIcon = true;
+                icon.itemData = newReward[i];
+                icon.inited = false;
+                icon.AutoSetName();
+                icon.Update();
+                icon.Update();
+                icon.Update();
+                
+                // 禁用/启用整个奖励子物体来强制刷新
+                child.gameObject.SetActive(false);
+                child.gameObject.SetActive(true);
+            }
+        }
+    }
+    
+   
 }

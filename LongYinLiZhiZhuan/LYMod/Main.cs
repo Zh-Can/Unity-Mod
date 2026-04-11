@@ -58,7 +58,6 @@ public class Plugin : MelonMod
     public MelonPreferences_Entry<float> ZhongyuanLv= null!; //鬼市商店等级
     public MelonPreferences_Entry<float> ChanDaoRate= null!; //禅宗道法修行倍率
     public MelonPreferences_Entry<string> ForceSpeFunctions= null!; // 门派特性
-    public MelonPreferences_Entry<string> SelectedBuildings= null!; // 选择翻倍的建筑id（兼容旧配置）
     public MelonPreferences_Entry<string> BuildingTimesMapStr= null!; // 建筑倍率映射 "索引:倍率,索引:倍率"
     public MelonPreferences_Entry<float> PoisonRate= null!; // 淬毒倍率
     public MelonPreferences_Entry<bool> PoisonNumReduceFlag= null!; // 淬毒值消耗开关
@@ -81,6 +80,11 @@ public class Plugin : MelonMod
     public MelonPreferences_Entry<bool> ExploreSeeAllFlag = null!; // 探险去除迷雾
     public MelonPreferences_Entry<bool> ExploreFreeMoveFlag = null!; // 探险随意移动
     public MelonPreferences_Entry<bool> PoisonTime1Flag = null!; // 毒相关消耗1天
+    public MelonPreferences_Entry<int> TeammateLeaveDay = null!; // 队友离队时间
+    public MelonPreferences_Entry<int> PlayerMaxTagNum = null!; // 玩家天赋数量上限
+    public MelonPreferences_Entry<int> NpcMaxTagNum = null!; // NPC天赋数量上限
+    public MelonPreferences_Entry<int> KungFuMaxLimitTimes = null!; // 武学修炼数量限制倍数
+    public MelonPreferences_Entry<bool> AddSpeBuildingsFlag = null!; // 添加特殊建筑开关
 
     
     
@@ -102,6 +106,8 @@ public class Plugin : MelonMod
     public string MaterialAttr = "6=20;70=0.2;131=0.2;132=0.2";//材料属性
     public bool MaxAreaFlag; //是否仙霞初建存档地块最大化
     public bool MaxAreaFlag1; //是否需要城墙
+    
+    
     
     
     // GUI状态
@@ -151,11 +157,14 @@ public class Plugin : MelonMod
         ZhongyuanLv = MainCategory.CreateEntry("ZhongyuanLv", 13.5f, description:"鬼市商店等级");
         ChanDaoRate = MainCategory.CreateEntry("ChanDaoRate", 1.0f, description:"禅宗道法修行倍率");
         ForceSpeFunctions = MainCategory.CreateEntry("ForceSpeFunctions", "", description:"选择的门派特性");
-        SelectedBuildings = MainCategory.CreateEntry("SelectedBuildings", "", description:"选择的翻倍建筑id（兼容旧配置）");
+        BuildingTimesMapStr = MainCategory.CreateEntry("BuildingTimesMapStr", "",description:"建筑倍率映射 格式:索引:倍率,索引:倍率");
         PoisonRate = MainCategory.CreateEntry("PoisonRate", 1.0f, description:"淬毒值倍率");
         ExpRateMultiplier = MainCategory.CreateEntry("ExpRateMultiplier", 1.0f, description:"游戏难度经验倍率,最高难度非本门经验倍率1.6（+60%）,这里默认2（+100%）");
         ForceContributionRate = MainCategory.CreateEntry("ForceContributionRate", 1.0f,description:"非本门功绩倍率");
-        BuildingTimesMapStr = MainCategory.CreateEntry("BuildingTimesMapStr", "",description:"建筑倍率映射 格式:索引:倍率,索引:倍率");
+        TeammateLeaveDay = MainCategory.CreateEntry("TeammateLeaveDay", 30,description:"队友自动离队天数");
+        PlayerMaxTagNum = MainCategory.CreateEntry("PlayerMaxTagNum", 9,description:"玩家天赋数量上限");
+        NpcMaxTagNum = MainCategory.CreateEntry("NpcMaxTagNum", 9,description:"Npc天赋数量上限");
+        KungFuMaxLimitTimes = MainCategory.CreateEntry("KungFuMaxLimitTimes", 1,description:"武学修炼限制倍数");
         
         PoisonNumReduceFlag = MainCategory.CreateEntry("PoisonNumReduceFlag", false, description:"淬毒消耗开关");
         UpgradeDay1 = MainCategory.CreateEntry("upgrade1", false, description:"升级一天");
@@ -193,6 +202,7 @@ public class Plugin : MelonMod
         ExploreFreeMoveFlag = MainCategory.CreateEntry("ExploreFreeMoveFlag", false,  description: "探险随意移动");
         ReadBookChangePatient1Flag = MainCategory.CreateEntry("ReadBookChangePatient1Flag", false,  description: "读书耐心减1");
         PoisonTime1Flag = MainCategory.CreateEntry("PoisonTime1Flag", false,  description: "毒相关消耗1天");
+        AddSpeBuildingsFlag = MainCategory.CreateEntry("AddSpeBuildingsFlag", false,  description: "添加可建造的特殊建筑开关");
         #endregion
       
         var harmony = new HarmonyLib.Harmony("LYMod");
@@ -214,7 +224,7 @@ public class Plugin : MelonMod
         harmony.PatchAll(typeof(ChooseControllerPatches));
         harmony.PatchAll(typeof(MeditationDataPatches));
         harmony.PatchAll(typeof(PoisonPatches));
-        harmony.PatchAll(typeof(TimeDataPatches));
+        harmony.PatchAll(typeof(GameControllerPatches));
         harmony.PatchAll(typeof(TestPatches));
         harmony.PatchAll(typeof(UIPatches));
         harmony.PatchAll(typeof(BattleSkip));
@@ -222,15 +232,31 @@ public class Plugin : MelonMod
         harmony.PatchAll(typeof(BookWriterDataPatches));
         harmony.PatchAll(typeof(StudyDodgePlayerPatches));
         harmony.PatchAll(typeof(DrinkUIControllerPatches));
-        MelonLogger.Msg("LYMod is loaded!左alt + e 打开窗体!");
+        
+        LOG.Msg("===================================================");
+        LOG.Msg("【LYMod】LYMod is loaded! 默认打开窗体：左alt + e !");
+        LOG.Msg("===================================================");
         
         var allMods = MelonBase.RegisteredMelons.OfType<MelonMod>();
         foreach (var mod in allMods)
         {
-            if (mod.Info.Name == "Refresh Auction") RollHelper.IsHaveAucRoll = false;
-            if (mod.Info.Name == "SelfHouseLover") RollHelper.IsRecruitReRoll = false;
+            switch (mod.Info.Name)
+            {
+                case "Refresh Auction":
+                    ModConfig.HaveAucRoll = true;
+                    LOG.Msg("【LYMod】由于加载了 Refresh Auction Mod，LYMod的按R键重Roll拍卖会失效");
+                    break;
+                case "SelfHouseLover":
+                    LOG.Msg("【LYMod】由于加载了 SelfHouseLover Mod，LYMod的按R键重Roll黄鹤楼招贤失效");
+                    ModConfig.HaveRecruitReRoll = true;
+                    break;
+                case "NPC管理Mod" or "TeammateManagerMod":
+                    LOG.Msg("【LYMod】由于加载了 NPC管理Mod，LYMod的【天赋上限设置】，【武学修习数量上限】，【入队时间修改】失效");
+                    ModConfig.HaveNpcMod = true;
+                    break;
+            }
         }
-        
+        LOG.Msg("===================================================");
     }
 
     private bool IsOpenWindowTriggered()
@@ -255,6 +281,7 @@ public class Plugin : MelonMod
             {
                 HeroHelper.TryReadNowHero(out _readedHeroData);
             }
+            OtherHelper.ChaneMaxNum();
         }
 
         // 按 R 重刷几个可复用的 Roll 场景
@@ -266,6 +293,7 @@ public class Plugin : MelonMod
             RollHelper.TryZhongyuanRoll();
             RollHelper.TryRefreshRecruitList();
             RollHelper.TrySpePoisonRoll();
+            RollHelper.TryFightMatchRewardRoll();
         }
         
         if (BreakMaxLimitFlag.Value || _breakMaxLimitLittleFlag.Value)
@@ -280,48 +308,46 @@ public class Plugin : MelonMod
             GlobalData.HeroMaxFightSkillNum = 120;
             GlobalData.HeroMaxLivingSkillNum = 100;
         }
-       
         
-        if (Input.GetKeyDown(KeyCode.F6))
-        {
-            // 1. 获取 PlotController 实例
-            var plotController = PlotController.Instance;
-
-            // 2. 设置交互的目标 NPC
-            HeroHelper.TryGetHeroByID(1, out var npcHero);
-            HeroHelper.TryReadPlayer(out var player);
-            plotController.targetInteractHero = npcHero; // 设置目标 NPC
-            plotController.sourceInteractHero = player;  // 设置玩家
-
-            // 3. 启动对话
-            // 创建对话
-            var plotData = new SinglePlotData();
-            plotData.plotText = $"{npcHero.heroName}：你好，有什么事吗？";
-        
-            // 创建选项
-            var choices = new Il2CppSystem.Collections.Generic.List<SinglePlotChoiceData>();
-        
-            // 闲聊选项
-            var chatChoice = new SinglePlotChoiceData();
-            chatChoice.choiceText = "闲聊";
-            chatChoice.callFuc = "ChatInteractHero";
-            chatChoice.callParam = "normal";
-            choices.Add(chatChoice);
-        
-            // 离开选项
-            var leaveChoice = new SinglePlotChoiceData();
-            leaveChoice.choiceText = "离开";
-            leaveChoice.callFuc = "GoNextPlot";
-            choices.Add(leaveChoice);
-        
-            plotData.choices = choices;
-        
-            // 显示对话
-            plotController.AddPlot(plotData);
-            
-            
-        }
-        
+        // if (Input.GetKeyDown(KeyCode.F6))
+        // {
+        //     // 1. 获取 PlotController 实例
+        //     var plotController = PlotController.Instance;
+        //
+        //     // 2. 设置交互的目标 NPC
+        //     HeroHelper.TryGetHeroByID(1, out var npcHero);
+        //     HeroHelper.TryReadPlayer(out var player);
+        //     plotController.targetInteractHero = npcHero; // 设置目标 NPC
+        //     plotController.sourceInteractHero = player;  // 设置玩家
+        //
+        //     // 3. 启动对话
+        //     // 创建对话
+        //     var plotData = new SinglePlotData();
+        //     plotData.plotText = $"{npcHero.heroName}：你好，有什么事吗？";
+        //
+        //     // 创建选项
+        //     var choices = new Il2CppSystem.Collections.Generic.List<SinglePlotChoiceData>();
+        //
+        //     // 闲聊选项
+        //     var chatChoice = new SinglePlotChoiceData();
+        //     chatChoice.choiceText = "闲聊";
+        //     chatChoice.callFuc = "ChatInteractHero";
+        //     chatChoice.callParam = "normal";
+        //     choices.Add(chatChoice);
+        //
+        //     // 离开选项
+        //     var leaveChoice = new SinglePlotChoiceData();
+        //     leaveChoice.choiceText = "离开";
+        //     leaveChoice.callFuc = "GoNextPlot";
+        //     choices.Add(leaveChoice);
+        //
+        //     plotData.choices = choices;
+        //
+        //     // 显示对话
+        //     plotController.AddPlot(plotData);
+        //     
+        //     
+        // }
     }
  
     
@@ -519,6 +545,8 @@ public class Plugin : MelonMod
 
         GUILayout.EndScrollView();
     }
+
+    #region 主界面
     
     private void DrawMainTab()
     {
@@ -527,7 +555,6 @@ public class Plugin : MelonMod
 
         builder.AddButtonRow("重置所有", OtherHelper.ResetAllMainConfig, 100);
         
-        #region 人物相关
         builder.BeginFoldout("人物相关").Space(10)
             .BeginHorizontal()
             .AddButton("读取人物", () =>
@@ -566,7 +593,9 @@ public class Plugin : MelonMod
                 _readedHeroData?.ChangeTagPoint(100,  true);
             }, 60)
             .EndHorizontal()
-            .AddAutoSave("无前置天赋要求", AnyTagFlag, labelWidth:150)
+            .Space(5)
+            .AddAutoSaveRow("无前置天赋要求", AnyTagFlag, "武学修炼限制倍数", KungFuMaxLimitTimes, labelWidth:150)
+            .AddAutoSaveRow("玩家天赋数量上限", PlayerMaxTagNum, "Npc天赋数量上限", NpcMaxTagNum,  labelWidth:150)
             .AddAutoSaveRow("突破潜力限制(轻微)",_breakMaxLimitLittleFlag,  "突破潜力限制(无限制)",BreakMaxLimitFlag)
             .AddLabelRow("装备马的数据:", 125)
             .BeginHorizontal()
@@ -607,7 +636,6 @@ public class Plugin : MelonMod
             }, "ha_resist",60,50)
             .EndHorizontal()
             .EndFoldout();
-        #endregion
 
         builder.BeginFoldout("个人相关").Space(10)
             .AddAutoSaveRow("练功倍率:", StudyFightRate, "闭关倍率:",  StudyUniqeRate)
@@ -647,6 +675,7 @@ public class Plugin : MelonMod
             .AddAutoSaveRow("研究一天",ReasearchFlag, "禅道修行倍率:", ChanDaoRate)
             .AddAutoSaveRow("建筑资源零消耗",Cost0, "建造升级移动拆除1天", UpgradeDay1)
             .AddAutoSaveRow("非本门功绩倍率:", ForceContributionRate,"特殊建筑上限", MaxSpeBuildingNum)
+            .AddAutoSave("添加可建造的特殊建筑", AddSpeBuildingsFlag)
             .EndFoldout();
         
         builder.BeginFoldout("交互相关").Space(10)
@@ -654,6 +683,7 @@ public class Plugin : MelonMod
             .AddAutoSaveRow("好感倍数",FavorTimes,"好感上限:", FavorMax)
             .AddAutoSaveRow("指点满级",TeachNpc,"传授满级:", TeachNewSkillToNpc)
             .AddAutoSaveRow("无限交互",Interaction,"传授任意技能:", TeachAnyNewSkill)
+            .AddAutoSave("队友离队天数", TeammateLeaveDay)
             .EndFoldout();
         
         builder.BeginFoldout("道具相关").Space(10)
@@ -705,5 +735,6 @@ public class Plugin : MelonMod
             .EndFoldout();
         
     }
+    #endregion
 }
 

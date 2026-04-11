@@ -83,4 +83,24 @@ public static class OtherHelper
         if (infoController == null) return;
         infoController.AddInfoTab(infoText, atlasName, infoPic, soundName, volumn, lastTime, picColor);
     }
+    
+    /// <summary>
+    /// 修改武学修炼数量限制倍数
+    /// </summary>
+    public static void ChaneMaxNum()
+    {
+        if (ModConfig.HaveNpcMod) return;
+        
+        List<float> skillBaseNum = new() {12,10,8,6,4,2};
+
+        var maxSkillNum = GlobalData.MaxSkillNum;
+        if (maxSkillNum.Count == 6)
+        {
+            for (int i = 0; i < 6; i++)
+            {
+                maxSkillNum[i] = skillBaseNum[i] * Plugin.Instance.KungFuMaxLimitTimes.Value;
+            }
+        }
+        GlobalData.MaxSkillNum = maxSkillNum;
+    }
 }

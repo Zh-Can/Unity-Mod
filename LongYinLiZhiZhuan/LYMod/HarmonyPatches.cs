@@ -4,10 +4,59 @@ using Object = Il2CppSystem.Object;
 using HarmonyLib;
 using Il2Cpp;
 using LYMod.Helpers;
-using String = Il2CppSystem.String;
+using MelonLoader;
 
 namespace LYMod;
 
+
+public class GameDataControllerPatches
+{
+    // 读取存档后
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(GameDataController), nameof(GameDataController.GameDataIntoGame))]
+    public static void GameDataController_GameDataIntoGame_Postfix(GameDataController __instance)
+    {
+        var allMods = MelonBase.RegisteredMelons.OfType<MelonMod>();
+        Plugin.LOG.Msg("===================================================");
+        foreach (var mod in allMods)
+        {
+            switch (mod.Info.Name)
+            {
+                case "Refresh Auction":
+                    ModConfig.HaveAucRoll = true;
+                    OtherHelper.AddInfoTab("【LYMod】由于加载了 <color=FF8C06>Refresh Auction</color> Mod，LYMod的<color=#FF8C06>按R键重Roll拍卖会</color><color=#FF0000>失效</color>", lastTime:20f);
+                    Plugin.LOG.Msg("【LYMod】由于加载了 Refresh Auction Mod，LYMod的按R键重Roll拍卖会失效");
+                    break;
+                case "SelfHouseLover":
+                    OtherHelper.AddInfoTab("【LYMod】由于加载了 <color=FF8C06>SelfHouseLover</color> Mod，LYMod的<color=#9A7CFF>按R键重Roll黄鹤楼招贤</color><color=#FF0000>失效</color>", lastTime:20f);
+                    Plugin.LOG.Msg("【LYMod】由于加载了 SelfHouseLover Mod，LYMod的按R键重Roll黄鹤楼招贤失效");
+                    ModConfig.HaveRecruitReRoll = true;
+                    break;
+                case "NPC管理Mod" or "TeammateManagerMod":
+                    OtherHelper.AddInfoTab("【LYMod】由于加载了 <color=#FF8C06>NPC管理Mod</color>，LYMod的<color=#9A7CFF>【天赋上限设置】</color>，<color=#9A7CFF>【武学修习数量上限】</color>，<color=#9A7CFF>【入队时间修改】</color><color=#FF0000>失效</color>", lastTime:20f);
+                    Plugin.LOG.Msg("【LYMod】由于加载了 NPC管理Mod，LYMod的【天赋上限设置】，【武学修习数量上限】，【入队时间修改】失效");
+                    ModConfig.HaveNpcMod = true;
+                    break;
+            }
+        }
+        Plugin.LOG.Msg("===================================================");
+        
+        // 游戏进入时自动加载建筑倍率配置
+        UIBuilderExtensions.RefreshBuildingList();
+        // 修改武学修炼数量限制倍数
+        OtherHelper.ChaneMaxNum();
+    }
+    /// <summary>
+    /// 藏宝阁容量
+    /// </summary>
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(GameDataController), nameof(GameDataController.GetExternalStorageMaxValue))]
+    public static void GetExternalStorageMaxValue_Postfix(GameDataController __instance, ref int __result)
+    {
+        if (__instance == null || !Plugin.Instance.ExternalStorageFlag.Value) return;
+        __result = 100000000;
+    }
+}
 
 public class DrinkUIControllerPatches
 {
@@ -50,27 +99,36 @@ public class StudyDodgePlayerPatches
     }
 }
 
-/// <summary>
-/// 藏宝阁容量
-/// </summary>
-public class GameDataControllerPatches
-{
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(GameDataController), nameof(GameDataController.GetExternalStorageMaxValue))]
-    public static void GetExternalStorageMaxValue_Postfix(GameDataController __instance, ref int __result)
-    {
-        if (__instance == null || !Plugin.Instance.ExternalStorageFlag.Value) return;
-        __result = 100000000;
-    }
-}
 
-public class TimeDataPatches
+public class GameControllerPatches
 {
+    /// <summary>
+    /// 时间冻结
+    /// </summary>
+    /// <returns></returns>
     [HarmonyPrefix]
     [HarmonyPatch(typeof(GameController), nameof(GameController.ChangeDay), new Type[0])]
     public static bool ChangeDay_Prefix()
     {
-        return !Plugin.Instance.TimeFreezeFlag.Value;
+        if (!Plugin.Instance.TimeFreezeFlag.Value) return true;
+        var wt = GameController.Instance.worldData.worldTime;
+        wt.day -= 1;
+        return true;
+    }
+    /// <summary>
+    /// 队友自动离队时间
+    /// </summary>
+    /// <param name="teamLeader"></param>
+    /// <param name="teamMate"></param>
+    /// <param name="autoLeaveDay"></param>
+    /// <returns></returns>
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(GameController), nameof(GameController.HeroJoinTeam))]
+    public static bool GameController_HeroJoinTeam_Prefix(HeroData teamLeader, HeroData teamMate, ref int autoLeaveDay)
+    {
+        if (Plugin.Instance.TeammateLeaveDay.Value == 30 || ModConfig.HaveNpcMod) return true;
+        autoLeaveDay = Plugin.Instance.TeammateLeaveDay.Value;
+        return true;
     }
 }
 
@@ -752,6 +810,7 @@ public class AreaBuildingDataPatches
             }
         }
     }
+    
     #endregion
     
     [HarmonyPrefix]
@@ -803,6 +862,24 @@ public class AreaBuildingDataPatches
        if (__instance == null || Plugin.Instance.MaxSpeBuildingNum.Value == 5) return;
         __result = Plugin.Instance.MaxSpeBuildingNum.Value;
     }
+    /// <summary>
+    /// 添加特殊建筑
+    /// </summary>
+    /// <param name="__instance"></param>
+    /// <param name="show"></param>
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(AreaBuildController), nameof(AreaBuildController.ShowBuildNewPanel))]
+    public static void AreaBuildController_ShowBuildNewPanel_Postfix(AreaBuildController __instance, bool show)
+    {
+        if (__instance == null || !show || !Plugin.Instance.AddSpeBuildingsFlag.Value) return;
+        var buildingIDsToAdd = new List<int> { 42,43,44,45,46,47,48,49,50,51,52,16,18,21,24,26,74,75 };
+        foreach (var buildingID in buildingIDsToAdd)
+        {
+            __instance.GenerateBuildNewButton(buildingID);
+        }
+    }
+    
+   
 }
 // 指定突破加的什么属性
 public class BreakThroughChoiceControllerPatch
@@ -914,6 +991,38 @@ public class StudySkillPatches
 
 public class HeroDataPatch
 {
+    /// <summary>
+    /// 晋升要求不受武学限制数量修改后影响影响
+    /// </summary>
+    /// <param name="__instance"></param>
+    /// <param name="__result"></param>
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(HeroData), nameof(HeroData.GetUpgradeForceLvNeedSkillNum))]
+    public static void HeroData_GetUpgradeForceLvNeedSkillNum_Postfix(HeroData __instance, ref int __result)
+    {
+        if (ModConfig.HaveNpcMod) return;
+        __result /= Plugin.Instance.KungFuMaxLimitTimes.Value;
+    }
+    
+    /// <summary>
+    /// 玩家/Npc 最大天赋数量设置
+    /// </summary>
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(HeroData), "GetMaxTagNum")]
+    public static void GetMaxTagNum_Postfix(HeroData __instance, ref int __result)
+    {
+        if (ModConfig.HaveNpcMod) return;
+        
+        if (__instance.heroID == 0 && Plugin.Instance.PlayerMaxTagNum.Value != 9)
+        {
+            __result = Plugin.Instance.PlayerMaxTagNum.Value;
+        }
+        if (__instance.heroID != 0 && Plugin.Instance.NpcMaxTagNum.Value != 9)
+        {
+            __result = Plugin.Instance.NpcMaxTagNum.Value;
+        }
+    }
+    
     #region 新档相关
     [HarmonyPostfix]
     [HarmonyPatch(typeof(StartGameSettingController), nameof(StartGameSettingController.Update))]
