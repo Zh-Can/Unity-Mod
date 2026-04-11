@@ -34,7 +34,9 @@ public class Plugin : MelonMod
     public MelonPreferences_Entry<float> Pzqh= null!; // 烹饪铸造炼药强化
     public MelonPreferences_Entry<bool> StealRate= null!; // 偷窃/偷学成功
     public MelonPreferences_Entry<bool> Hgbj= null!; // 好感不减
-    public MelonPreferences_Entry<float> WeightRatio= null!; // 负重倍率
+    public MelonPreferences_Entry<int> HorseMaxSeeRangeTimes= null!; // 马和马鞍视野加成倍数
+    public MelonPreferences_Entry<int> HorseMaxWeightTimes= null!; // 马和马鞍负重倍数
+    public MelonPreferences_Entry<int> HorseStepAddRateTimes= null!; // 马和马鞍探险耐力加成倍数
     public MelonPreferences_Entry<float> EquipmentWeight= null!; // 装备重量倍率
     public MelonPreferences_Entry<float> StudyFightRate= null!; // 练功房学习战斗经验倍率
     public MelonPreferences_Entry<float> StudyUniqeRate= null!; // 闭关室学习理论经验倍率
@@ -143,7 +145,9 @@ public class Plugin : MelonMod
         ReadBook = MainCategory.CreateEntry("readBookRate", 1.0f,  description: "读书倍率");
         RedBreak = MainCategory.CreateEntry("redBreakRate",1.0f,  description: "突破倍率");
         Pzqh = MainCategory.CreateEntry("pzlRate", 1.0f,  description: "烹饪铸造炼药倍率");
-        WeightRatio = MainCategory.CreateEntry("weightRatio", 1.0f,  description: "物品负重清零");
+        HorseMaxWeightTimes = MainCategory.CreateEntry("HorseMaxWeightTimes", 1, description:"马和马鞍负重的倍数");
+        HorseMaxSeeRangeTimes = MainCategory.CreateEntry("HorseMaxSeeRangeTimes", 1, description:"马和马鞍视野范围的倍数");
+        HorseStepAddRateTimes = MainCategory.CreateEntry("HorseStepAddRateTimes", 1, description:"马和马鞍探险耐力加成倍数");
         EquipmentWeight = MainCategory.CreateEntry("equipmentWeight", 1.0f, description: "装备负重清零");
         ShopLvRate = MainCategory.CreateEntry("shopLvRate", 1.0f,  description: "拍卖会品质倍率");
         ItemNum = MainCategory.CreateEntry("itemNum", -1,  description: "拍卖会物品数量");
@@ -309,45 +313,47 @@ public class Plugin : MelonMod
             GlobalData.HeroMaxLivingSkillNum = 100;
         }
         
-        // if (Input.GetKeyDown(KeyCode.F6))
-        // {
-        //     // 1. 获取 PlotController 实例
-        //     var plotController = PlotController.Instance;
-        //
-        //     // 2. 设置交互的目标 NPC
-        //     HeroHelper.TryGetHeroByID(1, out var npcHero);
-        //     HeroHelper.TryReadPlayer(out var player);
-        //     plotController.targetInteractHero = npcHero; // 设置目标 NPC
-        //     plotController.sourceInteractHero = player;  // 设置玩家
-        //
-        //     // 3. 启动对话
-        //     // 创建对话
-        //     var plotData = new SinglePlotData();
-        //     plotData.plotText = $"{npcHero.heroName}：你好，有什么事吗？";
-        //
-        //     // 创建选项
-        //     var choices = new Il2CppSystem.Collections.Generic.List<SinglePlotChoiceData>();
-        //
-        //     // 闲聊选项
-        //     var chatChoice = new SinglePlotChoiceData();
-        //     chatChoice.choiceText = "闲聊";
-        //     chatChoice.callFuc = "ChatInteractHero";
-        //     chatChoice.callParam = "normal";
-        //     choices.Add(chatChoice);
-        //
-        //     // 离开选项
-        //     var leaveChoice = new SinglePlotChoiceData();
-        //     leaveChoice.choiceText = "离开";
-        //     leaveChoice.callFuc = "GoNextPlot";
-        //     choices.Add(leaveChoice);
-        //
-        //     plotData.choices = choices;
-        //
-        //     // 显示对话
-        //     plotController.AddPlot(plotData);
-        //     
-        //     
-        // }
+        if (Input.GetKeyDown(KeyCode.KeypadMinus))
+        {
+            HeroHelper.TryReadPlayer(out var data);
+            data.itemListData.maxWeight = 9999;
+            //     // 1. 获取 PlotController 实例
+            //     var plotController = PlotController.Instance;
+            //
+            //     // 2. 设置交互的目标 NPC
+            //     HeroHelper.TryGetHeroByID(1, out var npcHero);
+            //     HeroHelper.TryReadPlayer(out var player);
+            //     plotController.targetInteractHero = npcHero; // 设置目标 NPC
+            //     plotController.sourceInteractHero = player;  // 设置玩家
+            //
+            //     // 3. 启动对话
+            //     // 创建对话
+            //     var plotData = new SinglePlotData();
+            //     plotData.plotText = $"{npcHero.heroName}：你好，有什么事吗？";
+            //
+            //     // 创建选项
+            //     var choices = new Il2CppSystem.Collections.Generic.List<SinglePlotChoiceData>();
+            //
+            //     // 闲聊选项
+            //     var chatChoice = new SinglePlotChoiceData();
+            //     chatChoice.choiceText = "闲聊";
+            //     chatChoice.callFuc = "ChatInteractHero";
+            //     chatChoice.callParam = "normal";
+            //     choices.Add(chatChoice);
+            //
+            //     // 离开选项
+            //     var leaveChoice = new SinglePlotChoiceData();
+            //     leaveChoice.choiceText = "离开";
+            //     leaveChoice.callFuc = "GoNextPlot";
+            //     choices.Add(leaveChoice);
+            //
+            //     plotData.choices = choices;
+            //
+            //     // 显示对话
+            //     plotController.AddPlot(plotData);
+            //     
+            //     
+        }
     }
  
     
@@ -689,7 +695,8 @@ public class Plugin : MelonMod
         builder.BeginFoldout("道具相关").Space(10)
             .AddAutoSaveRow("必定获得完本",RedBook,"一眼鉴宝:",JianBaoFlag)
             .AddAutoSaveRow("珍宝品质变红",GoodTreasure,"必定红色珍宝:", RedTreasure)
-            .AddAutoSaveRow("物品负重倍率(0-1)",WeightRatio,"装备负重倍率(0-1):", EquipmentWeight)
+            .AddAutoSaveRow("马和马鞍负重倍数",HorseMaxWeightTimes,"马和马鞍视野范围加成倍数", HorseMaxSeeRangeTimes)
+            .AddAutoSaveRow("马和马鞍探险耐力加成倍数", HorseStepAddRateTimes,"装备负重倍率(0-1):", EquipmentWeight)
             .AddAutoSaveRow("淬毒值倍率",PoisonRate,"淬毒不减:", PoisonNumReduceFlag)
             .AddAutoSaveRow("拍卖品质倍率",ShopLvRate,"拍卖物品数量:", ItemNum)
             .AddAutoSaveRow("烹饪铸造炼药倍率",Pzqh,"鬼市商店等级:", ZhongyuanLv)

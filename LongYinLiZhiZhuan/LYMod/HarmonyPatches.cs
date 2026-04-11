@@ -1636,6 +1636,33 @@ public class ForceDataPatches
 
 public class ItemListDataPatches
 {
+    /// <summary>
+    /// 马和马鞍的负重倍数
+    /// </summary>
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(ItemData), nameof(ItemData.GetHorseMaxWeightAdd))]
+    public static void ItemData_GetHorseMaxWeightAdd_Postfix(ItemData __instance, ref float __result)
+    {
+        __result *= Plugin.Instance.HorseMaxWeightTimes.Value;
+    }
+    /// <summary>
+    /// 马和马鞍视野范围加成倍数
+    /// </summary>
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(ItemData), nameof(ItemData.GetHorseSeeRange))]
+    public static void ItemData_GetHorseSeeRange_Postfix(ItemData __instance, ref float __result)
+    {
+        __result *= Plugin.Instance.HorseMaxSeeRangeTimes.Value;
+    }
+    /// <summary>
+    /// 马和马鞍探险耐力加成倍数
+    /// </summary>
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(ItemData), nameof(ItemData.GetHorseStepAddRate))]
+    public static void ItemData_GetHorseStepAddRate_Postfix(ItemData __instance, ref float __result)
+    {
+        __result *= Plugin.Instance.HorseStepAddRateTimes.Value;
+    }
     
     [HarmonyPrefix]
     [HarmonyPatch(typeof(ItemIconController), nameof(ItemIconController.Update))]
@@ -1661,10 +1688,7 @@ public class ItemListDataPatches
     {
         if (__instance?.GetHero() != null && __instance.GetHero().heroID == 0)
         {
-            if (Plugin.Instance.WeightRatio.Value < 1)
-                __instance.weight *= Plugin.Instance.WeightRatio.Value;
-
-            // 所以是红品质
+            // 所有是红品质
             if (Plugin.Instance.RedQuality.Value)
             {
                 if (targetItem.type == ItemType.Book)
@@ -1728,8 +1752,8 @@ public class ItemListDataPatches
                         list[i] = 5;
                     }
                 }
-                    
             }
+            
         }
     }
     
