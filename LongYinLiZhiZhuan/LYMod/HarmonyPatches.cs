@@ -56,6 +56,18 @@ public class GameDataControllerPatches
         if (__instance == null || !Plugin.Instance.ExternalStorageFlag.Value) return;
         __result = 100000000;
     }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(BattleController), nameof(BattleController.StartBattleButtonClicked))]
+    public static void StartBattleButtonClicked_Postfix(BattleController __instance)
+    {
+        if (__instance == null || !Plugin.Instance.BattleMaxTime999Flag.Value) return;
+        var newList = new Il2CppSystem.Collections.Generic.List<float>();
+        newList.Add(999);
+        newList.Add(999);
+        newList.Add(999);
+        BattleController.BattleMaxTime = newList;
+    }
 }
 
 public class DrinkUIControllerPatches
@@ -102,19 +114,21 @@ public class StudyDodgePlayerPatches
 
 public class GameControllerPatches
 {
-    /// <summary>
-    /// 时间冻结
-    /// </summary>
-    /// <returns></returns>
+    #region 时间冻结
+
     [HarmonyPrefix]
     [HarmonyPatch(typeof(GameController), nameof(GameController.ChangeDay), new Type[0])]
-    public static bool ChangeDay_Prefix()
+    public static bool GameController_ChangeDay_Prefix()
     {
-        if (!Plugin.Instance.TimeFreezeFlag.Value) return true;
-        var wt = GameController.Instance.worldData.worldTime;
-        wt.day -= 1;
-        return true;
+        // if (!Plugin.Instance.TimeFreezeFlag.Value) return true;
+        // var wd = GameController.Instance.worldData;
+        // wd.worldTime.day -= 1;
+        // return true;
+        
+        return !Plugin.Instance.TimeFreezeFlag.Value;
     }
+    
+    #endregion
     /// <summary>
     /// 队友自动离队时间
     /// </summary>

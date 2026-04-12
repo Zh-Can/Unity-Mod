@@ -87,6 +87,7 @@ public class Plugin : MelonMod
     public MelonPreferences_Entry<int> NpcMaxTagNum = null!; // NPC天赋数量上限
     public MelonPreferences_Entry<int> KungFuMaxLimitTimes = null!; // 武学修炼数量限制倍数
     public MelonPreferences_Entry<bool> AddSpeBuildingsFlag = null!; // 添加特殊建筑开关
+    public MelonPreferences_Entry<bool> BattleMaxTime999Flag = null!; // 战斗最大回合数999开关
 
     
     
@@ -207,6 +208,7 @@ public class Plugin : MelonMod
         ReadBookChangePatient1Flag = MainCategory.CreateEntry("ReadBookChangePatient1Flag", false,  description: "读书耐心减1");
         PoisonTime1Flag = MainCategory.CreateEntry("PoisonTime1Flag", false,  description: "毒相关消耗1天");
         AddSpeBuildingsFlag = MainCategory.CreateEntry("AddSpeBuildingsFlag", false,  description: "添加可建造的特殊建筑开关");
+        BattleMaxTime999Flag = MainCategory.CreateEntry("BattleMaxTime999Flag", false,  description: "战斗最大回合数999");
         #endregion
       
         var harmony = new HarmonyLib.Harmony("LYMod");
@@ -313,10 +315,10 @@ public class Plugin : MelonMod
             GlobalData.HeroMaxLivingSkillNum = 100;
         }
         
-        if (Input.GetKeyDown(KeyCode.KeypadMinus))
-        {
-            HeroHelper.TryReadPlayer(out var data);
-            data.itemListData.maxWeight = 9999;
+        // if (Input.GetKeyDown(KeyCode.KeypadMinus))
+        // {
+        // }
+           
             //     // 1. 获取 PlotController 实例
             //     var plotController = PlotController.Instance;
             //
@@ -353,7 +355,7 @@ public class Plugin : MelonMod
             //     plotController.AddPlot(plotData);
             //     
             //     
-        }
+        
     }
  
     
@@ -710,8 +712,9 @@ public class Plugin : MelonMod
             .EndFoldout();
         
         builder.BeginFoldout("其他相关").Space(10)
-            .AddAutoSaveRow("探险耐力锁定", Explore, "跳过战斗", BattleSkipFlag)
+            .AddAutoSave("探险耐力锁定", Explore)
             .AddAutoSaveRow("探险去除迷雾", ExploreSeeAllFlag, "探险随意移动", ExploreFreeMoveFlag)
+            .AddAutoSaveRow("跳过战斗",BattleSkipFlag,"999回合后进入疲劳", BattleMaxTime999Flag)
             .AddAutoSaveRow("按R键重新Roll", _breakRollFlag, "时间暂停", TimeFreezeFlag)
             .AddAutoSaveRow("自动鉴宝",AutoJianBaoFlag, "斗酒一回胜利", DrinkOneWinFlag)
             .AddAutoSave("喝酒自动倒满", DrinkUiAutoFillFlag)

@@ -1,5 +1,6 @@
 using System.Globalization;
 using Il2Cpp;
+using LYMod.Helpers;
 using MelonLoader;
 using UnityEngine;
 
@@ -1031,9 +1032,11 @@ public static class UIBuilderExtensions
             BuildingTimesMap.Select(kv => $"{kv.Key}:{kv.Value}"));
         Plugin.Instance.MainCategory.SaveToFile();
         Plugin.LOG.Msg($"建筑倍率映射：{Plugin.Instance.BuildingTimesMapStr.Value}");
-        GameController.Instance.ManageAreaStuff();
-        GameController.Instance.ManageForceStuff();
-        GameController.Instance.ManageForceSpeResearch();
+        HeroHelper.TryReadPlayer(out var player);
+        var force = player.GetForce();
+        force.forceDetailDirty = true;
+        player.GetArea().areaDetailDirty = true;
+        GameController.Instance.ChangeHour(1);
     }
     /// <summary>
     /// 刷新建筑数据
