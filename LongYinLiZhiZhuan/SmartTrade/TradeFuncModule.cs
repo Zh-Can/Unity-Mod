@@ -232,6 +232,18 @@ namespace SmartTrade
             var icons = _currentTradeUI.rightList.itemGrid.GetComponentsInChildren<ItemIconController>(true);
             if (icons.Length <= 0) return;
             
+            var player = GameController.Instance.worldData.Player();
+            var area = player.GetArea();
+            var list = area.areaTreasurePriceData;
+            var expensiveList = new List<int>();
+            foreach (var atpd in list)
+            {
+                if (atpd.expensive)
+                {
+                    expensiveList.Add(atpd.treasureType);
+                }
+            }
+            
             foreach (var icon in icons)
             {
                 var item = icon.itemData;
@@ -240,10 +252,13 @@ namespace SmartTrade
                 var realValue = item.GetTreasureRealValue();
                 var price = icon.GetItemPrice(true);
                 var netIncome = NetIncome(realValue, Plugin.AreaRate, price);
-                if (netIncome > 1)
-                {
-                    icon.OnClick();
-                }
+                
+                // 判断是否是本地高价商品
+                if (expensiveList.Contains(icon.itemData.subType)) continue;
+                
+                // 收益大于1买入
+                if (netIncome > 1) icon.OnClick();
+                
             }
         }
         
@@ -274,10 +289,7 @@ namespace SmartTrade
             var cheapList = new List<int>();
             foreach (var atpd in list)
             {
-                if (!atpd.expensive)
-                {
-                    cheapList.Add(atpd.treasureType);
-                }
+                if (!atpd.expensive) cheapList.Add(atpd.treasureType);
             }
             
             
@@ -297,7 +309,7 @@ namespace SmartTrade
                         // 是否大于商店的钱
                         if (totalSellPrice + sellPrice > shopMoney) continue;
                     
-                        // 判断是否是本地贱卖商品
+                        // 判断是否是本地低价商品
                         if (cheapList.Contains(icon.itemData.subType)) continue;
                         
                         totalSellPrice += sellPrice;
