@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using HarmonyLib;
 using Il2Cpp;
@@ -266,6 +267,19 @@ namespace SmartTrade
             
             var shopMoney = _currentTradeUI.rightList?.targetItemList?.money ?? 0;
             var totalSellPrice = 0;
+
+            var player = GameController.Instance.worldData.Player();
+            var area = player.GetArea();
+            var list = area.areaTreasurePriceData;
+            var cheapList = new List<int>();
+            foreach (var atpd in list)
+            {
+                if (!atpd.expensive)
+                {
+                    cheapList.Add(atpd.treasureType);
+                }
+            }
+            
             
             foreach (var purchaseItem in Plugin.PurchaseItems)
             {
@@ -276,16 +290,15 @@ namespace SmartTrade
                     if (icon?.itemData == null) continue;
                     if (ReferenceEquals(icon.itemData, purchaseItem.ItemData) && icon.itemData.treasureData.fullIdentified)
                     {
-                        if (icon.itemData.itemLv >= 3 && !Plugin.SellHighQuality)
-                        {
-                            continue;
-                        }
+                        // 是否勾选了自动卖紫色珍宝
+                        if (icon.itemData.itemLv >= 3 && !Plugin.SellHighQuality) continue;
                         
                         var sellPrice = icon.GetItemPrice(false);
-                        if (totalSellPrice + sellPrice > shopMoney)
-                        {
-                            continue;
-                        }
+                        // 是否大于商店的钱
+                        if (totalSellPrice + sellPrice > shopMoney) continue;
+                    
+                        // 判断是否是本地贱卖商品
+                        if (cheapList.Contains(icon.itemData.subType)) continue;
                         
                         totalSellPrice += sellPrice;
                         icon.OnClick();
