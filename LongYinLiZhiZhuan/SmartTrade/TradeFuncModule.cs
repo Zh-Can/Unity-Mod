@@ -286,7 +286,7 @@ namespace SmartTrade
 
             var player = GameController.Instance.worldData.Player();
             var area = player.GetArea();
-            var list = area.areaTreasurePriceData;
+            var list = area == null ? new Il2CppSystem.Collections.Generic.List<AreaTreasurePriceData>() : area.areaTreasurePriceData;
             var cheapTypeList = new List<int>();
             var expensiveTypeList = new List<int>();
             foreach (var atpd in list)
@@ -341,11 +341,7 @@ namespace SmartTrade
                     icon.OnClick();
                     totalSellPrice += sellPrice;
                 }
-                    
             }
-            
-            
-            
         }
 
         private static float NetIncome(float realValue, float areaRate, int price)
