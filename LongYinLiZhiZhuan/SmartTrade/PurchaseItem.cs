@@ -30,16 +30,21 @@ public class PurchaseItem : IEquatable<PurchaseItem>
     {
         if (other == null) return false;
         if (ItemData == null || other.ItemData == null) return false;
-        return ReferenceEquals(ItemData, other.ItemData);
+        return ItemData.itemID == other.ItemData.itemID &&
+               ItemData.type == other.ItemData.type &&
+               ItemData.subType == other.ItemData.subType &&
+               ItemData.value == other.ItemData.value;
     }
 
     public override bool Equals(object obj)
     {
-        return Equals(obj as PurchaseItem);
+        if (!(obj is PurchaseItem otherItem)) return false;
+        return Equals(otherItem);
     }
 
     public override int GetHashCode()
     {
-        return ItemData?.GetHashCode() ?? 0;
+        if (ItemData == null) return 0;
+        return HashCode.Combine(ItemData.itemID, ItemData.type, ItemData.subType);
     }
 }

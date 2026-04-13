@@ -1185,11 +1185,9 @@ public class HeroDataPatch
     public static bool HeroData_ChangeForceContribution_Prefix(HeroData __instance, ref float num, 
         bool showInfo, int targetForce = -1)
     {
-        if (__instance == null) return true;
         var gc = GameController.Instance;
-        if (gc == null) return true;
-        var forceId = gc.worldData.Player()?.belongForceID ?? -1;
-        if (forceId == -1) return true;
+        if (__instance == null || gc == null || __instance.heroID != 0) return true;
+        var forceId = __instance.belongForceID;
         if (forceId != targetForce && Plugin.Instance.ForceContributionRate.Value > 1 && num > 0)
         {
             num *= Plugin.Instance.ForceContributionRate.Value;
@@ -1428,6 +1426,15 @@ public class PlotControllerPatches
 
 public class ReadBookControllerPatches
 {
+    // [HarmonyPostfix]
+    // [HarmonyPatch(typeof(ReadBookController), nameof(ReadBookController.ShowReadBookPanel))]
+    // public static void ReadBookController_ShowReadBookPanel_Postfix(ReadBookController __instance)
+    // {
+    //     if (__instance == null) return;
+    //     var list = __instance.readBookTextTypeDataBase;
+    //     
+    // }
+    
     /// <summary>
     /// 读书耐心扣减1
     /// </summary>

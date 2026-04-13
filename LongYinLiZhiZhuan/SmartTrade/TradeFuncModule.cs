@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using HarmonyLib;
 using Il2Cpp;
 using SmartTrade;
@@ -41,7 +42,7 @@ namespace SmartTrade
             CheckButtonClick(_autoSellButton, OnAutoSellClicked);
         }
 
-        private static void CheckButtonClick(GameObject buttonObj, Action callback)
+        private static async void CheckButtonClick(GameObject buttonObj, Func<Task> callback)
         {
             var rect = buttonObj.GetComponent<RectTransform>();
             if (rect == null) return;
@@ -53,7 +54,7 @@ namespace SmartTrade
             if (RectTransformUtility.RectangleContainsScreenPoint(rect, Input.mousePosition, camera))
             {
                 _lastClickTime = Time.unscaledTime;
-                callback();
+                await callback();
             }
         }
 
@@ -227,8 +228,9 @@ namespace SmartTrade
         /**
          * 买入按钮
          */
-        private static void OnAutoBuyClicked()
+        private static async Task OnAutoBuyClicked()
         {
+            Other.ShowInfo("开始自动买入");
             var icons = _currentTradeUI.rightList.itemGrid.GetComponentsInChildren<ItemIconController>(true);
             if (icons.Length <= 0) return;
             
@@ -253,10 +255,8 @@ namespace SmartTrade
                 var price = icon.GetItemPrice(true);
                 var netIncome = NetIncome(realValue, Plugin.AreaRate, price);
                 
-                // 判断是否是本地高价商品
                 if (expensiveList.Contains(icon.itemData.subType)) continue;
                 
-                // 收益大于1买入
                 if (netIncome > 1) icon.OnClick();
                 
             }
@@ -269,8 +269,9 @@ namespace SmartTrade
         /**
          * 卖出按钮
          */
-        private static void OnAutoSellClicked()
+        private static async Task OnAutoSellClicked()
         {
+            Other.ShowInfo("开始自动卖出");
             if (Plugin.PurchaseItems is not {Count: > 0}) return;
             if (_currentTradeUI == null) return;
             
@@ -286,38 +287,65 @@ namespace SmartTrade
             var player = GameController.Instance.worldData.Player();
             var area = player.GetArea();
             var list = area.areaTreasurePriceData;
-            var cheapList = new List<int>();
+            var cheapTypeList = new List<int>();
+            var expensiveTypeList = new List<int>();
             foreach (var atpd in list)
             {
-                if (!atpd.expensive) cheapList.Add(atpd.treasureType);
+                if (!atpd.expensive) 
+                    cheapTypeList.Add(atpd.treasureType);
+                else
+                    expensiveTypeList.Add(atpd.treasureType);
             }
-            
-            
+            var expensiveList = new List<ItemIconController>(); 
+            var normalList = new List<ItemIconController>();    
+            foreach (var icon in icons)
+            {
+                if (icon.itemData.treasureData == null) continue;
+                if (expensiveTypeList.Contains(icon.itemData.subType))
+                    expensiveList.Add(icon);
+                else if (!cheapTypeList.Contains(icon.itemData.subType))
+                    normalList.Add(icon);
+            }
+
             foreach (var purchaseItem in Plugin.PurchaseItems)
             {
                 if (purchaseItem?.ItemData == null) continue;
-                
-                foreach (var icon in icons)
+
+                foreach (var icon in expensiveList)
                 {
-                    if (icon?.itemData == null) continue;
-                    if (ReferenceEquals(icon.itemData, purchaseItem.ItemData) && icon.itemData.treasureData.fullIdentified)
-                    {
-                        // 是否勾选了自动卖紫色珍宝
-                        if (icon.itemData.itemLv >= 3 && !Plugin.SellHighQuality) continue;
-                        
-                        var sellPrice = icon.GetItemPrice(false);
-                        // 是否大于商店的钱
-                        if (totalSellPrice + sellPrice > shopMoney) continue;
-                    
-                        // 判断是否是本地低价商品
-                        if (cheapList.Contains(icon.itemData.subType)) continue;
-                        
-                        totalSellPrice += sellPrice;
-                        icon.OnClick();
-                        break;
-                    }
+                    if (!ReferenceEquals(icon.itemData, purchaseItem.ItemData) ||
+                        !icon.itemData.treasureData.fullIdentified) continue;
+                    if (icon.itemData.itemLv >= 3 && !Plugin.SellHighQuality) continue;
+
+                    var sellPrice = icon.GetItemPrice(false);
+
+                    if (totalSellPrice + sellPrice > shopMoney) break;
+
+                    icon.OnClick();
+                    totalSellPrice += sellPrice;
                 }
             }
+            foreach (var purchaseItem in Plugin.PurchaseItems)
+            {
+                if (purchaseItem?.ItemData == null) continue;
+
+                foreach (var icon in normalList)
+                {
+                    if (!ReferenceEquals(icon.itemData, purchaseItem.ItemData) || !icon.itemData.treasureData.fullIdentified) continue;
+                    if (icon.itemData.itemLv >= 3 && !Plugin.SellHighQuality) continue;
+                    
+                    var sellPrice = icon.GetItemPrice(false);
+                
+                    if (totalSellPrice + sellPrice > shopMoney) break;
+                
+                    icon.OnClick();
+                    totalSellPrice += sellPrice;
+                }
+                    
+            }
+            
+            
+            
         }
 
         private static float NetIncome(float realValue, float areaRate, int price)
