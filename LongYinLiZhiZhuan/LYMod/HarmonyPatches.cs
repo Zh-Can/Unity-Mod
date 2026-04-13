@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Text;
 using UnityEngine;
 using Object = Il2CppSystem.Object;
@@ -36,6 +37,10 @@ public class GameDataControllerPatches
                     OtherHelper.AddInfoTab("【LYMod】由于加载了 <color=#FF8C06>NPC管理Mod</color>，LYMod的<color=#9A7CFF>【天赋上限设置】</color>，<color=#9A7CFF>【武学修习数量上限】</color>，<color=#9A7CFF>【入队时间修改】</color><color=#FF0000>失效</color>", lastTime:20f);
                     Plugin.LOG.Msg("【LYMod】由于加载了 NPC管理Mod，LYMod的【天赋上限设置】，【武学修习数量上限】，【入队时间修改】失效");
                     ModConfig.HaveNpcMod = true;
+                    break;
+                case "ReadBookPlus":
+                    Plugin.LOG.Msg("【LYMod】由于加载了 HaveReadBookPlus，LYMod的 读书显示所有格子 失效");
+                    ModConfig.HaveReadBookPlus = true;
                     break;
             }
         }
@@ -481,7 +486,7 @@ public class ChooseControllerPatches
         }
     }
 
-    #region 任意传授
+    #region 任意传授  此处代码由 3DM：SaintCirno9 大佬提供
 
     /// <summary>
     /// 从当前技能选择面板读取玩家刚点中的武功。
@@ -1426,15 +1431,6 @@ public class PlotControllerPatches
 
 public class ReadBookControllerPatches
 {
-    // [HarmonyPostfix]
-    // [HarmonyPatch(typeof(ReadBookController), nameof(ReadBookController.ShowReadBookPanel))]
-    // public static void ReadBookController_ShowReadBookPanel_Postfix(ReadBookController __instance)
-    // {
-    //     if (__instance == null) return;
-    //     var list = __instance.readBookTextTypeDataBase;
-    //     
-    // }
-    
     /// <summary>
     /// 读书耐心扣减1
     /// </summary>
@@ -1723,6 +1719,7 @@ public class ItemListDataPatches
                     {
                         list[i] = 5;
                     }
+                    targetItem.rareLv = 5;
                 }
                 else
                 {
@@ -1772,6 +1769,7 @@ public class ItemListDataPatches
                     {
                         list[i] = 5;
                     }
+                    targetItem.rareLv = 5;
                 }
             }
             

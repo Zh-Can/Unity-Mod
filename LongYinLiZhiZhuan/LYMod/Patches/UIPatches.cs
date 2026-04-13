@@ -2,8 +2,11 @@ using HarmonyLib;
 using Il2Cpp;
 using UnityEngine;
 
-namespace LYMod;
+namespace LYMod.Patches;
 
+/// <summary>
+/// 此处代码由 github:Zephdyn/3DM:ALpha喇嘛 提供
+/// </summary>
 [HarmonyPatch]
 public static class UIPatches
 {

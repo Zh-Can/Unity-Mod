@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using Il2Cpp;
 using LYMod;
 using LYMod.Helpers;
@@ -88,6 +88,7 @@ public class Plugin : MelonMod
     public MelonPreferences_Entry<int> KungFuMaxLimitTimes = null!; // 武学修炼数量限制倍数
     public MelonPreferences_Entry<bool> AddSpeBuildingsFlag = null!; // 添加特殊建筑开关
     public MelonPreferences_Entry<bool> BattleMaxTime999Flag = null!; // 战斗最大回合数999开关
+    public MelonPreferences_Entry<bool> AutoReadBookFlag = null!; // 一键阅读开关
 
     
     
@@ -209,10 +210,12 @@ public class Plugin : MelonMod
         PoisonTime1Flag = MainCategory.CreateEntry("PoisonTime1Flag", false,  description: "毒相关消耗1天");
         AddSpeBuildingsFlag = MainCategory.CreateEntry("AddSpeBuildingsFlag", false,  description: "添加可建造的特殊建筑开关");
         BattleMaxTime999Flag = MainCategory.CreateEntry("BattleMaxTime999Flag", false,  description: "战斗最大回合数999");
+        AutoReadBookFlag = MainCategory.CreateEntry("AutoReadBookFlag", false,  description: "一键阅读开关");
         #endregion
       
         var harmony = new HarmonyLib.Harmony("LYMod");
         harmony.PatchAll(typeof(ReadBookControllerPatches));
+        harmony.PatchAll(typeof(ReadBookAutoReadPatches));
         harmony.PatchAll(typeof(ItemListDataPatches));
         harmony.PatchAll(typeof(BreakThroughControllerPatches));
         harmony.PatchAll(typeof(ForceDataPatches));
@@ -275,6 +278,8 @@ public class Plugin : MelonMod
     }
     public override void OnUpdate()
     {
+        ReadBookAutoReadPatches.HandleAutoReadButton();
+        
         // Alt+E 切换主面板
         if (IsOpenWindowTriggered())
         {
@@ -317,6 +322,8 @@ public class Plugin : MelonMod
         
         // if (Input.GetKeyDown(KeyCode.KeypadMinus))
         // {
+        //     var list = ReadBookController.Instance.actingGrid;
+        //     LOG.Msg(list.Count);
         // }
            
             //     // 1. 获取 PlotController 实例
@@ -649,6 +656,7 @@ public class Plugin : MelonMod
             .AddAutoSaveRow("练功倍率:", StudyFightRate, "闭关倍率:",  StudyUniqeRate)
             .AddAutoSaveRow("实战倍率:", BattleChangeSkillFightRate,  "读书倍率:", ReadBook)
             .AddAutoSaveRow("读书耐心减1", ReadBookChangePatient1Flag, "毒相关耗时1天", PoisonTime1Flag)
+            .AddAutoSave("一键阅读", AutoReadBookFlag)
             .AddAutoSaveRow("突破倍率:", RedBreak, "抄书一天", CopyBookFlag)
             .AddAutoSaveRow("获得金钱倍数:",MoneyTimes, "莫高窟遗忘任意技能", RemoveAnySkill)
             .AddAutoSaveRow("生活经验倍率:", LivingSkillExpRate, "生活潜力倍数:", MaxLivingSkillExpTimes)

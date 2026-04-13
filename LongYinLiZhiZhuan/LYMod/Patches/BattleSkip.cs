@@ -1,7 +1,7 @@
 ﻿using HarmonyLib;
 using Il2Cpp;
 
-namespace LYMod;
+namespace LYMod.Patches;
 
 public static class BattleSkip
 {
@@ -32,9 +32,7 @@ public static class BattleSkip
     {
         public static void Prefix(BattleController __instance)
         {
-
             var playerTeamID = __instance.GetPlayerControlTeamID();
-
             GetEnemyInfo(__instance, playerTeamID, out var enemyCount, out var enemyTotalHP);
             _storedEnemyCount = enemyCount;
             _storedEnemyTotalHp = enemyTotalHP;
