@@ -1207,15 +1207,19 @@ public class HeroDataPatch
     [HarmonyPatch(typeof(HeroData), nameof(HeroData.HaveForceFunction))]
     public static void HeroData_HaveForceFunction_Postfix(HeroData __instance,int forceID, ref bool __result)
     {
-        if (__instance is { heroID: 0 })
+        if (UIBuilderExtensions.EnabledForceIDs.Count == 0)
         {
-            if (UIBuilderExtensions.EnabledForceIDs.Count == 0)
-            {
-                UIBuilderExtensions.RefreshForceList();
-            }
-            if (UIBuilderExtensions.EnabledForceIDs.Contains(forceID)) 
-                __result = true;
+            UIBuilderExtensions.RefreshForceList();
         }
+        // 如果不是玩家
+        if (__instance is not { heroID: 0 })
+        {
+            var flag = HeroHelper.TryReadPlayer(out var player);
+            if (!flag) return;
+            if (player.belongForceID == -1 || player.belongForceID != forceID) return;
+        }
+
+        if (UIBuilderExtensions.EnabledForceIDs.Contains(forceID)) __result = true;
     }
     [HarmonyPrefix]
     [HarmonyPatch(typeof(HeroData), nameof(HeroData.BattleChangeSkillFightExp))]
