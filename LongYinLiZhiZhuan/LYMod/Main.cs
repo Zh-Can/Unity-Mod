@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Linq;
 using Il2Cpp;
 using LYMod;
 using LYMod.Helpers;
@@ -6,6 +7,7 @@ using LYMod.Patches;
 using MelonLoader;
 using MelonLoader.Utils;
 using UnityEngine;
+using System;
 
 [assembly: MelonInfo(typeof(Plugin), ModConfig.ModName, ModConfig.ModVersion, ModConfig.ModAuthor)]
 [assembly:MelonGame("TppStudio", "LongYinLiZhiZhuan")]

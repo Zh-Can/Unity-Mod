@@ -1,4 +1,7 @@
+using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using Il2Cpp;
 using LYMod.Helpers;
 using MelonLoader;
@@ -535,7 +538,7 @@ public class UIBuilder
     }
     
 
-    public UIBuilder AddButton(string text, Action? onClick, float width = 0f, float height = 0f)
+    public UIBuilder AddButton(string text, Action onClick, float width = 0f, float height = 0f)
     {
         var w = width > 0 ? width * _scale : 0f;
         var h = height > 0 ? height * _scale : _toggleHeight;
