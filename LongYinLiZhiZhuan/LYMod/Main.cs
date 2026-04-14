@@ -596,7 +596,7 @@ public class Plugin : MelonMod
                 new InfoItem("年龄：", _readedHeroData?.age)
             )
             .AddInfoRow(60, new InfoItem("天赋：", _readedHeroData?.talent > 4 ? _readedHeroData?.talent : GlobalData.TalentText[_readedHeroData?.talent ?? 0]))
-           .AddButton("+", () =>
+            .AddButton("+", () =>
             {
                 if (_readedHeroData == null) return;
                 if (_readedHeroData.talent < 4) _readedHeroData.talent += 1;
@@ -614,6 +614,39 @@ public class Plugin : MelonMod
             .AddAutoSaveRow("无前置天赋要求", AnyTagFlag, "武学修炼限制倍数", KungFuMaxLimitTimes, labelWidth:150)
             .AddAutoSaveRow("玩家天赋数量上限", PlayerMaxTagNum, "Npc天赋数量上限", NpcMaxTagNum,  labelWidth:150)
             .AddAutoSaveRow("突破潜力限制(轻微)",_breakMaxLimitLittleFlag,  "突破潜力限制(无限制)",BreakMaxLimitFlag)
+            .AddLabelRow("修改读取到人物的潜力：", 200)
+            .Space(5)
+            .BeginHorizontal()
+            .AddButton("基本属性潜力120", () =>
+            {
+                if (_readedHeroData == null) return;
+                var list = _readedHeroData.maxAttri;
+                for (var i = 0; i < list.Count; i++)
+                {
+                    list[i] = 120;
+                }
+            }, 170)
+            .Space(3)
+            .AddButton("战斗技能潜力120", () =>
+            {
+                if (_readedHeroData == null) return;
+                var list = _readedHeroData.maxFightSkill;
+                for (var i = 0; i < list.Count; i++)
+                {
+                    list[i] = 120;
+                }
+            }, 170)
+            .Space(5)
+            .AddButton("生活技能潜力100", () =>
+            {
+                if (_readedHeroData == null) return;
+                var list = _readedHeroData.maxLivingSkill;
+                for (var i = 0; i < list.Count; i++)
+                {
+                    list[i] = 100;
+                }
+            }, 170)
+            .EndHorizontal()
             .AddLabelRow("装备马的数据:", 125)
             .BeginHorizontal()
             .AddLinkedFloat("速度：", () => _readedHeroData?.horse?.horseData.speed ?? 0f, val =>

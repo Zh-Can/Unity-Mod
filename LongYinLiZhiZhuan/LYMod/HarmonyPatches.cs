@@ -52,6 +52,13 @@ public class GameDataControllerPatches
         UIBuilderExtensions.RefreshBuildingList();
         // 修改武学修炼数量限制倍数
         OtherHelper.ChaneMaxNum();
+        
+        if (__instance == null) return;
+        var list = __instance.skinDataBase;
+        foreach (var skinData in list)
+        {
+            if (skinData.DLC == 0) skinData.DLC = -1;
+        }
     }
     /// <summary>
     /// 藏宝阁容量
