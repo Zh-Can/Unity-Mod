@@ -61,6 +61,7 @@ namespace SmartTrade
 
         public static void CreateButtons(TradeUIController tradeUIController)
         {
+            DestroyButtons();
             if (!HasTreasureInShop(tradeUIController))
             {
                 return;
@@ -104,7 +105,6 @@ namespace SmartTrade
         {
             try
             {
-                DestroyButtons();
                 var flag = false;
                 var merchantList = tradeUIController.rightList;
                 if (merchantList == null || merchantList.itemGrid == null)
