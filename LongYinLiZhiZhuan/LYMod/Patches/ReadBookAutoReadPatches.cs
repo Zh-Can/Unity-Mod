@@ -64,6 +64,7 @@ public class ReadBookAutoReadPatches
         var newButton = Object.Instantiate(template.gameObject, template.transform.parent);
         newButton.name = buttonName;
 
+        DisableNativeClick(newButton);
         var buttonComponent = newButton.GetComponent<Button>();
         if (buttonComponent != null)
         {
