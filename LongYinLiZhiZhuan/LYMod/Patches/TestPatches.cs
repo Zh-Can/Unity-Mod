@@ -6,6 +6,17 @@ namespace LYMod.Patches;
 [HarmonyPatch]
 public class TestPatches
 {
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(SteamStatsAndAchievements), nameof(SteamStatsAndAchievements.CheckDLCState))]
+    public static bool SteamStatsAndAchievements_CheckDLCState_Prefix(SteamStatsAndAchievements __instance)
+    {
+        var ppd = GameDataController.playerPrefData.playerPrefData;
+        var dlc0 = ppd.GetInt("DLC0");
+        if (dlc0 != 0) return true;
+        ppd.SetKey("DLC0", 1);
+        return false;
+    }
+    
     private static readonly int[] MaximizedLayout =
     {
         -1, -1, -1, -1, -1, -1, -1, -2, -1, -1, -1, -1, -1, -1, -1,

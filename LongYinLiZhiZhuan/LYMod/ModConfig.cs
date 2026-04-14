@@ -3,7 +3,7 @@
 public static class ModConfig
 {
     public const string ModName = "LYMod";     // 插件名
-    public const string ModVersion = "4.4";    // 版本号
+    public const string ModVersion = "4.4.1";    // 版本号
     public const string ModAuthor = "Can";     // 作者
     
     public static bool HaveNpcMod = false; // 是否有NPC管理mod

@@ -248,26 +248,6 @@ public class Plugin : MelonMod
         LOG.Msg("【LYMod】LYMod is loaded! 默认打开窗体：左alt + e !");
         LOG.Msg("===================================================");
         
-        var allMods = MelonBase.RegisteredMelons.OfType<MelonMod>();
-        foreach (var mod in allMods)
-        {
-            switch (mod.Info.Name)
-            {
-                case "Refresh Auction":
-                    ModConfig.HaveAucRoll = true;
-                    LOG.Msg("【LYMod】由于加载了 Refresh Auction Mod，LYMod的按R键重Roll拍卖会失效");
-                    break;
-                case "SelfHouseLover":
-                    LOG.Msg("【LYMod】由于加载了 SelfHouseLover Mod，LYMod的按R键重Roll黄鹤楼招贤失效");
-                    ModConfig.HaveRecruitReRoll = true;
-                    break;
-                case "NPC管理Mod" or "TeammateManagerMod":
-                    LOG.Msg("【LYMod】由于加载了 NPC管理Mod，LYMod的【天赋上限设置】，【武学修习数量上限】，【入队时间修改】失效");
-                    ModConfig.HaveNpcMod = true;
-                    break;
-            }
-        }
-        LOG.Msg("===================================================");
     }
 
     private bool IsOpenWindowTriggered()
@@ -324,8 +304,7 @@ public class Plugin : MelonMod
         
         // if (Input.GetKeyDown(KeyCode.KeypadMinus))
         // {
-        //     var list = ReadBookController.Instance.actingGrid;
-        //     LOG.Msg(list.Count);
+        //     
         // }
            
             //     // 1. 获取 PlotController 实例
