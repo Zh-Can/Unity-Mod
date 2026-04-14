@@ -1,4 +1,8 @@
 using Il2Cpp;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using MelonLoader;
 using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
@@ -170,7 +174,7 @@ public class ReadBookAutoReadPatches
         CheckButtonClick(_autoReadButton, OnAutoReadClicked);
     }
 
-    private static void CheckButtonClick(GameObject buttonObj, Action callback)
+    private static void CheckButtonClick(GameObject buttonObj, Func<IEnumerator> callback)
     {
         var rect = buttonObj.GetComponent<RectTransform>();
         if (rect == null) return;
@@ -185,7 +189,7 @@ public class ReadBookAutoReadPatches
         if (RectTransformUtility.RectangleContainsScreenPoint(rect, Input.mousePosition, camera))
         {
             _lastClickTime = Time.unscaledTime;
-            callback();
+            MelonCoroutines.Start(callback());
         }
     }
 
@@ -202,10 +206,10 @@ public class ReadBookAutoReadPatches
     ///
     /// 此处代码由大佬 3DM：名取早耶香 提供优化
     /// </summary>
-    private static void OnAutoReadClicked()
+    private static IEnumerator OnAutoReadClicked()
     {
         var textGrid = GameObject.Find("Canvas/ReadBookUIPanel/Paper/TextGrid");
-        if (textGrid == null) return;
+        if (textGrid == null) yield break;
         
         // 只遍历一次 UI 子节点，按 fullName 归档，保留原始子节点顺序
         var controllersByName = new Dictionary<string, List<ReadBookTextController>>(StringComparer.Ordinal);
@@ -246,6 +250,7 @@ public class ReadBookAutoReadPatches
                 }
             }
         }
+        yield break;
         
         //
         // var count = textGrid.transform.childCount;
