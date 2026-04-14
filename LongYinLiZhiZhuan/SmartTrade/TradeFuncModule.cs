@@ -1,9 +1,10 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using HarmonyLib;
 using Il2Cpp;
+using MelonLoader;
 using SmartTrade;
 using UnityEngine;
 using UnityEngine.UI;
@@ -42,7 +43,7 @@ namespace SmartTrade
             CheckButtonClick(_autoSellButton, OnAutoSellClicked);
         }
 
-        private static async void CheckButtonClick(GameObject buttonObj, Func<Task> callback)
+        private static void CheckButtonClick(GameObject buttonObj, Func<IEnumerator> callback)
         {
             var rect = buttonObj.GetComponent<RectTransform>();
             if (rect == null) return;
@@ -54,14 +55,12 @@ namespace SmartTrade
             if (RectTransformUtility.RectangleContainsScreenPoint(rect, Input.mousePosition, camera))
             {
                 _lastClickTime = Time.unscaledTime;
-                await callback();
+                MelonCoroutines.Start(callback());
             }
         }
 
         public static void CreateButtons(TradeUIController tradeUIController)
         {
-            DestroyButtons();
-
             if (!HasTreasureInShop(tradeUIController))
             {
                 return;
@@ -105,10 +104,12 @@ namespace SmartTrade
         {
             try
             {
+                DestroyButtons();
+                var flag = false;
                 var merchantList = tradeUIController.rightList;
                 if (merchantList == null || merchantList.itemGrid == null)
                 {
-                    Plugin.LOG.Warning("[SmartTrade] 商人物品列表为空");
+                    Plugin.LOG.Msg("[SmartTrade] 商人物品列表为空");
                     return false;
                 }
 
@@ -119,18 +120,16 @@ namespace SmartTrade
 
                     var itemData = icon.itemData;
                     if (itemData == null) continue;
-
-                    if (itemData.treasureData != null)
-                    {
-                        return true;
-                    }
+                    if (itemData.treasureData is not { fullIdentified: false }) continue;
+                    flag = true;
+                    break;
                 }
-
-                return false;
+                if (!flag) Plugin.LOG.Msg("[SmartTrade] 未检测到珍宝商品");;
+                return flag;
             }
             catch (Exception ex)
             {
-                Plugin.LOG.Error($"[SmartTrade] 检查珍宝时出错: {ex.Message}");
+                Plugin.LOG.Msg($"[SmartTrade] 检查珍宝时出错: {ex.Message}");
                 return false;
             }
         }
@@ -216,7 +215,7 @@ namespace SmartTrade
                 var cancelRect = cancelButton.GetComponent<RectTransform>();
                 if (cancelRect != null) y = Math.Min(sureRect.anchoredPosition.y, cancelRect.anchoredPosition.y);
             }
-
+            
             sellRect.anchoredPosition = new Vector2(startX, y);
             buyRect.anchoredPosition = new Vector2(startX - smallerSize.x - gap, y);
         }
@@ -228,11 +227,11 @@ namespace SmartTrade
         /**
          * 买入按钮
          */
-        private static async Task OnAutoBuyClicked()
+        private static IEnumerator OnAutoBuyClicked()
         {
             Other.ShowInfo("开始自动买入");
             var icons = _currentTradeUI.rightList.itemGrid.GetComponentsInChildren<ItemIconController>(true);
-            if (icons.Length <= 0) return;
+            if (icons.Length <= 0) yield break;
             
             var player = GameController.Instance.worldData.Player();
             var area = player.GetArea();
@@ -260,6 +259,7 @@ namespace SmartTrade
                 if (netIncome > 1) icon.OnClick();
                 
             }
+            yield break;
         }
         
         public static void SetCurrentTradeUI(TradeUIController controller)
@@ -269,17 +269,17 @@ namespace SmartTrade
         /**
          * 卖出按钮
          */
-        private static async Task OnAutoSellClicked()
+        private static IEnumerator OnAutoSellClicked()
         {
             Other.ShowInfo("开始自动卖出");
-            if (Plugin.PurchaseItems is not {Count: > 0}) return;
-            if (_currentTradeUI == null) return;
+            if (Plugin.PurchaseItems is not {Count: > 0}) yield break;
+            if (_currentTradeUI == null) yield break;
             
             var leftList = _currentTradeUI.leftList;
-            if (leftList == null) return;
+            if (leftList == null) yield break;
             
             var icons = leftList.itemGrid?.GetComponentsInChildren<ItemIconController>(true);
-            if (icons == null) return;
+            if (icons == null) yield break;
             
             var shopMoney = _currentTradeUI.rightList?.targetItemList?.money ?? 0;
             var totalSellPrice = 0;
@@ -342,6 +342,7 @@ namespace SmartTrade
                     totalSellPrice += sellPrice;
                 }
             }
+            yield break;
         }
 
         private static float NetIncome(float realValue, float areaRate, int price)
