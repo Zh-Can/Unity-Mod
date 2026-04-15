@@ -8,6 +8,7 @@ using MelonLoader;
 using MelonLoader.Utils;
 using UnityEngine;
 using System;
+using Il2CppConsolation;
 
 [assembly: MelonInfo(typeof(Plugin), ModConfig.ModName, ModConfig.ModVersion, ModConfig.ModAuthor)]
 [assembly:MelonGame("TppStudio", "LongYinLiZhiZhuan")]
@@ -68,8 +69,10 @@ public class Plugin : MelonMod
     public MelonPreferences_Entry<bool> TimeFreezeFlag= null!; // 时间停止
     public MelonPreferences_Entry<bool> DrinkOneWinFlag= null!; // 斗酒一轮必胜
     public MelonPreferences_Entry<float> ExpRateMultiplier= null!; // 游戏难度经验倍率
+    public MelonPreferences_Entry<bool> ExpRateMultiplierSelfForceFlag= null!; // 游戏难度经验倍率是否对自己门派生效
     public MelonPreferences_Entry<bool> GoodTreasure= null!; // 珍宝品质修改当前等级全红
     public MelonPreferences_Entry<float> ForceContributionRate= null!; // 非本门派功绩倍率
+    public MelonPreferences_Entry<float> GovernContributionRate= null!; // 官府功绩倍率
     public MelonPreferences_Entry<bool> BattleSkipFlag= null!; // 跳过战斗
     public MelonPreferences_Entry<bool> BreakMaxLimitFlag= null!; // 突破潜力限制
     private MelonPreferences_Entry<bool> _breakMaxLimitLittleFlag= null!; // 突破潜力限制（轻微）
@@ -169,6 +172,7 @@ public class Plugin : MelonMod
         PoisonRate = MainCategory.CreateEntry("PoisonRate", 1.0f, description:"淬毒值倍率");
         ExpRateMultiplier = MainCategory.CreateEntry("ExpRateMultiplier", 1.0f, description:"游戏难度经验倍率,最高难度非本门经验倍率1.6（+60%）,这里默认2（+100%）");
         ForceContributionRate = MainCategory.CreateEntry("ForceContributionRate", 1.0f,description:"非本门功绩倍率");
+        GovernContributionRate = MainCategory.CreateEntry("GovernContributionRate", 1.0f,description:"官府功绩倍率");
         TeammateLeaveDay = MainCategory.CreateEntry("TeammateLeaveDay", 30,description:"队友自动离队天数");
         PlayerMaxTagNum = MainCategory.CreateEntry("PlayerMaxTagNum", 9,description:"玩家天赋数量上限");
         NpcMaxTagNum = MainCategory.CreateEntry("NpcMaxTagNum", 9,description:"Npc天赋数量上限");
@@ -213,6 +217,7 @@ public class Plugin : MelonMod
         AddSpeBuildingsFlag = MainCategory.CreateEntry("AddSpeBuildingsFlag", false,  description: "添加可建造的特殊建筑开关");
         BattleMaxTime999Flag = MainCategory.CreateEntry("BattleMaxTime999Flag", false,  description: "战斗最大回合数999");
         AutoReadBookFlag = MainCategory.CreateEntry("AutoReadBookFlag", false,  description: "一键阅读开关");
+        ExpRateMultiplierSelfForceFlag = MainCategory.CreateEntry("ExpRateMultiplierSelfForceFlag", false,  description: "游戏难度经验倍率是否对自己门派生效");
         #endregion
       
         var harmony = new HarmonyLib.Harmony("LYMod");
@@ -280,6 +285,7 @@ public class Plugin : MelonMod
         // 按 R 重刷几个可复用的 Roll 场景
         if (Input.GetKeyDown(KeyCode.R) && _breakRollFlag.Value)
         {
+            LOG.Msg("1111");
             RollHelper.TryBreakThoughtRoll();
             RollHelper.TryCraftRoll();
             RollHelper.TryAuctionRoll();
@@ -304,7 +310,8 @@ public class Plugin : MelonMod
         
         // if (Input.GetKeyDown(KeyCode.KeypadMinus))
         // {
-        //     
+        //     HeroHelper.TryReadPlayer(out var data);
+        //     data.ChangeGovernContribution(100);
         // }
            
             //     // 1. 获取 PlotController 实例
@@ -734,13 +741,13 @@ public class Plugin : MelonMod
             .EndFoldout();
         
         builder.BeginFoldout("其他相关").Space(10)
-            .AddAutoSave("探险耐力锁定", Explore)
+            .AddAutoSaveRow("官府功绩倍率", GovernContributionRate, "探险耐力锁定", Explore)
             .AddAutoSaveRow("探险去除迷雾", ExploreSeeAllFlag, "探险随意移动", ExploreFreeMoveFlag)
             .AddAutoSaveRow("跳过战斗",BattleSkipFlag,"999回合后进入疲劳", BattleMaxTime999Flag)
             .AddAutoSaveRow("按R键重新Roll", _breakRollFlag, "时间暂停", TimeFreezeFlag)
             .AddAutoSaveRow("自动鉴宝",AutoJianBaoFlag, "斗酒一回胜利", DrinkOneWinFlag)
-            .AddAutoSave("喝酒自动倒满", DrinkUiAutoFillFlag)
-            .AddAutoSaveRow("难度经验倍率", ExpRateMultiplier, "藏宝阁价值容量1亿", ExternalStorageFlag)
+            .AddAutoSaveRow("喝酒自动倒满", DrinkUiAutoFillFlag, "藏宝阁价值容量1亿", ExternalStorageFlag)
+            .AddAutoSaveRow("难度经验倍率", ExpRateMultiplier, "难度经验是否对自门派生效", ExpRateMultiplierSelfForceFlag)
             .AddSlider("窗体/字体缩放", WindowScaling,0.5f, 2.0f, _otherCategory, labelWidth:100, sliderWidth:200, useFixedLayout:true)
             .AddButtonRow("重置缩放", () =>
             {

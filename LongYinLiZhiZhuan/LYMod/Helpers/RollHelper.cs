@@ -1,5 +1,4 @@
 ﻿using Il2Cpp;
-using MelonLoader;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -98,35 +97,34 @@ public class RollHelper
     }
 
 
-    // 中元鬼市roll
+    // 中元鬼市roll + 官府兑换
     public static void TryZhongyuanRoll()
     {
         var tuic = TradeUIController.Instance;
-        if (tuic == null || !tuic.tradeUI.activeInHierarchy) return;
-
         var plotController = PlotController.Instance;
-        if (plotController == null || plotController.nowEvent == null) return;
-
-        var currentEvent = plotController.nowEvent;
-
-        if (!currentEvent.eventName.Contains("中元鬼市")) return;
-
-        var tradeUI = TradeUIController.Instance;
-        if (tradeUI == null || tradeUI.rightList == null) return;
-
-
-        var rightItemListData = tradeUI.rightList.targetItemList;
-        if (rightItemListData == null) return;
-
-        var oldCount = rightItemListData.allItem?.Count ?? 0;
-
         var gc = GameController.Instance;
-        if (gc == null) return;
+        if (tuic == null || !tuic.tradeUI.activeInHierarchy || gc == null) return;
+        if (tuic.tradeUIType != TradeUIType.GovernStorage)
+        {
+            if (plotController == null || plotController.nowEvent == null) return;
+            var currentEvent = plotController.nowEvent;
 
-        rightItemListData.ClearAllItem();
+            if (!currentEvent.eventName.Contains("中元鬼市")) return;
+            
+            var rightItemListData = tuic.rightList.targetItemList;
+            
+            var oldCount = rightItemListData.allItem?.Count ?? 0;
 
-        gc.GenerateRandomItem(rightItemListData, oldCount, null, Plugin.Instance.ZhongyuanLv.Value, 0f, false);
-        tradeUI.rightList.RefreshItemList(rightItemListData, ItemListInteractType.TradeRight, false);
+            rightItemListData.ClearAllItem();
+
+            gc.GenerateRandomItem(rightItemListData, oldCount, null, Plugin.Instance.ZhongyuanLv.Value, 0f, false);
+            tuic.rightList.RefreshItemList(rightItemListData, ItemListInteractType.TradeRight, false);
+        }
+        else
+        {
+            gc.RefreshGovernStorage();
+            tuic.rightList.RefreshItemList(false);
+        }
     }
 
     // roll招募，只有女性角色
@@ -254,7 +252,7 @@ public class RollHelper
         if (rewardItemTransform == null) return;
 
         // 根据UI结构分析：真正的奖励物体是名为 "0"、"1"、"2" 等，子物体包含 "ItemIcon(Clone)"
-        var rewardItemChildren = new List<Transform>();
+        var rewardItemChildren = new Il2CppSystem.Collections.Generic.List<Transform>();
         for (var i = 0; i < rewardItemTransform.childCount; i++)
         {
             var child = rewardItemTransform.GetChild(i);

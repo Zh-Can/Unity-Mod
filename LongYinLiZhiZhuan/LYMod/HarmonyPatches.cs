@@ -791,7 +791,7 @@ public class HeroTagIconControllerPatches
 
 public class AreaBuildingDataPatches
 {
-    #region 建筑效果倍数
+    #region 门派建筑效果倍数
 
     // 加成
     [HarmonyPostfix]
@@ -810,7 +810,7 @@ public class AreaBuildingDataPatches
         var dict = db.GetBuildingSpeAddData(__instance.lv).forceSpeAddData;
         foreach (var ky in dict)
         {
-            __result.Set(ky.Key, __result.Get(ky.Key) * times);
+            __result.Set(ky.Key, ky.Value * times);
         }
     }
     // 每月收入
@@ -1150,7 +1150,6 @@ public class HeroDataPatch
         }
     }
     
-    
     #endregion
     
     
@@ -1176,17 +1175,12 @@ public class HeroDataPatch
         }
         else//玩家有门派时，不和玩家一个门派的人物倍率修改
         {
-            if (__instance.belongForceID != playerForceId) __result = Plugin.Instance.ExpRateMultiplier.Value;
+            if (Plugin.Instance.ExpRateMultiplierSelfForceFlag.Value || __instance.belongForceID != playerForceId) __result = Plugin.Instance.ExpRateMultiplier.Value;
         }
     }
     /// <summary>
     /// 门派功绩倍率
     /// </summary>
-    /// <param name="__instance"></param>
-    /// <param name="num"></param>
-    /// <param name="showInfo"></param>
-    /// <param name="targetForce"></param>
-    /// <returns></returns>
     [HarmonyPrefix]
     [HarmonyPatch(typeof(HeroData), nameof(HeroData.ChangeForceContribution))]
     public static bool HeroData_ChangeForceContribution_Prefix(HeroData __instance, ref float num, 
@@ -1199,6 +1193,15 @@ public class HeroDataPatch
         {
             num *= Plugin.Instance.ForceContributionRate.Value;
         }
+        return true;
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(HeroData), nameof(HeroData.ChangeGovernContribution))]
+    public static bool HeroData_ChangeGovernContribution_Prefix(HeroData __instance, ref float num)
+    {
+        if (__instance is not { heroID: 0 } || num < 0) return true;
+        num *= Plugin.Instance.GovernContributionRate.Value;
         return true;
     }
     
