@@ -131,7 +131,6 @@ public class GameControllerPatches
         // var wd = GameController.Instance.worldData;
         // wd.worldTime.day -= 1;
         // return true;
-        
         return !Plugin.Instance.TimeFreezeFlag.Value;
     }
     
@@ -1294,18 +1293,6 @@ public class HeroDataPatch
         int[] cdTable = { 30, 20, 15, 10, 5, 1, 0 };
         var lv = Mathf.Clamp(n.heroForceLv, 0, 6);
         n.changeSkinCd = cdTable[lv];
-        
-    }
-
-    
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(HeroDetailController), nameof(HeroDetailController.Update))]
-    public static void HeroDetailController_Update_Postfix(HeroDetailController __instance)
-    {
-        if (__instance == null || __instance.nowShowHero is not { changeSkinCd: > 0 }) return;
-        int[] cdTable = { 30, 15, 10, 5, 3, 0};
-        var lv = Mathf.Clamp(__instance.nowShowHero.heroForceLv, 0, 5);
-        __instance.nowShowHero.changeSkinCd = cdTable[lv];
     }
     
     [HarmonyPrefix]
