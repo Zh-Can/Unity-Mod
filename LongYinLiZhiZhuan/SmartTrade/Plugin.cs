@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
-[assembly: MelonInfo(typeof(SmartTrade.Plugin), "SmartTrade", "1.6.2", "Can")]
+[assembly: MelonInfo(typeof(SmartTrade.Plugin), "SmartTrade", "1.7", "Can")]
 [assembly: MelonGame("TppStudio", "LongYinLiZhiZhuan")]
 [assembly: MelonPlatformDomain(MelonPlatformDomainAttribute.CompatibleDomains.IL2CPP)]
 
@@ -31,7 +31,9 @@ namespace SmartTrade
         public static float KouCai;
         public static List<TableListEntity> TableDatas = new();
         public static bool SellHighQuality = true;
-        
+        // 身上珍宝列表
+        public static List<ItemData> PlayerTreasures = new();
+
         #endregion
 
         #region UI相关
@@ -104,6 +106,9 @@ namespace SmartTrade
                 EnsureUGUI();
                 if (_canvasRoot != null)
                     _canvasRoot.SetActive(true);
+                TradeFuncModule.RefreshData();
+                TradeFuncModule.ScanPlayerTreasures();
+                UpdatePurchasedCount();
                 RefreshList();
             }
             else
@@ -351,11 +356,21 @@ namespace SmartTrade
             #endregion
 
             #region 售卖精良以上Toggle
-            _sellHighQualityToggle = CreateToggle(toolbar1Rect, "售卖精良以上", -50, 120f);
+            _sellHighQualityToggle = CreateToggle(toolbar1Rect, "☑售卖精良以上", -50, 120f);
             if (_sellHighQualityToggle != null)
             {
                 _sellHighQualityToggle.isOn = true;
-                _sellHighQualityToggle.onValueChanged.AddListener(new Action<bool>(isOn => { SellHighQuality = isOn; }));
+    
+                _sellHighQualityToggle.onValueChanged.AddListener(new Action<bool>(isOn => 
+                { 
+                    SellHighQuality = isOn; 
+                    // 动态修改label文本
+                    var label = _sellHighQualityToggle.GetComponentInChildren<Text>();
+                    if (label != null)
+                    {
+                        label.text = isOn ? "☑售卖精良以上" : "☐售卖精良以上";
+                    }
+                }));
             }
             #endregion
 
@@ -368,13 +383,13 @@ namespace SmartTrade
                 var font = GetFont();
                 if (font != null)
                     _countLabel.font = font;
-                _countLabel.text = "已购入珍宝: 0";
+                _countLabel.text = "拥有：0";
                 _countLabel.fontSize = 16;
                 _countLabel.fontStyle = FontStyle.Bold;
                 _countLabel.alignment = TextAnchor.MiddleRight;
                 _countLabel.color = new Color(1f, 0.85f, 0.2f);
             }
-            
+
             var countLabelRect = countLabelObj.GetComponent<RectTransform>();
             if (countLabelRect != null)
             {
@@ -382,7 +397,7 @@ namespace SmartTrade
                 countLabelRect.anchorMax = new Vector2(1f, 0.5f);
                 countLabelRect.pivot = new Vector2(1f, 0.5f);
                 countLabelRect.anchoredPosition = new Vector2(-8f, 0f);
-                countLabelRect.sizeDelta = new Vector2(140f, 28f);
+                countLabelRect.sizeDelta = new Vector2(240f, 28f);
             }
             #endregion
 
@@ -1008,7 +1023,7 @@ namespace SmartTrade
         {
             LOG.Msg("[SmartTrade] 清空已购数据");
             PurchaseItems.Clear();
-            UpdatePurchasedCount(0);
+            UpdatePurchasedCount();
             RefreshList();
         }
         
@@ -1032,7 +1047,7 @@ namespace SmartTrade
                 AddListItem(data);
             }
             
-            UpdatePurchasedCount(PurchaseItems.Count);
+            UpdatePurchasedCount();
             UpdateSortHeader();
         }
         
@@ -1050,20 +1065,13 @@ namespace SmartTrade
             }
         }
 
-        private void UpdatePurchasedCount(int count)
+        private void UpdatePurchasedCount()
         {
-            if (_countLabel != null)
-            {
-                _countLabel.text = $"已购入: {count}";
-            }
+            if (_countLabel == null) return;
+            var ownedCount = Plugin.PlayerTreasures?.Count ?? 0;
+            _countLabel.text = $"拥有：{ownedCount}";
         }
-        
-        public static void SetPurchasedCount(int count)
-        {
-            if (Instance != null)
-                Instance.UpdatePurchasedCount(count);
-        }
-        
+
         public static bool IsBigMapVisible()
         {
             var instance = BigMapController.Instance;

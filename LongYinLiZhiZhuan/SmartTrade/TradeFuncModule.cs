@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using HarmonyLib;
 using Il2Cpp;
@@ -64,6 +65,7 @@ namespace SmartTrade
             DestroyButtons();
             if (!HasTreasureInShop(tradeUIController))
             {
+                MelonCoroutines.Start(WaitForItemsAndCreateButtons(tradeUIController));
                 return;
             }
 
@@ -75,6 +77,54 @@ namespace SmartTrade
             {
                 Plugin.LOG.Warning("[SmartTrade] 未找到SureButton");
                 return;
+            }
+
+            _autoBuyButton = CreateButtonFromTemplate(sureButton, "AutoBuyButton", "自动买入");
+            _autoSellButton = CreateButtonFromTemplate(sureButton, "AutoSellButton", "自动卖出");
+
+            if (_autoBuyButton != null && _autoSellButton != null)
+            {
+                PositionButtons(_autoBuyButton, _autoSellButton, sureButton, cancelButton);
+            }
+        }
+
+        private static IEnumerator WaitForItemsAndCreateButtons(TradeUIController tradeUIController)
+        {
+            if (tradeUIController == null) yield break;
+
+            var merchantList = tradeUIController.rightList;
+            if (merchantList == null || merchantList.itemGrid == null)
+            {
+                yield break;
+            }
+
+            var maxWait = 50;
+            var waited = 0;
+
+            while (waited < maxWait)
+            {
+                var icons = merchantList.itemGrid.GetComponentsInChildren<ItemIconController>(true);
+                if (icons != null && icons.Length > 0)
+                {
+                    break;
+                }
+                waited++;
+                yield return null;
+            }
+
+            if (!HasTreasureInShop(tradeUIController))
+            {
+                yield break;
+            }
+
+            var tradeUI = tradeUIController.tradeUI;
+            var sureButton = FindButton(tradeUI, "SureButton");
+            var cancelButton = FindButton(tradeUI, "CancelButton");
+
+            if (sureButton == null)
+            {
+                Plugin.LOG.Warning("[SmartTrade] 未找到SureButton");
+                yield break;
             }
 
             _autoBuyButton = CreateButtonFromTemplate(sureButton, "AutoBuyButton", "自动买入");
@@ -120,7 +170,7 @@ namespace SmartTrade
 
                     var itemData = icon.itemData;
                     if (itemData == null) continue;
-                    if (itemData.treasureData is not { fullIdentified: false }) continue;
+                    if (itemData.type != ItemType.Treasure) continue;
                     flag = true;
                     break;
                 }
@@ -272,77 +322,81 @@ namespace SmartTrade
         private static IEnumerator OnAutoSellClicked()
         {
             Other.ShowInfo("开始自动卖出");
-            if (Plugin.PurchaseItems is not {Count: > 0}) yield break;
+
             if (_currentTradeUI == null) yield break;
-            
+
             var leftList = _currentTradeUI.leftList;
             if (leftList == null) yield break;
-            
+
             var icons = leftList.itemGrid?.GetComponentsInChildren<ItemIconController>(true);
-            if (icons == null) yield break;
-            
+            if (icons == null || icons.Length == 0) yield break;
+
+            ScanPlayerTreasures();
+
             var shopMoney = _currentTradeUI.rightList?.targetItemList?.money ?? 0;
             var totalSellPrice = 0;
 
             var player = GameController.Instance.worldData.Player();
             var area = player.GetArea();
-            var list = area == null ? new Il2CppSystem.Collections.Generic.List<AreaTreasurePriceData>() : area.areaTreasurePriceData;
-            var cheapTypeList = new List<int>();
-            var expensiveTypeList = new List<int>();
-            foreach (var atpd in list)
+            var list = area?.areaTreasurePriceData;
+
+            var cheapTypes = new HashSet<int>();
+            var expensiveTypes = new HashSet<int>();
+
+            if (list != null)
             {
-                if (!atpd.expensive) 
-                    cheapTypeList.Add(atpd.treasureType);
-                else
-                    expensiveTypeList.Add(atpd.treasureType);
+                foreach (var atpd in list)
+                {
+                    if (atpd.expensive) expensiveTypes.Add(atpd.treasureType);
+                    else cheapTypes.Add(atpd.treasureType);
+                }
             }
-            var expensiveList = new List<ItemIconController>(); 
-            var normalList = new List<ItemIconController>();    
+
+            var expensiveList = new List<ItemIconController>();
+            var normalList = new List<ItemIconController>();
+
+            var validSellItemIds = new HashSet<int>(Plugin.PlayerTreasures.Where(t => t != null).Select(t => t.itemID));
+
             foreach (var icon in icons)
             {
-                if (icon.itemData.treasureData == null) continue;
-                if (expensiveTypeList.Contains(icon.itemData.subType))
+                if (icon?.itemData?.treasureData == null) continue;
+                if (!validSellItemIds.Contains(icon.itemData.itemID)) continue;
+
+                if (expensiveTypes.Contains(icon.itemData.subType))
                     expensiveList.Add(icon);
-                else if (!cheapTypeList.Contains(icon.itemData.subType))
+                else if (!cheapTypes.Contains(icon.itemData.subType))
                     normalList.Add(icon);
             }
 
-            foreach (var purchaseItem in Plugin.PurchaseItems)
-            {
-                if (purchaseItem?.ItemData == null) continue;
+            bool shopFull = false;
 
-                foreach (var icon in expensiveList)
+            var allLists = new[] { expensiveList, normalList };
+            foreach (var currentList in allLists)
+            {
+                if (shopFull) break;
+
+                foreach (var icon in currentList)
                 {
-                    if (!ReferenceEquals(icon.itemData, purchaseItem.ItemData) ||
-                        !icon.itemData.treasureData.fullIdentified) continue;
+                    if (icon?.itemData == null || icon.itemData.treasureData == null) continue;
+
+                    if (!icon.itemData.treasureData.fullIdentified) continue;
+
                     if (icon.itemData.itemLv >= 3 && !Plugin.SellHighQuality) continue;
 
                     var sellPrice = icon.GetItemPrice(false);
 
-                    if (totalSellPrice + sellPrice > shopMoney) break;
+                    if (totalSellPrice + sellPrice > shopMoney)
+                    {
+                        shopFull = true;
+                        break;
+                    }
 
                     icon.OnClick();
                     totalSellPrice += sellPrice;
-                }
-            }
-            foreach (var purchaseItem in Plugin.PurchaseItems)
-            {
-                if (purchaseItem?.ItemData == null) continue;
 
-                foreach (var icon in normalList)
-                {
-                    if (!ReferenceEquals(icon.itemData, purchaseItem.ItemData) || !icon.itemData.treasureData.fullIdentified) continue;
-                    if (icon.itemData.itemLv >= 3 && !Plugin.SellHighQuality) continue;
-                    
-                    var sellPrice = icon.GetItemPrice(false);
-                
-                    if (totalSellPrice + sellPrice > shopMoney) break;
-                
-                    icon.OnClick();
-                    totalSellPrice += sellPrice;
+                    yield return null;
                 }
             }
-            yield break;
         }
 
         private static float NetIncome(float realValue, float areaRate, int price)
@@ -356,7 +410,9 @@ namespace SmartTrade
             if (gc == null) return;
 
             var player = gc.worldData.Player();
-            
+
+            ScanPlayerTreasures();
+
             Plugin.KouCai = player.totalLivingSkill[3];
             var calculatedSellRate = 0.25f + Plugin.KouCai * 0.0025f;
             if (player.HaveTag(235)) calculatedSellRate += 0.05f;
@@ -415,6 +471,35 @@ namespace SmartTrade
             return 1.25f - zhiAn * 0.005f;
         }
 
+        public static void ScanPlayerTreasures()
+        {
+            var gc = GameController.Instance;
+            if (gc == null) return;
+
+            var player = gc.worldData?.Player();
+            if (player == null) return;
+
+            Plugin.PlayerTreasures.Clear();
+
+            try
+            {
+                var itemList = player.itemListData?.allItem;
+                if (itemList == null) return;
+
+                foreach (var item in itemList)
+                {
+                    if (item == null) continue;
+                    if (item.type != ItemType.Treasure) continue;
+
+                    Plugin.PlayerTreasures.Add(item);
+                }
+            }
+            catch (Exception ex)
+            {
+                Plugin.LOG.Warning("[SmartTrade] 扫描珍宝时出错: " + ex.Message);
+            }
+        }
+
         #endregion
     }
 }
@@ -429,7 +514,7 @@ public static class TradeUIControllerPatch
         if (__instance == null) return true;
         var rightOutList =__instance.rightOutList?.itemGrid?.GetComponentsInChildren<ItemIconController>(true);
         var leftOutList =__instance.leftOutList?.itemGrid?.GetComponentsInChildren<ItemIconController>(true);
-        
+
         // 购入商品时
         if (rightOutList is { Count: > 0 })
         {
@@ -438,6 +523,10 @@ public static class TradeUIControllerPatch
                 if (icon?.itemData == null || icon.itemData.type != ItemType.Treasure) continue;
                 var price = icon.GetItemPrice(true);
                 Plugin.PurchaseItems.Add(new PurchaseItem(icon.itemData, price));
+                if (!Plugin.PlayerTreasures.Contains(icon.itemData))
+                {
+                    Plugin.PlayerTreasures.Add(icon.itemData);
+                }
             }
         }
         // 卖出商品时
@@ -447,6 +536,7 @@ public static class TradeUIControllerPatch
             {
                 if (icon?.itemData == null || icon.itemData.type != ItemType.Treasure) continue;
                 Plugin.PurchaseItems.Remove(new PurchaseItem(icon.itemData, 0));
+                Plugin.PlayerTreasures.Remove(icon.itemData);
             }
         }
 

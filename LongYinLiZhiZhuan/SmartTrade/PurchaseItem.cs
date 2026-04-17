@@ -7,23 +7,11 @@ public class PurchaseItem : IEquatable<PurchaseItem>
 {
     public ItemData ItemData { get; }
     public int PurchasePrice { get; set; }
-    public float RealValue { get; }
-    public int SubType { get; }
 
     public PurchaseItem(ItemData itemData, int purchasePrice)
     {
         ItemData = itemData;
         PurchasePrice = purchasePrice;
-        SubType = itemData?.subType ?? 0;
-        
-        try
-        {
-            RealValue = itemData?.GetTreasureRealValue() ?? 0;
-        }
-        catch
-        {
-            RealValue = 0;
-        }
     }
 
     public bool Equals(PurchaseItem other)
