@@ -196,7 +196,8 @@ public class RollHelper
         var poisonData = spc.targetSpePoisonData;
         if (poisonData is not { finished: true }) return;
         var res = poisonData.result;
-        var newPoison = GameController.Instance.GenerateRandomItemValue(res.value, (int)res.type, 1f, res.subType);
+        
+        var newPoison = GameController.Instance.GenerateRandomItemValue(spc.GetTotalScore(), (int)res.type, 1f, res.subType);
         spc.targetSpePoisonData.result = newPoison;
         spc.HideSpePoisonUI();
         spc.ShowSpePoisonUI();

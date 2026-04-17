@@ -285,7 +285,6 @@ public class Plugin : MelonMod
         // 按 R 重刷几个可复用的 Roll 场景
         if (Input.GetKeyDown(KeyCode.R) && _breakRollFlag.Value)
         {
-            LOG.Msg("1111");
             RollHelper.TryBreakThoughtRoll();
             RollHelper.TryCraftRoll();
             RollHelper.TryAuctionRoll();
