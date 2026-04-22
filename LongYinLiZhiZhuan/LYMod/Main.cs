@@ -75,7 +75,6 @@ public class Plugin : MelonMod
     public MelonPreferences_Entry<float> GovernContributionRate= null!; // 官府功绩倍率
     public MelonPreferences_Entry<bool> BattleSkipFlag= null!; // 跳过战斗
     public MelonPreferences_Entry<bool> BreakMaxLimitFlag= null!; // 突破潜力限制
-    private MelonPreferences_Entry<bool> _breakMaxLimitLittleFlag= null!; // 突破潜力限制（轻微）
     public MelonPreferences_Entry<bool> RedQuality= null!; // 获得所有物品都是红品质
     public MelonPreferences_Entry<bool> NewGameTagNumFlag = null!; // 获得所有物品都是红品质
     public MelonPreferences_Entry<bool> AnyTagFlag = null!; // 天赋无视要求和前置
@@ -202,7 +201,6 @@ public class Plugin : MelonMod
         GoodTreasure = MainCategory.CreateEntry("GoodTreasure", false,  description: "珍宝等级不变品质变红");
         BattleSkipFlag = MainCategory.CreateEntry("BattleSkipFlag", false,  description: "跳过战斗");
         BreakMaxLimitFlag = MainCategory.CreateEntry("BreakMaxLimitFlag", false,  description: "突破潜力限制");
-        _breakMaxLimitLittleFlag = MainCategory.CreateEntry("BreakMaxLimitLittleFlag", false,  description: "突破潜力限制（轻微）");
         RedQuality = MainCategory.CreateEntry("RedQuality", false,  description: "获得所有物品品质都是红");
         NewGameTagNumFlag = MainCategory.CreateEntry("NewGameTagNumFlag", false,  description: "新档天赋点数999");
         AnyTagFlag = MainCategory.CreateEntry("AnyTagFlag", false,  description: "天赋无视前置要求");
@@ -248,6 +246,8 @@ public class Plugin : MelonMod
         harmony.PatchAll(typeof(BookWriterDataPatches));
         harmony.PatchAll(typeof(StudyDodgePlayerPatches));
         harmony.PatchAll(typeof(DrinkUIControllerPatches));
+        harmony.PatchAll(typeof(ForceTeachNewSkillPlotPatches));
+        harmony.PatchAll(typeof(RollHelper));
         
         LOG.Msg("===================================================");
         LOG.Msg("【LYMod】LYMod is loaded! 默认打开窗体：左alt + e !");
@@ -294,24 +294,22 @@ public class Plugin : MelonMod
             RollHelper.TryFightMatchRewardRoll();
         }
         
-        if (BreakMaxLimitFlag.Value || _breakMaxLimitLittleFlag.Value)
-        {
-            GlobalData.HeroMaxAttriNum = 999;
-            GlobalData.HeroMaxFightSkillNum = 999;
-            GlobalData.HeroMaxLivingSkillNum = 999;
-        }
-        else
-        {
-            GlobalData.HeroMaxAttriNum = 120;
-            GlobalData.HeroMaxFightSkillNum = 120;
-            GlobalData.HeroMaxLivingSkillNum = 100;
-        }
         
-        // if (Input.GetKeyDown(KeyCode.KeypadMinus))
-        // {
-        //     HeroHelper.TryReadPlayer(out var data);
-        //     data.ChangeGovernContribution(100);
-        // }
+        if (Input.GetKeyDown(KeyCode.KeypadPlus))
+        {
+            //PlotController.Instance.ChooseQingMingFestivalPlot();
+            HeroHelper.TryReadPlayer(out var player);
+            var list = player.baseAttri;
+            for (var i = 0; i < list.Count; i++)
+            {
+                list[i] = 500;
+            }
+            var list1 = player.maxAttri;
+            for (var i = 0; i < list1.Count; i++)
+            {
+                list1[i] = 500;
+            }
+        }
            
             //     // 1. 获取 PlotController 实例
             //     var plotController = PlotController.Instance;
@@ -598,7 +596,7 @@ public class Plugin : MelonMod
             .Space(5)
             .AddAutoSaveRow("无前置天赋要求", AnyTagFlag, "武学修炼限制倍数", KungFuMaxLimitTimes, labelWidth:150)
             .AddAutoSaveRow("玩家天赋数量上限", PlayerMaxTagNum, "Npc天赋数量上限", NpcMaxTagNum,  labelWidth:150)
-            .AddAutoSaveRow("突破潜力限制(轻微)",_breakMaxLimitLittleFlag,  "突破潜力限制(无限制)",BreakMaxLimitFlag)
+            .AddAutoSave("突破潜力限制(无限制)",BreakMaxLimitFlag)
             .AddLabelRow("修改读取到人物的潜力：", 200)
             .Space(5)
             .BeginHorizontal()

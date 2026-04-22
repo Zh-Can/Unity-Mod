@@ -1,4 +1,5 @@
-﻿using Il2Cpp;
+﻿﻿using HarmonyLib;
+using Il2Cpp;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -127,42 +128,32 @@ public class RollHelper
         }
     }
 
-    // roll招募，只有女性角色
+    private static float _recruitLv = 0;
+    
+    // roll招募 - 按R键触发，关闭并重新打开招募界面以刷新人物列表
     public static void TryRefreshRecruitList()
     {
         if (ModConfig.HaveRecruitReRoll) return;
+        
         var ruic = RecruitUIController.Instance;
         if (ruic == null || ruic.recruitUIPanel == null || !ruic.recruitUIPanel.activeInHierarchy) return;
 
-        var gc = GameController.Instance;
-        var gdc = GameDataController.Instance;
-        var baseHero = new HeroData
-        {
-            age = 20,
-            isFemale = true,
-            talent = 4,
-            heroTagPoint = 100
-        };
-        if (gc != null && gdc != null)
-        {
-            var tempHeros = gc.worldData.TempHeros;
-            tempHeros.Clear();
-            var forceLv = gc.worldData.Player()?.GetForce()?.forceLv ?? 0;
-            var heroNum = 4;
-            for (var i = 0; i < heroNum; i++)
-            {
-                // 生成女性名称
-                var randomName = gdc.GenerateRandomHeroName(true, gdc.GenerateRandomHeroFamilyName(), true);
-                // 生成女性hero
-                var newHero = gc.GenerateHeroData(randomName, -1, -1, forceLv - 1, baseHero, true,
-                    SexLimit.Female);
-                gc.worldData.AddTempHero(newHero);
-            }
-
-            ruic.HideRecruitUI();
-            ruic.ShowRecruitUI(RecruitUIType.Normal, heroNum, forceLv);
-            
-        }
+        // 使用游戏原生的方式：关闭并重新打开招募界面
+        // 这样会触发游戏重新生成招募人物
+        var recruitType = ruic.recruitUIType;
+        
+        ruic.HideRecruitUI();
+        ruic.ShowRecruitUI(recruitType, 6, _recruitLv);
+        
+        Plugin.LOG.Msg($"[Recruit] 正在刷新招募列表...");
+    }
+    
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(RecruitUIController), nameof(RecruitUIController.ShowRecruitUI))]
+    public static void RecruitUIController_ShowRecruitUI_Postfix(RecruitUIController __instance, RecruitUIType targetType, int heroNum, float recruitLv)
+    {
+        _recruitLv = recruitLv;
+        Plugin.LOG.Msg(_recruitLv);
     }
 
     // 刷新特殊事件 没啥意思

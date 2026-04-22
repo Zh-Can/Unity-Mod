@@ -1128,27 +1128,6 @@ public class HeroDataPatch
         }
     }
     
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(HeroData), nameof(HeroData.ChangeLivingSkill))]
-    public static void HeroData_ChangeLivingSkill_Postfix(HeroData __instance, int id, float num, 
-        bool showText, bool skillUpgrade)
-    {
-        if (__instance == null || !skillUpgrade || num <= 0 || __instance.heroID != 0
-            || !Plugin.Instance.BreakMaxLimitFlag.Value) return;
-        
-        var baseLivingSkill = __instance.baseLivingSkill;
-        var maxLivingSkill = __instance.maxLivingSkill;
-        if (baseLivingSkill == null || maxLivingSkill == null) return;
-        if (id < 0 || id >= baseLivingSkill.Count || id >= maxLivingSkill.Count) return;
-        
-        var currentVal = baseLivingSkill[id];
-        var maxVal = maxLivingSkill[id];
-        if (currentVal > maxVal)
-        {
-            maxLivingSkill[id] = currentVal;
-        }
-    }
-    
     #endregion
     
     
@@ -1267,8 +1246,9 @@ public class HeroDataPatch
     
     [HarmonyPrefix]
     [HarmonyPatch(typeof(HeroData), "ChangeFavor")]
-    public static bool HeroData_ChangeFavor_Prefix(ref float num)
+    public static bool HeroData_ChangeFavor_Prefix(HeroData __instance, ref float num)
     {
+        if (__instance is not { heroID: 0 }) return true;
         if (Plugin.Instance.Hgbj.Value && num < 0f)
         {
             num = 0f;
