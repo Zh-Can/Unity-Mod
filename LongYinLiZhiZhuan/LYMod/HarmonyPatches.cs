@@ -1091,8 +1091,7 @@ public class HeroDataPatch
     public static void HeroData_ChangeAttri_Postfix(HeroData __instance, int id, float num, 
         bool showText, bool skillUpgrade)
     {
-        if (__instance == null || !skillUpgrade || num <= 0 || __instance.heroID != 0 
-            || !Plugin.Instance.BreakMaxLimitFlag.Value) return;
+        if (__instance == null || !skillUpgrade || num <= 0 || !Plugin.Instance.BreakMaxLimitFlag.Value) return;
         
         var baseAttri = __instance.baseAttri;
         var maxAttri = __instance.maxAttri;
@@ -1112,8 +1111,7 @@ public class HeroDataPatch
     public static void HeroData_ChangeFightSkill_Postfix(HeroData __instance, int id, float num, 
         bool showText, bool skillUpgrade)
     {
-        if (__instance == null || !skillUpgrade || num <= 0 || __instance.heroID != 0
-            || !Plugin.Instance.BreakMaxLimitFlag.Value) return;
+        if (__instance == null || !skillUpgrade || num <= 0 || !Plugin.Instance.BreakMaxLimitFlag.Value) return;
         
         var baseFightSkill = __instance.baseFightSkill;
         var maxFightSkill = __instance.maxFightSkill;
