@@ -67,6 +67,7 @@ namespace BookOwnMark
                         t.name = t.name.Replace(OWNED_MARK, "");
                     }
                 }
+
             }
         }
         // 设置 Dropdown 滚轮滚动速度
@@ -189,37 +190,32 @@ namespace BookOwnMark
         private static void RefreshCurrentList()
         {
             if (_currentItemListController == null) return;
-            // LOG.Msg($"type:{_currentSkillTypeFilter}, lv:{_currentRareLvFilter}");
-            var tempList = new Il2CppSystem.Collections.Generic.List<ItemData>();
-            // LOG.Msg($"tempItemList:{_bookList.Count}");
-            foreach (var item in _bookList)
-            {
-                // LOG.Msg($"name:{item.name}, type:{item.bookData.DataBase().type}, lv:{item.bookData.DataBase().rareLv}, {item.bookData.DataBase().TypeDescribe()}");
-
-                var db = item.bookData.DataBase();
-                // LOG.Msg($"_currentSkillTypeFilter:{_currentSkillTypeFilter}, lv:{_currentRareLvFilter}");
-                var matchType = (_currentSkillTypeFilter == -1 || db.type == _currentSkillTypeFilter);
-                
-                var matchRare = (_currentRareLvFilter == -1 || db.rareLv == _currentRareLvFilter);
-
-                // LOG.Msg($"matchRare:{matchRare}, matchType:{matchType}");
-                if (matchRare && matchType)
-                {
-                    tempList.Add(item);
-                }
-            }
-            // LOG.Msg($"tempList:{tempList.Count}");
             
-          
-            _currentItemListController.targetItemList = new ItemListData
+            // 修复方案：不替换 targetItemList，而是通过控制 itemGrid 中子物体的显示/隐藏来实现筛选
+            // 首先确保显示的是完整的秘籍列表
+            if (_currentItemListController.targetItemList != _originalItemList)
             {
-                allItem = tempList,
-                itemTypeList =
-                {
-                    [(int)ItemListType.BookType] = tempList
-                }
-            };
-            _currentItemListController.RefreshItemList(true);
+                _currentItemListController.targetItemList = _originalItemList;
+                _currentItemListController.RefreshItemList(true);
+            }
+            
+            // 获取所有物品图标
+            var itemIcons = _currentItemListController.itemGrid?.GetComponentsInChildren<ItemIconController>(true);
+            if (itemIcons == null || itemIcons.Length == 0) return;
+            
+            // 遍历所有图标，根据筛选条件显示/隐藏
+            foreach (var icon in itemIcons)
+            {
+                if (icon?.itemData == null) continue;
+                if (icon.itemData.type != ItemType.Book) continue;
+                
+                var db = icon.itemData.bookData.DataBase();
+                var matchType = (_currentSkillTypeFilter == -1 || db.type == _currentSkillTypeFilter);
+                var matchRare = (_currentRareLvFilter == -1 || db.rareLv == _currentRareLvFilter);
+                
+                // 显示或隐藏图标
+                icon.gameObject.SetActive(matchType && matchRare);
+            }
         }
 
         private static void ScanOwnedBooks()
@@ -385,63 +381,18 @@ namespace BookOwnMark
                     }
                 }
             }
-            LOG.Msg($"111{__instance.forceItemListType}");
             // 当在秘籍筛选时存取
             if (__instance.tradeUIType == TradeUIType.Storage && __instance.rightList.nowItemListType == ItemListType.BookType &&
                 __instance.forceItemListType == ItemListType.None)
             {
-                // 如果有取出
-                if (rightOutList != null && rightOutList.Length != 0)
-                {
-                    foreach (var icon in rightOutList)
-                    {
-                        var target = icon.itemData;
-                        var findIndex = -1;
-
-                        for (var i = 0; i < _originalItemList.allItem.Count; i++)
-                        {
-                            var item = _originalItemList.allItem[i];
-                            if (item.name == target.name && item.value == target.value)
-                            {
-                                findIndex = i;
-                                break;
-                            }
-                        }
-                        if (findIndex != -1)
-                        {
-                            _originalItemList.allItem.RemoveAt(findIndex);
-                        }
-
-                        findIndex = -1;
-                        
-                        for (var i = 0; i < _bookList.Count; i++)
-                        {
-                            var item = _bookList[i];
-                            if (item.name == target.name && item.value == target.value)
-                            {
-                                findIndex = i;
-                                break;
-                            }
-                        }
-                        if (findIndex != -1)
-                        {
-                            _bookList.RemoveAt(findIndex);
-                        }
-                    }
-                }
-                // 如果有存入
-                if (leftOutList != null && leftOutList.Length != 0)
-                {
-                    foreach (var icon in leftOutList)
-                    {
-                        _originalItemList.allItem.Add(icon.itemData);
-                        _bookList.Add(icon.itemData);
-                    }
-                }
-                // 刷新数据
-                _originalItemList.itemTypeList[(int)ItemType.Book] = _bookList;
-                __instance.rightList.targetItemList = _originalItemList;
-                // 重置选择
+                // 修复后：由于 RefreshCurrentList 不再替换 targetItemList，
+                // 游戏内部会自动处理从 _originalItemList 中移除/添加物品
+                // 我们只需要确保 _bookList 与 _originalItemList 同步
+                
+                // 重新从 _originalItemList 获取秘籍列表（因为游戏可能已经修改了 allItem）
+                _bookList = _originalItemList.itemTypeList[(int)ItemType.Book];
+                
+                // 重置筛选状态
                 if (_skillTypeDropdown != null && _skillTypeDropdown.gameObject != null)
                 {
                     _skillTypeDropdown.value = 0;
@@ -487,10 +438,17 @@ namespace BookOwnMark
         [HarmonyPatch(typeof(ItemIconController), nameof(ItemIconController.OnClick))]
         public static void ItemIconController_OnClick_Postfix(ItemIconController __instance)
         {
-            LOG.Msg($"fromStorage:{__instance.fromStorage}, tradeIconType:{__instance.tradeIconType}");
+            // 当在秘籍筛选状态下点击物品时，重新应用筛选
+            // 因为游戏内部会刷新列表，导致筛选失效
+            if (_currentItemListController == null) return;
+            if (_currentTradeUI?.tradeUIType != TradeUIType.Storage) return;
+            if (_currentItemListController.nowItemListType != ItemListType.BookType) return;
             
-            if (__instance == null) return;
-            
+            // 如果有筛选条件，重新应用筛选
+            if (_currentSkillTypeFilter != -1 || _currentRareLvFilter != -1)
+            {
+                RefreshCurrentList();
+            }
         }
     }
 }
