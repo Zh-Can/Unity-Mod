@@ -93,6 +93,7 @@ public class Plugin : MelonMod
     public MelonPreferences_Entry<bool> AddSpeBuildingsFlag = null!; // 添加特殊建筑开关
     public MelonPreferences_Entry<bool> BattleMaxTime999Flag = null!; // 战斗最大回合数999开关
     public MelonPreferences_Entry<bool> AutoReadBookFlag = null!; // 一键阅读开关
+    public MelonPreferences_Entry<bool> SwordPoolEasyFlag = null!; // 剑池天工 耗时1天 只用1块
 
     
     
@@ -216,6 +217,7 @@ public class Plugin : MelonMod
         BattleMaxTime999Flag = MainCategory.CreateEntry("BattleMaxTime999Flag", false,  description: "战斗最大回合数999");
         AutoReadBookFlag = MainCategory.CreateEntry("AutoReadBookFlag", false,  description: "一键阅读开关");
         ExpRateMultiplierSelfForceFlag = MainCategory.CreateEntry("ExpRateMultiplierSelfForceFlag", false,  description: "游戏难度经验倍率是否对自己门派生效");
+        SwordPoolEasyFlag = MainCategory.CreateEntry("SwordPoolEasyFlag", false,  description: "剑池天工 耗时1天 只用1块");
         #endregion
       
         var harmony = new HarmonyLib.Harmony("LYMod");
@@ -248,6 +250,7 @@ public class Plugin : MelonMod
         harmony.PatchAll(typeof(DrinkUIControllerPatches));
         harmony.PatchAll(typeof(ForceTeachNewSkillPlotPatches));
         harmony.PatchAll(typeof(RollHelper));
+        harmony.PatchAll(typeof(SpeEnhanceEquipControllerPatches));
         
         LOG.Msg("===================================================");
         LOG.Msg("【LYMod】LYMod is loaded! 默认打开窗体：左alt + e !");
@@ -295,21 +298,13 @@ public class Plugin : MelonMod
         }
         
         
-        if (Input.GetKeyDown(KeyCode.KeypadPlus))
-        {
-            //PlotController.Instance.ChooseQingMingFestivalPlot();
-            HeroHelper.TryReadPlayer(out var player);
-            var list = player.baseAttri;
-            for (var i = 0; i < list.Count; i++)
-            {
-                list[i] = 500;
-            }
-            var list1 = player.maxAttri;
-            for (var i = 0; i < list1.Count; i++)
-            {
-                list1[i] = 500;
-            }
-        }
+        // if (Input.GetKeyDown(KeyCode.KeypadPlus))
+        // {
+        //     //PlotController.Instance.ChooseQingMingFestivalPlot();
+        //     //HeroHelper.TryReadPlayer(out var player);
+        //     
+        //  
+        // }
            
             //     // 1. 获取 PlotController 实例
             //     var plotController = PlotController.Instance;
@@ -709,7 +704,11 @@ public class Plugin : MelonMod
             .AddAutoSaveRow("研究一天",ReasearchFlag, "禅道修行倍率:", ChanDaoRate)
             .AddAutoSaveRow("建筑资源零消耗",Cost0, "建造升级移动拆除1天", UpgradeDay1)
             .AddAutoSaveRow("非本门功绩倍率:", ForceContributionRate,"特殊建筑上限", MaxSpeBuildingNum)
-            .AddAutoSave("添加可建造的特殊建筑", AddSpeBuildingsFlag)
+            .AddAutoSaveRow("添加可建造的特殊建筑", AddSpeBuildingsFlag, "剑池天工简单模式", SwordPoolEasyFlag)
+            .AddButtonRow("添加10块陨铁", () =>
+            {
+                GameController.Instance.worldData.ChangeSpeEnhanceStoneNum(10,true);
+            }, width:150)
             .EndFoldout();
         
         builder.BeginFoldout("交互相关").Space(10)

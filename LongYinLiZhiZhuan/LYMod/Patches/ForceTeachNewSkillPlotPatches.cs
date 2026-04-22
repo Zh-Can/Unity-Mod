@@ -14,6 +14,9 @@ public class ForceTeachNewSkillPlotPatches
     [HarmonyPatch(typeof(BuildingUIController), nameof(BuildingUIController.GenerateBuildingButton))]
     public static void BuildingUIController_GenerateBuildingButton_Postfix(BuildingUIController __instance)
     {
+        var flag = HeroHelper.TryReadPlayer(out var player);
+        if (!flag || player.belongForceID == -1 || player.GetForce().mainAreaID != player.atAreaID) return;
+        
         if (__instance.buildingData is not { buildingID: 2 }) return;
 
         Plugin.LOG.Msg("[掌门演武] 当前是练武场，开始添加按钮");

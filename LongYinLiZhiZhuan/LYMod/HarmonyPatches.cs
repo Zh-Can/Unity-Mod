@@ -1244,19 +1244,14 @@ public class HeroDataPatch
     
     [HarmonyPrefix]
     [HarmonyPatch(typeof(HeroData), "ChangeFavor")]
-    public static bool HeroData_ChangeFavor_Prefix(HeroData __instance, ref float num)
+    public static bool HeroData_ChangeFavor_Prefix(ref float num)
     {
-        if (__instance is not { heroID: 0 }) return true;
-        if (Plugin.Instance.Hgbj.Value && num < 0f)
-        {
+        if (Plugin.Instance.Hgbj.Value && num < 0f) 
             num = 0f;
-        }
-
+        
         if (num > 0 && Plugin.Instance.FavorTimes.Value > 1)
-        {
             num *= Plugin.Instance.FavorTimes.Value;
-        }
-
+        
         return true;
     }
 
@@ -1767,3 +1762,24 @@ public class BreakThroughControllerPatches
     }
 }
 
+/// <summary>
+/// 剑池天工修改
+/// </summary>
+public class SpeEnhanceEquipControllerPatches
+{
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(SpeEnhanceEquipController), nameof(SpeEnhanceEquipController.GetTimeNeed))]
+    public static void SpeEnhanceEquipController_GetTimeNeed_Postfix(SpeEnhanceEquipController __instance, ref int __result)
+    {
+        if (__instance == null || !Plugin.Instance.SwordPoolEasyFlag.Value) return;
+        __result = 1;
+    }
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(SpeEnhanceEquipController), nameof(SpeEnhanceEquipController.GetStoneNeed))]
+    public static void SpeEnhanceEquipController_GetStoneNeed_Postfix(SpeEnhanceEquipController __instance, ref int __result)
+    {
+        if (__instance == null || !Plugin.Instance.SwordPoolEasyFlag.Value) return;
+        __result = 1;
+    }
+}
+    
