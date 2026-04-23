@@ -9,7 +9,7 @@ using Il2CppConsolation;
 using UnityEngine;
 using UnityEngine.UI;
 
-[assembly: MelonInfo(typeof(BookOwnMark.Plugin), "BookOwnMark", "2.2", "Can")]
+[assembly: MelonInfo(typeof(BookOwnMark.Plugin), "BookOwnMark", "2.3", "Can")]
 [assembly: MelonGame("TppStudio", "LongYinLiZhiZhuan")]
 [assembly: MelonPlatformDomain(MelonPlatformDomainAttribute.CompatibleDomains.IL2CPP)]
 
@@ -344,10 +344,62 @@ namespace BookOwnMark
             }
         }
 
+        private static void ClearAllOwnedMarks(TradeUIController tuc)
+        {
+            // 清理当前商店的标记
+            if (tuc == null) return;
+            var list = tuc.rightList.targetItemList.allItem;
+            foreach (var item in list)
+            {
+                if (item is { name: not null } && item.name.Contains(OWNED_MARK))
+                {
+                    item.name = RemoveOwnedMark(item.name);
+                }
+            }
+            
+            // 清理所有已标记的物品名称
+            var gc = GameController.Instance;
+            if (gc?.worldData != null)
+            {
+                // 清理玩家仓库
+                var player = gc.worldData.Player();
+                if (player?.selfStorage?.allItem != null)
+                {
+                    foreach (var item in player.selfStorage.allItem)
+                    {
+                        if (item is { name: not null } && item.name.Contains(OWNED_MARK))
+                        {
+                            item.name = RemoveOwnedMark(item.name);
+                        }
+                    }
+                }
+                
+                // 清理门派仓库
+                if (player?.belongForceID != -1)
+                {
+                    var forceData = gc.worldData.GetHeroForce(0);
+                    if (forceData?.bookStorage?.allItem != null)
+                    {
+                        foreach (var item in forceData.bookStorage.allItem)
+                        {
+                            if (item is { name: not null } && item.name.Contains(OWNED_MARK))
+                            {
+                                item.name = RemoveOwnedMark(item.name);
+                            }
+                        }
+                    }
+                }
+                
+            }
+        }
+
         [HarmonyPrefix]
         [HarmonyPatch(typeof(TradeUIController), nameof(TradeUIController.HideTradeUI))]
-        public static void HideTradeUI_Prefix()
+        public static void HideTradeUI_Prefix(TradeUIController __instance)
         {
+            // 关闭界面时清理所有标记
+            ClearAllOwnedMarks(__instance);
+            
             _currentItemListController = null;
             _currentTradeUI = null;
             _currentSkillTypeFilter = -1;
