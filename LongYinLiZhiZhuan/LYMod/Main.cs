@@ -94,6 +94,7 @@ public class Plugin : MelonMod
     public MelonPreferences_Entry<bool> BattleMaxTime999Flag = null!; // 战斗最大回合数999开关
     public MelonPreferences_Entry<bool> AutoReadBookFlag = null!; // 一键阅读开关
     public MelonPreferences_Entry<bool> SwordPoolEasyFlag = null!; // 剑池天工 耗时1天 只用1块
+    public MelonPreferences_Entry<bool> ZMYWFlag = null!; // 掌门演武
 
     
     
@@ -218,6 +219,7 @@ public class Plugin : MelonMod
         AutoReadBookFlag = MainCategory.CreateEntry("AutoReadBookFlag", false,  description: "一键阅读开关");
         ExpRateMultiplierSelfForceFlag = MainCategory.CreateEntry("ExpRateMultiplierSelfForceFlag", false,  description: "游戏难度经验倍率是否对自己门派生效");
         SwordPoolEasyFlag = MainCategory.CreateEntry("SwordPoolEasyFlag", false,  description: "剑池天工 耗时1天 只用1块");
+        ZMYWFlag = MainCategory.CreateEntry("ZMYWFlag", true,  description: "掌门演武");
         #endregion
       
         var harmony = new HarmonyLib.Harmony("LYMod");
@@ -709,6 +711,7 @@ public class Plugin : MelonMod
             {
                 GameController.Instance.worldData.ChangeSpeEnhanceStoneNum(10,true);
             }, width:150)
+            .AddAutoSave("掌门演武", ZMYWFlag)
             .EndFoldout();
         
         builder.BeginFoldout("交互相关").Space(10)

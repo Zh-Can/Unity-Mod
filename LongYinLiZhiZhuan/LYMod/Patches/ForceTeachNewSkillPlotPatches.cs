@@ -15,7 +15,7 @@ public class ForceTeachNewSkillPlotPatches
     public static void BuildingUIController_GenerateBuildingButton_Postfix(BuildingUIController __instance)
     {
         var flag = HeroHelper.TryReadPlayer(out var player);
-        if (!flag || player.belongForceID == -1 || player.GetForce().mainAreaID != player.atAreaID) return;
+        if (!flag || player.belongForceID == -1 || player.GetForce().mainAreaID != player.atAreaID || !Plugin.Instance.ZMYWFlag.Value) return;
         
         if (__instance.buildingData is not { buildingID: 2 }) return;
 
@@ -183,28 +183,19 @@ public class ForceTeachNewSkillPlotPatches
 
     private static IEnumerator OnSkillSelected(KungfuSkillLvData skillData)
     {
-        Plugin.LOG.Msg($"[掌门演武] 选择了技能: {skillData.skillID}, 等级: {skillData.lv}");
+        Plugin.LOG.Msg($"[掌门演武] 选择了技能: {skillData.Name()}, 等级: {skillData.lv}");
         PlotController.Instance.HideInteractUI();
 
-        var worldData = GameController.Instance?.worldData;
-        if (worldData == null || worldData.Forces == null)
+        var flag = HeroHelper.TryReadPlayer(out var player);
+        if (!flag) yield break;
+
+        if (player.belongForceID == -1)
         {
-            Plugin.LOG.Msg("[掌门演武] 世界数据为空");
+            Plugin.LOG.Msg("[掌门演武] 玩家没有门派");
             yield break;
         }
-
-        var playerForceId = GlobalData.PlayerForceID;
-        Plugin.LOG.Msg($"[掌门演武] 玩家门派 ID: {playerForceId}");
-
-        ForceData playerForce = null;
-        foreach (var force in worldData.Forces)
-        {
-            if (force.forceID == playerForceId)
-            {
-                playerForce = force;
-                break;
-            }
-        }
+        
+        ForceData playerForce = player.GetForce();
 
         if (playerForce == null)
         {
@@ -234,19 +225,19 @@ public class ForceTeachNewSkillPlotPatches
             if (disciple == null) continue;
 
             var existingSkill = disciple.FindSkill(skillData.skillID);
+            
             if (existingSkill == null)
             {
-                
-                disciple.GetSkill(skillData, true);
-                Plugin.LOG.Msg($"[掌门演武] [{i + 1}/{discipleCount}] 传授技能 {skillData.skillID} 给弟子 {disciple.heroName}");
+                disciple.GetSkill(new KungfuSkillLvData(skillData.skillID), true);
+                Plugin.LOG.Msg($"[掌门演武] [{i + 1}/{discipleCount}] 传授技能 {skillData.Name()} 给弟子 {disciple.heroName}");
             }
             else
             {
                 for (var j = 0; j < 2; j++)
                 {
-                    disciple.UpgradeSkill(skillData);
+                    disciple.UpgradeSkill(existingSkill);
                 }
-                Plugin.LOG.Msg($"[掌门演武] [{i + 1}/{discipleCount}] 弟子 {disciple.heroName} 已掌握技能 {skillData.skillID}");
+                Plugin.LOG.Msg($"[掌门演武] [{i + 1}/{discipleCount}] 弟子 {disciple.heroName} 已掌握技能 {skillData.Name()}");
             }
 
             yield return null;
