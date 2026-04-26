@@ -15,7 +15,7 @@ public class ForceTeachNewSkillPlotPatches
     public static void BuildingUIController_GenerateBuildingButton_Postfix(BuildingUIController __instance)
     {
         var flag = HeroHelper.TryReadPlayer(out var player);
-        if (!flag || player.belongForceID == -1 || player.GetForce().mainAreaID != player.atAreaID || !Plugin.Instance.ZMYWFlag.Value) return;
+        if (!flag || player.belongForceID == -1 || player.GetForce().mainAreaID != player.atAreaID || !Plugin.Instance.ZmywFlag.Value) return;
         
         if (__instance.buildingData is not { buildingID: 2 }) return;
 

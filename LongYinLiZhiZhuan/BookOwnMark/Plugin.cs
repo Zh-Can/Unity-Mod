@@ -233,7 +233,8 @@ namespace BookOwnMark
                 {
                     if (item is { type: ItemType.Book })
                     {
-                        _ownedBookNames.Add(item.Name());
+                        // 去掉可能存在的标记后再添加
+                        _ownedBookNames.Add(RemoveOwnedMark(item.Name()));
                     }
                 }
             }
@@ -248,7 +249,8 @@ namespace BookOwnMark
                     {
                         if (item is { type: ItemType.Book })
                         {
-                            _ownedBookNames.Add(item.Name());
+                            // 去掉可能存在的标记后再添加
+                            _ownedBookNames.Add(RemoveOwnedMark(item.Name()));
                         }
                     }
                 }

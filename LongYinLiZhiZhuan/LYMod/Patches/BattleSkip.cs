@@ -7,6 +7,7 @@ public static class BattleSkip
 {
     private static int _storedEnemyCount;
     private static float _storedEnemyTotalHp;
+    private static bool _isSkipping = false;
 
     [HarmonyPatch(typeof(BattleController), nameof(BattleController.StartBattleButtonClicked))]
     public static class StartBattleButtonClickedPatch
@@ -14,16 +15,63 @@ public static class BattleSkip
         public static void Postfix(BattleController __instance)
         {
             if (!Plugin.Instance.BattleSkipFlag.Value) return;
+            
+            // 重置跳过状态，确保新战斗可以正常跳过
+            _isSkipping = false;
+            
+            // 不再在这里显示按钮，等待人物就位后在 Update 中显示
+        }
+    }
+
+    /// <summary>
+    /// 在 Update 中检查战斗状态，当人物就位后显示跳过按钮
+    /// </summary>
+    [HarmonyPatch(typeof(BattleController), nameof(BattleController.Update))]
+    public static class BattleControllerUpdatePatch
+    {
+        public static void Postfix(BattleController __instance)
+        {
+            if (!Plugin.Instance.BattleSkipFlag.Value) return;
+            
+            // 只在战斗准备完成且未跳过时显示按钮
+            if (__instance.battleState != BattleState.Ready && __instance.battleState != BattleState.Fighting) 
+                return;
+            
             var skipButton = __instance.battleSkipButton;
+            if (skipButton == null) return;
+            
+            // 如果按钮已经显示，不需要再处理
+            if (skipButton.activeSelf) return;
+            
             var rect = skipButton.GetComponent<UnityEngine.UI.Image>()?.rectTransform;
-            if (__instance != null && !skipButton.activeSelf && rect != null)
+            if (rect == null) return;
+            
+            // 修复缩放问题
+            if (rect.localScale.x == 0 || rect.localScale.y == 0)
             {
-                if (rect.localScale.x == 0 || rect.localScale.y == 0)
-                {
-                    rect.localScale = new UnityEngine.Vector3(1f, 1f, 1f);
-                }
-                skipButton.SetActive(true);
+                rect.localScale = new UnityEngine.Vector3(1f, 1f, 1f);
             }
+            
+            skipButton.SetActive(true);
+        }
+    }
+
+    /// <summary>
+    /// 在点击跳过按钮时，直接调用 SureSkipBattle 跳过战斗
+    /// </summary>
+    [HarmonyPatch(typeof(BattleController), nameof(BattleController.BattleSkipButtonClicked))]
+    public static class BattleSkipButtonClickedPatch
+    {
+        public static void Prefix(BattleController __instance)
+        {
+            if (!Plugin.Instance.BattleSkipFlag.Value) return;
+            
+            // 防止重复点击
+            if (_isSkipping) return;
+            _isSkipping = true;
+            
+            // 清除 noSkip 标志
+            __instance.noSkip = false;
         }
     }
 
@@ -45,7 +93,15 @@ public static class BattleSkip
                 playerUnit.battleInfo.takeDamage = 0f;
                 playerUnit.battleInfo.enemyKilled = _storedEnemyCount;
                 playerUnit.battleInfo.enemyKillScorePercent = _storedEnemyTotalHp;
+            }
 
+            var teams = __instance.teams;
+            foreach (var team in teams)
+            {
+                foreach (var unit in team.battleUnits)
+                {
+                    unit.heroData.AutoGetFightExp();
+                }
             }
         }
     }
@@ -104,4 +160,18 @@ public static class BattleSkip
             targetUnit.battleInfo.enemyKillScorePercent = _storedEnemyTotalHp;
         }
     }
+    
+    /// <summary>
+    /// 战斗结束时重置跳过状态
+    /// </summary>
+    [HarmonyPatch(typeof(BattleController), nameof(BattleController.BattleEnd))]
+    public static class BattleEndPatch
+    {
+        public static void Postfix()
+        {
+            _isSkipping = false;
+        }
+    }
+
+  
 }

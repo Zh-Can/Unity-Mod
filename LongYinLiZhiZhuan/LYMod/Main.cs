@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Linq;
 using Il2Cpp;
 using LYMod;
 using LYMod.Helpers;
@@ -7,8 +6,6 @@ using LYMod.Patches;
 using MelonLoader;
 using MelonLoader.Utils;
 using UnityEngine;
-using System;
-using Il2CppConsolation;
 
 [assembly: MelonInfo(typeof(Plugin), ModConfig.ModName, ModConfig.ModVersion, ModConfig.ModAuthor)]
 [assembly:MelonGame("TppStudio", "LongYinLiZhiZhuan")]
@@ -94,7 +91,7 @@ public class Plugin : MelonMod
     public MelonPreferences_Entry<bool> BattleMaxTime999Flag = null!; // 战斗最大回合数999开关
     public MelonPreferences_Entry<bool> AutoReadBookFlag = null!; // 一键阅读开关
     public MelonPreferences_Entry<bool> SwordPoolEasyFlag = null!; // 剑池天工 耗时1天 只用1块
-    public MelonPreferences_Entry<bool> ZMYWFlag = null!; // 掌门演武
+    public MelonPreferences_Entry<bool> ZmywFlag = null!; // 掌门演武
 
     
     
@@ -219,7 +216,7 @@ public class Plugin : MelonMod
         AutoReadBookFlag = MainCategory.CreateEntry("AutoReadBookFlag", false,  description: "一键阅读开关");
         ExpRateMultiplierSelfForceFlag = MainCategory.CreateEntry("ExpRateMultiplierSelfForceFlag", false,  description: "游戏难度经验倍率是否对自己门派生效");
         SwordPoolEasyFlag = MainCategory.CreateEntry("SwordPoolEasyFlag", false,  description: "剑池天工 耗时1天 只用1块");
-        ZMYWFlag = MainCategory.CreateEntry("ZMYWFlag", true,  description: "掌门演武");
+        ZmywFlag = MainCategory.CreateEntry("ZMYWFlag", true,  description: "掌门演武");
         #endregion
       
         var harmony = new HarmonyLib.Harmony("LYMod");
@@ -300,13 +297,17 @@ public class Plugin : MelonMod
         }
         
         
-        // if (Input.GetKeyDown(KeyCode.KeypadPlus))
-        // {
-        //     //PlotController.Instance.ChooseQingMingFestivalPlot();
-        //     //HeroHelper.TryReadPlayer(out var player);
-        //     
-        //  
-        // }
+        if (Input.GetKeyDown(KeyCode.KeypadPlus))
+        {
+            //PlotController.Instance.ChooseQingMingFestivalPlot();
+            // HeroHelper.TryReadPlayer(out var player);
+            // player.heroNickName = "天下无双";
+            // var list = GameController.Instance.worldData.Heros;
+            // foreach (var hero in list)
+            // {
+            //     Plugin.LOG.Msg($"name:{hero.heroName}, nickName:{hero.heroNickName}");
+            // }
+        }
            
             //     // 1. 获取 PlotController 实例
             //     var plotController = PlotController.Instance;
@@ -711,7 +712,7 @@ public class Plugin : MelonMod
             {
                 GameController.Instance.worldData.ChangeSpeEnhanceStoneNum(10,true);
             }, width:150)
-            .AddAutoSave("掌门演武", ZMYWFlag)
+            .AddAutoSave("掌门演武", ZmywFlag)
             .EndFoldout();
         
         builder.BeginFoldout("交互相关").Space(10)

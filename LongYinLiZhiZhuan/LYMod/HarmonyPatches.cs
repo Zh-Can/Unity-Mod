@@ -567,12 +567,14 @@ public class ChooseControllerPatches
     public static void ChooseController_ShowChoosePanel_Postfix(
         ChooseController __instance, ChooseType _chooseType, Il2CppSystem.Collections.Generic.List<Object> param,
         GameObject _sendResultFucTarget, string _sendResultFuc, string _sendResultParam, ChooseFilterType _filterType,
-        HeroData targetFavorHero, string _cancelFuc)
+        HeroData? targetFavorHero, string _cancelFuc)
     {
+        Plugin.LOG.Msg(_filterType);
+        
         if (_sendResultFuc == "SpeRemoveSkillChoosen" && Plugin.Instance.RemoveAnySkill.Value)
         {
-            var player = GameDataController.Instance?.gameSaveData?.WorldData?.Player();
-            if (player == null || player.kungfuSkills == null) return;
+            var flag = HeroHelper.TryReadPlayer(out var player);
+            if (!flag && player.kungfuSkills == null) return;
 
             var content = __instance.choosePanel?.transform?.Find("ChoosePanelRoot/ChooseItemList/Viewport/Content");
             if (content == null) return;
@@ -618,9 +620,8 @@ public class ChooseControllerPatches
         
         if (_filterType is ChooseFilterType.ForceTeachNpcNewSkill or ChooseFilterType.TeachNpcNewSkill && Plugin.Instance.TeachAnyNewSkill.Value)
         {
-            Plugin.LOG.Msg(_filterType);
-            var player = GameDataController.Instance?.gameSaveData?.WorldData?.Player();
-            if (player == null || player.kungfuSkills == null) return;
+            var flag = HeroHelper.TryReadPlayer(out var player);
+            if (!flag || player.kungfuSkills == null) return;
             // 优先使用当前选择流程传入的目标，避免静态缓存串到别的 NPC。
             var currentTargetHero = targetFavorHero ?? PlotController.Instance?.targetInteractHero;
             
@@ -683,7 +684,134 @@ public class ChooseControllerPatches
                 }
             }
         }
+
+        // 传秘籍
+        if (_filterType == ChooseFilterType.ForceTeachNpcNewBook && Plugin.Instance.TeachAnyNewSkill.Value)
+        {
+            var flag = HeroHelper.TryReadPlayer(out var player);
+            var content = __instance.choosePanel?.transform?.Find("ChoosePanelRoot/ChooseItemList/Viewport/Content");
+            var newObj = __instance.newObj;
+            if (newObj == null)
+            {
+                newObj = GameObjectController.Instance?.itemIconPrefab;
+            }
+            if (!flag || content == null || newObj == null) return;
+            
+            var existingSkillIds = new System.Collections.Generic.HashSet<int>();
+            for (int i = 0; i < content.childCount; i++)
+            {
+                var child = content.GetChild(i);
+                if (child != null && child.gameObject != null && child.gameObject.activeSelf)
+                {
+                    var skillIcon = child.GetComponent<SkillIconController>();
+                    if (skillIcon?.skillLvData != null)
+                    {
+                        existingSkillIds.Add(skillIcon.skillLvData.skillID);
+                    }
+                }
+            }
+            
+            // 使用targetHero获取NPC已有技能列表，但需要做null检查和IL2CPP对象有效性检查
+            var npcExistingSkillIds = new System.Collections.Generic.HashSet<int>();
+            var currentTargetHero = targetFavorHero ?? PlotController.Instance?.targetInteractHero;
+            if (currentTargetHero is { kungfuSkills: not null })
+            {
+                foreach (var skill in currentTargetHero.kungfuSkills)
+                {
+                    if (skill != null)
+                    {
+                        npcExistingSkillIds.Add(skill.skillID);
+                    }
+                }
+            }
+            
+            HashSet<ItemData> allBookSet = new HashSet<ItemData>();
+            // 背包
+            var bookList = player.itemListData.itemTypeList[(int)ItemType.Book];
+            // 个人仓库
+            var bookList1 = player.selfStorage.itemTypeList[(int)ItemType.Book];
+            // 藏经阁
+            var bookList2 = new Il2CppSystem.Collections.Generic.List<ItemData>();
+            if (player.belongForceID != -1)
+            {
+                bookList2 = player.GetForce().bookStorage.allItem;
+            }
+            // 存入set中
+            foreach (var item in bookList) allBookSet.Add(item);
+            foreach (var item in bookList1) allBookSet.Add(item);
+            foreach (var item in bookList2) allBookSet.Add(item);
+            
+            foreach (var item in allBookSet)
+            {
+                // 这里不再限制 rareLv，真正做到“任意等级技能”都能补进列表。
+                if (item == null || existingSkillIds.Contains(item.bookData.skillID)) continue;
+                if (npcExistingSkillIds.Contains(item.bookData.skillID)) continue;
+            
+                var newSkillObj = UnityEngine.Object.Instantiate(newObj.gameObject, content);
+                if (newSkillObj == null) continue;
+            
+                newSkillObj.SetActive(true);
+                var newItemIcon = newSkillObj.GetComponent<ItemIconController>();
+                if (newItemIcon != null)
+                {
+                    newItemIcon.itemIconType = ItemIconType.Choose;
+                    newItemIcon.itemData = item;
+                }
+            }
+        }
     }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(PlotController), nameof(PlotController.ChangePlot), typeof(string))]
+    public static void ChangePlot_Postfix(PlotController __instance, string plotID)
+    {
+        var f = HeroHelper.TryReadPlayer(out var player);
+        if (__instance == null || plotID != "0" || !Plugin.Instance.TeachAnyNewSkill.Value || !f 
+            || (player.belongForceID != -1 && __instance.targetInteractHero.belongForceID == player.belongForceID) 
+            || ModConfig.HaveNpcMod
+            ) return;
+        
+        
+        Il2CppSystem.Collections.Generic.List<SinglePlotChoiceData> list = __instance.nowSinglePlot.choices;
+        var flag = false;
+        foreach (var spcd in list)
+        {
+            if (spcd.callFuc == "ForceTeachNpcNewBook" || spcd.choiceText == "传授秘籍")
+            {
+                flag = true;
+            }
+        }
+        if (flag) return;
+        
+        var singlePlotChoiceData = new SinglePlotChoiceData
+        {
+            choiceText = "传授秘籍",
+            callFuc = "ForceTeachNewBookToNPC",
+            requirements = new Il2CppSystem.Collections.Generic.List<PlotChoiceRequirement>(),
+            relations = new Il2CppSystem.Collections.Generic.List<RelationRequirementType>(),
+            costResource = new Il2CppSystem.Collections.Generic.List<ResourceData>()
+        };
+        singlePlotChoiceData.requirements.Add(new PlotChoiceRequirement(ChoiceRequirementType.FavorDegree, 60f));
+        list.Insert(list.Count - 2, singlePlotChoiceData);
+        __instance.nowSinglePlot.choices = list;
+    }
+    
+    // [HarmonyPrefix]
+    // [HarmonyPatch(typeof(PlotInteractController), nameof(PlotInteractController.OnClick))]
+    // public static void Prefix(PlotInteractController __instance)
+    // {
+    //     // 获取选项数据
+    //     var choiceData = __instance.choiceData;
+    //     if (choiceData != null)
+    //     {
+    //         string callFunc = choiceData.callFuc;  // 调用的函数名
+    //         string callParam = choiceData.callParam; // 参数
+    //         
+    //         Plugin.LOG.Msg($"{callFunc}-{callParam}");
+    //     }
+    // }
+    
+   
     #endregion
     
     
@@ -1470,8 +1598,9 @@ public class ForceDataPatches
     {
         if (__instance != null && __result != null && Plugin.Instance.ReasearchFlag.Value)
         {
-            var heroData = GameDataController.Instance.gameSaveData.WorldData.Player();
-            if (__instance.forceID == heroData.GetForce()?.forceID)
+            var flag = HeroHelper.TryReadPlayer(out var player);
+            
+            if (!flag && player.belongForceID != -1 && __instance.forceID == player.GetForce()?.forceID)
             {
                 __result.researchPercent = 1f;
             }
