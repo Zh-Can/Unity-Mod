@@ -1600,7 +1600,7 @@ public class ForceDataPatches
         {
             var flag = HeroHelper.TryReadPlayer(out var player);
             
-            if (!flag && player.belongForceID != -1 && __instance.forceID == player.GetForce()?.forceID)
+            if (flag && player.belongForceID != -1 && __instance.forceID == player.GetForce()?.forceID)
             {
                 __result.researchPercent = 1f;
             }
