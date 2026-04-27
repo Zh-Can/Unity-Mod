@@ -4,11 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Il2CppInterop.Runtime;
+using MelonLoader.Utils;
 using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
-[assembly: MelonInfo(typeof(SmartTrade.Plugin), "SmartTrade", "1.7", "Can")]
+[assembly: MelonInfo(typeof(SmartTrade.Plugin), "SmartTrade", "1.7.1", "Can")]
 [assembly: MelonGame("TppStudio", "LongYinLiZhiZhuan")]
 [assembly: MelonPlatformDomain(MelonPlatformDomainAttribute.CompatibleDomains.IL2CPP)]
 
@@ -18,7 +19,9 @@ namespace SmartTrade
     {
         public static Plugin Instance;
         public static MelonLogger.Instance LOG => Instance.LoggerInstance;
-
+        private MelonPreferences_Category _mainCategory= null!;
+        public MelonPreferences_Entry<bool> RedQuality= null!; // 珍宝品质修改当前等级全红
+        
         #region 配置
 
         // 卖出百分比
@@ -71,6 +74,10 @@ namespace SmartTrade
         {
             Instance = this;
             LOG.Msg("[SmartTrade] 初始化完成, 按~显示/隐藏窗体");
+            
+            _mainCategory = MelonPreferences.CreateCategory("LYModConfig", "功能配置");
+            _mainCategory.SetFilePath(MelonEnvironment.UserDataDirectory + "\\LYModConfig.cfg");
+            RedQuality = _mainCategory.GetEntry<bool>("RedQuality");
         }
 
         public override void OnUpdate()

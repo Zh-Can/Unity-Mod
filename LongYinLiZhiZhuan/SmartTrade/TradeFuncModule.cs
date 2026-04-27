@@ -306,7 +306,7 @@ namespace SmartTrade
                 
                 if (expensiveList.Contains(icon.itemData.subType)) continue;
                 
-                if (netIncome > 1) icon.OnClick();
+                if (netIncome > 1 || (Plugin.Instance.RedQuality.Value && !icon.itemData.treasureData.fullIdentified)) icon.OnClick();
                 
             }
             yield break;
