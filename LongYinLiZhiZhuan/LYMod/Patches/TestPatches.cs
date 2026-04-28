@@ -10,6 +10,7 @@ public class TestPatches
     [HarmonyPatch(typeof(SteamStatsAndAchievements), nameof(SteamStatsAndAchievements.CheckDLCState))]
     public static bool SteamStatsAndAchievements_CheckDLCState_Prefix(SteamStatsAndAchievements __instance)
     {
+        if (!Plugin.Instance.Dlc0Flag.Value) return true;
         var ppd = GameDataController.playerPrefData.playerPrefData;
         var dlc0 = ppd.GetInt("DLC0");
         if (dlc0 != 0) return true;

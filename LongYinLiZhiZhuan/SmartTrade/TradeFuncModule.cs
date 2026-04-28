@@ -285,26 +285,31 @@ namespace SmartTrade
             
             var player = GameController.Instance.worldData.Player();
             var area = player.GetArea();
-            var list = area.areaTreasurePriceData;
             var expensiveList = new List<int>();
-            foreach (var atpd in list)
+            if (area != null)
             {
-                if (atpd.expensive)
+                var list = area.areaTreasurePriceData;
+                
+                foreach (var atpd in list)
                 {
-                    expensiveList.Add(atpd.treasureType);
+                    if (atpd.expensive)
+                    {
+                        expensiveList.Add(atpd.treasureType);
+                    }
                 }
             }
+            
             
             foreach (var icon in icons)
             {
                 var item = icon.itemData;
-                if (item.type != ItemType.Treasure) continue;
+                if (item.type != ItemType.Treasure || icon.itemData.treasureData == null) continue;
 
                 var realValue = item.GetTreasureRealValue();
                 var price = icon.GetItemPrice(true);
                 var netIncome = NetIncome(realValue, Plugin.AreaRate, price);
                 
-                if (expensiveList.Contains(icon.itemData.subType)) continue;
+                if (area != null && expensiveList.Contains(icon.itemData.subType)) continue;
                 
                 if (netIncome > 1 || (Plugin.Instance.RedQuality.Value && !icon.itemData.treasureData.fullIdentified)) icon.OnClick();
                 

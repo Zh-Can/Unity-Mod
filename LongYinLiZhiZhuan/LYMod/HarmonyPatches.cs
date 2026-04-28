@@ -8,51 +8,14 @@ using HarmonyLib;
 using Il2Cpp;
 using LYMod.Helpers;
 using MelonLoader;
+using UnityEngine.UI;
 
 namespace LYMod;
 
 
 public class GameDataControllerPatches
 {
-    // 读取存档后
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(GameDataController), nameof(GameDataController.GameDataIntoGame))]
-    public static void GameDataController_GameDataIntoGame_Postfix(GameDataController __instance)
-    {
-        var allMods = MelonBase.RegisteredMelons.OfType<MelonMod>();
-        Plugin.LOG.Msg("===================================================");
-        foreach (var mod in allMods)
-        {
-            switch (mod.Info.Name)
-            {
-                case "Refresh Auction":
-                    ModConfig.HaveAucRoll = true;
-                    OtherHelper.AddInfoTab("【LYMod】由于加载了 <color=FF8C06>Refresh Auction</color> Mod，LYMod的<color=#FF8C06>按R键重Roll拍卖会</color><color=#FF0000>失效</color>", lastTime:20f);
-                    Plugin.LOG.Msg("【LYMod】由于加载了 Refresh Auction Mod，LYMod的按R键重Roll拍卖会失效");
-                    break;
-                case "SelfHouseLover":
-                    OtherHelper.AddInfoTab("【LYMod】由于加载了 <color=FF8C06>SelfHouseLover</color> Mod，LYMod的<color=#9A7CFF>按R键重Roll黄鹤楼招贤</color><color=#FF0000>失效</color>", lastTime:20f);
-                    Plugin.LOG.Msg("【LYMod】由于加载了 SelfHouseLover Mod，LYMod的按R键重Roll黄鹤楼招贤失效");
-                    ModConfig.HaveRecruitReRoll = true;
-                    break;
-                case "NPC管理Mod" or "TeammateManagerMod":
-                    OtherHelper.AddInfoTab("【LYMod】由于加载了 <color=#FF8C06>NPC管理Mod</color>，LYMod的<color=#9A7CFF>【天赋上限设置】</color>，<color=#9A7CFF>【武学修习数量上限】</color>，<color=#9A7CFF>【入队时间修改】</color><color=#FF0000>失效</color>", lastTime:20f);
-                    Plugin.LOG.Msg("【LYMod】由于加载了 NPC管理Mod，LYMod的【天赋上限设置】，【武学修习数量上限】，【入队时间修改】失效");
-                    ModConfig.HaveNpcMod = true;
-                    break;
-                case "ReadBookPlus":
-                    Plugin.LOG.Msg("【LYMod】由于加载了 HaveReadBookPlus，LYMod的 读书显示所有格子 失效");
-                    ModConfig.HaveReadBookPlus = true;
-                    break;
-            }
-        }
-        Plugin.LOG.Msg("===================================================");
-        
-        // 游戏进入时自动加载建筑倍率配置
-        UIBuilderExtensions.RefreshBuildingList();
-        // 修改武学修炼数量限制倍数
-        OtherHelper.ChaneMaxNum();
-    }
+   
     /// <summary>
     /// 藏宝阁容量
     /// </summary>
@@ -890,8 +853,32 @@ public class LivingSkillPatches
 }
 
 
-public class HeroTagIconControllerPatches
+/// <summary>
+/// 点天赋无前置要求
+/// </summary>
+public class ManageTagControllerPatches
 {
+    public static Il2CppSystem.Collections.Generic.List<HeroTagDataBase> OriginalHeroTagDataBases = new();
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(ManageTagController), nameof(ManageTagController.ShowManageTagUI))]
+    public static void ManageTagController_ShowManageTagUI_Prefix(ManageTagController __instance, 
+        HeroData _targetHero, bool _useMoney)
+    {
+        if (Plugin.Instance.AnyTagFlag.Value)
+        {
+            var list = GameDataController.Instance.heroTagDataBase;
+            for (var i = 0; i < list.Count; i++)
+            {
+                list[i].replaceTag = new Il2CppSystem.Collections.Generic.List<string>();
+                list[i].sameMeaning = "";
+                list[i].oppositeMeaning = "";
+            }
+        }
+        else
+        {
+            GameDataController.Instance.heroTagDataBase = OriginalHeroTagDataBases;
+        }
+    }
     [HarmonyPostfix]
     [HarmonyPatch(typeof(ManageTagController), nameof(ManageTagController.CheckMeetCondition))]
     public static void ManageTagController_CheckMeetCondition_Postfix(ManageTagController __instance,
@@ -899,6 +886,7 @@ public class HeroTagIconControllerPatches
     {
         if (__instance != null && Plugin.Instance.AnyTagFlag.Value)
         {
+            targetTag.replaceTag = new Il2CppSystem.Collections.Generic.List<string>();
             targetTag.oppositeMeaning = "";
             targetTag.sameMeaning = "";
             __result = true;
@@ -1208,6 +1196,29 @@ public class HeroDataPatch
         if (Plugin.Instance.NewGameAnyTagFlag.Value)
         { 
             __result = true;
+        }
+    }
+    /// <summary>
+    /// 
+    /// </summary>
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(StartMenuController), nameof(StartMenuController.Start))]
+    public static void StartMenuController_Start_Postfix(StartMenuController __instance)
+    {
+        Slider[] sliders = __instance.customDifficultyRoot.GetComponentsInChildren<Slider>(true);
+        
+        // 只修改前8个滑动条（0-7），保留最后两个（8-9）不变
+        for (int i = 0; i < sliders.Length && i < 6; i++)
+        {
+            Slider slider = sliders[i];
+            
+            // 修改范围为 -5 到 5
+            slider.minValue = Plugin.Instance.NewSaveSliderMin.Value;
+            slider.maxValue = Plugin.Instance.NewSaveSliderMax.Value;
+            
+            // 如果需要整数步进
+            slider.wholeNumbers = true;
+            
         }
     }
     #endregion

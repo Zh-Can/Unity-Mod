@@ -71,6 +71,7 @@ public class Plugin : MelonMod
     public MelonPreferences_Entry<float> ForceContributionRate= null!; // 非本门派功绩倍率
     public MelonPreferences_Entry<float> GovernContributionRate= null!; // 官府功绩倍率
     public MelonPreferences_Entry<bool> BattleSkipFlag= null!; // 跳过战斗
+    public MelonPreferences_Entry<bool> BattleSkipAddExpFlag= null!; // 跳过战斗加经验
     public MelonPreferences_Entry<bool> BreakMaxLimitFlag= null!; // 突破潜力限制
     public MelonPreferences_Entry<bool> RedQuality= null!; // 获得所有物品都是红品质
     public MelonPreferences_Entry<bool> NewGameTagNumFlag = null!; // 获得所有物品都是红品质
@@ -92,7 +93,11 @@ public class Plugin : MelonMod
     public MelonPreferences_Entry<bool> AutoReadBookFlag = null!; // 一键阅读开关
     public MelonPreferences_Entry<bool> SwordPoolEasyFlag = null!; // 剑池天工 耗时1天 只用1块
     public MelonPreferences_Entry<bool> ZmywFlag = null!; // 掌门演武
-
+    public MelonPreferences_Entry<int> SpecifiedSkinId = null!; // 指定的服装ID
+    public MelonPreferences_Entry<bool> Dlc0Flag = null!; // DLC0解锁开关
+    public MelonPreferences_Entry<int> NewSaveSliderMin = null!; // 新档自定义难度滑块最小值
+    public MelonPreferences_Entry<int> NewSaveSliderMax = null!; // 新档自定义难度滑块最大值
+    public MelonPreferences_Entry<bool> AnyDifficultUnlockAchFlag = null!; // 任意难度都可以解锁成就
     
     
     private MelonPreferences_Entry<bool> _useModifier = null!; // 使用组合键
@@ -114,6 +119,16 @@ public class Plugin : MelonMod
     public bool MaxAreaFlag; //是否仙霞初建存档地块最大化
     public bool MaxAreaFlag1; //是否需要城墙
     
+    public static int ExpRate = 0;
+    public static int FameRate = 0;
+    public static int MaxweightRate = 0;
+    public static int SelfforceExpRate = 0;
+    public static int OtherforceExpRate = 0;
+    public static int RandomEnemyStrength = 0;
+    public static int RandomEnemyNum = 0;
+    public static int BadfameRate = 0;
+    public static int MaxSkillNum = 0;
+    public static int TeammateLimit = 0;
     
     
     
@@ -175,6 +190,9 @@ public class Plugin : MelonMod
         PlayerMaxTagNum = MainCategory.CreateEntry("PlayerMaxTagNum", 9,description:"玩家天赋数量上限");
         NpcMaxTagNum = MainCategory.CreateEntry("NpcMaxTagNum", 9,description:"Npc天赋数量上限");
         KungFuMaxLimitTimes = MainCategory.CreateEntry("KungFuMaxLimitTimes", 1,description:"武学修炼限制倍数");
+        SpecifiedSkinId = MainCategory.CreateEntry("SpecifiedSkinId", 99999,description:"指定的服装ID（99999为默认不修改）");
+        NewSaveSliderMin = MainCategory.CreateEntry("NewSaveSliderMin", -5, description:"新档自定义难度滑块最小值");
+        NewSaveSliderMax = MainCategory.CreateEntry("NewSaveSliderMax", 5, description:"新档自定义难度滑块最大值");
         
         PoisonNumReduceFlag = MainCategory.CreateEntry("PoisonNumReduceFlag", false, description:"淬毒消耗开关");
         UpgradeDay1 = MainCategory.CreateEntry("upgrade1", false, description:"升级一天");
@@ -199,6 +217,7 @@ public class Plugin : MelonMod
         DrinkUiAutoFillFlag = MainCategory.CreateEntry("DrinkUiAutoFillFlag", false,  description: "喝酒自动倒满");
         GoodTreasure = MainCategory.CreateEntry("GoodTreasure", false,  description: "珍宝等级不变品质变红");
         BattleSkipFlag = MainCategory.CreateEntry("BattleSkipFlag", false,  description: "跳过战斗");
+        BattleSkipAddExpFlag = MainCategory.CreateEntry("BattleSkipAddExpFlag", true,  description: "跳过战斗加经验开关");
         BreakMaxLimitFlag = MainCategory.CreateEntry("BreakMaxLimitFlag", false,  description: "突破潜力限制");
         RedQuality = MainCategory.CreateEntry("RedQuality", false,  description: "获得所有物品品质都是红");
         NewGameTagNumFlag = MainCategory.CreateEntry("NewGameTagNumFlag", false,  description: "新档天赋点数999");
@@ -217,6 +236,8 @@ public class Plugin : MelonMod
         ExpRateMultiplierSelfForceFlag = MainCategory.CreateEntry("ExpRateMultiplierSelfForceFlag", false,  description: "游戏难度经验倍率是否对自己门派生效");
         SwordPoolEasyFlag = MainCategory.CreateEntry("SwordPoolEasyFlag", false,  description: "剑池天工 耗时1天 只用1块");
         ZmywFlag = MainCategory.CreateEntry("ZMYWFlag", true,  description: "掌门演武");
+        Dlc0Flag = MainCategory.CreateEntry("Dlc0Flag", true,  description: "Dlc0解锁开关");
+        AnyDifficultUnlockAchFlag = MainCategory.CreateEntry("AnyDifficultUnlockACHFlag", false,  description: "任意难度都可解锁成功");
         #endregion
       
         var harmony = new HarmonyLib.Harmony("LYMod");
@@ -233,7 +254,7 @@ public class Plugin : MelonMod
         harmony.PatchAll(typeof(BookWriterUIControllerPatches));
         harmony.PatchAll(typeof(BreakThroughChoiceControllerPatch));
         harmony.PatchAll(typeof(AreaBuildingDataPatches));
-        harmony.PatchAll(typeof(HeroTagIconControllerPatches));
+        harmony.PatchAll(typeof(ManageTagControllerPatches));
         harmony.PatchAll(typeof(LivingSkillPatches));
         harmony.PatchAll(typeof(IdentifyMatchControllerPatches));
         harmony.PatchAll(typeof(ChooseControllerPatches));
@@ -250,6 +271,9 @@ public class Plugin : MelonMod
         harmony.PatchAll(typeof(ForceTeachNewSkillPlotPatches));
         harmony.PatchAll(typeof(RollHelper));
         harmony.PatchAll(typeof(SpeEnhanceEquipControllerPatches));
+        harmony.PatchAll(typeof(GameCustomDifficultyPatches));
+        harmony.PatchAll(typeof(AutoChangeSkinPatches));
+        harmony.PatchAll(typeof(LoadSavePostPatches));
         
         LOG.Msg("===================================================");
         LOG.Msg("【LYMod】LYMod is loaded! 默认打开窗体：左alt + e !");
@@ -294,8 +318,34 @@ public class Plugin : MelonMod
             RollHelper.TryRefreshRecruitList();
             RollHelper.TrySpePoisonRoll();
             RollHelper.TryFightMatchRewardRoll();
+            HeroHelper.TryReadPlayer(out var player);
         }
-        
+
+        if (Input.GetKeyDown(KeyCode.KeypadDivide))
+        {
+            var buildUI = BuildingUIController.Instance;
+            if (buildUI == null) return;
+    
+            var building = buildUI.targetBuildingData;
+            if (building == null) return;
+    
+            var shopList = building.shopItemList;
+            var db = building.DataBase();
+            var shopData = db?.areaBuildingShopData;
+            
+            MelonLogger.Msg($"=== 商店调试信息 ===");
+            MelonLogger.Msg($"建筑ID: {building.buildingID}, 等级: {building.lv}");
+            MelonLogger.Msg($"当前物品数量: {shopList?.allItem?.Count ?? 0}");
+    
+            if (shopData != null)
+            {
+                MelonLogger.Msg($"配置 itemNum: {shopData.itemNum}");
+                MelonLogger.Msg($"配置 money (shopLv): {buildUI.targetBuildingData.lv}");
+                MelonLogger.Msg($"配置 itemBossLv: {shopData.itemBossLv}");
+                MelonLogger.Msg($"配置 subType: {shopData.subType}");
+                MelonLogger.Msg($"配置 itemType 数量: {shopData.itemType?.Count ?? 0}");
+            }
+        }
         
         if (Input.GetKeyDown(KeyCode.KeypadPlus))
         {
@@ -307,44 +357,39 @@ public class Plugin : MelonMod
             // {
             //     Plugin.LOG.Msg($"name:{hero.heroName}, nickName:{hero.heroNickName}");
             // }
+            // var a  = GameController.Instance.worldData.customDifficultyData.customDifficultyLv;
+            // foreach (var b in a)
+            // {
+            //     LOG.Msg($"key:{b.Key}, val:{b.Value}");
+            // }
+            // 在游戏运行时查看当前设置
+            WorldData worldData = GameController.Instance.worldData;
+
+            LOG.Msg($"=== 敌人成长速度相关设置 ===");
+            LOG.Msg($"游戏难度 (gameDifficulty): {worldData.gameDifficulty}");
+            LOG.Msg($"时间难度 (TimeDifficulty): {worldData.TimeDifficulty}");
+            LOG.Msg($"休闲模式 (relaxMode): {worldData.relaxMode}");
+
+            var a = CustomDifficultyData.customDifficultyName;
+            var b = CustomDifficultyData.teammateLimitName;
+            foreach (var v in a)
+            {
+                LOG.Msg(v);
+            }
+            foreach (var v in b)
+            {
+                LOG.Msg(v);
+            }
+            
+            
+            var dict = worldData.customDifficultyData.customDifficultyLv;
+            foreach (var kv in dict)
+            {
+                LOG.Msg($"key: {CustomDifficultyData.customDifficultyName[kv.Key]}, value: {kv.Value}");
+            }
         }
-           
-            //     // 1. 获取 PlotController 实例
-            //     var plotController = PlotController.Instance;
-            //
-            //     // 2. 设置交互的目标 NPC
-            //     HeroHelper.TryGetHeroByID(1, out var npcHero);
-            //     HeroHelper.TryReadPlayer(out var player);
-            //     plotController.targetInteractHero = npcHero; // 设置目标 NPC
-            //     plotController.sourceInteractHero = player;  // 设置玩家
-            //
-            //     // 3. 启动对话
-            //     // 创建对话
-            //     var plotData = new SinglePlotData();
-            //     plotData.plotText = $"{npcHero.heroName}：你好，有什么事吗？";
-            //
-            //     // 创建选项
-            //     var choices = new Il2CppSystem.Collections.Generic.List<SinglePlotChoiceData>();
-            //
-            //     // 闲聊选项
-            //     var chatChoice = new SinglePlotChoiceData();
-            //     chatChoice.choiceText = "闲聊";
-            //     chatChoice.callFuc = "ChatInteractHero";
-            //     chatChoice.callParam = "normal";
-            //     choices.Add(chatChoice);
-            //
-            //     // 离开选项
-            //     var leaveChoice = new SinglePlotChoiceData();
-            //     leaveChoice.choiceText = "离开";
-            //     leaveChoice.callFuc = "GoNextPlot";
-            //     choices.Add(leaveChoice);
-            //
-            //     plotData.choices = choices;
-            //
-            //     // 显示对话
-            //     plotController.AddPlot(plotData);
-            //     
-            //     
+
+        
         
     }
  
@@ -585,6 +630,19 @@ public class Plugin : MelonMod
             })
             .EndHorizontal()
             .BeginHorizontal()
+            .AddButton("修改喜好为食物", () =>
+            {
+                if (_readedHeroData == null) return;
+                
+                if (_readedHeroData.hobby == null)
+                    _readedHeroData.hobby = new Il2CppSystem.Collections.Generic.List<int>();
+                else
+                    _readedHeroData.hobby.Clear();
+                _readedHeroData.hobby.Add((int)ItemType.Food);
+            }, width:150)
+            .EndHorizontal()
+            .Space(5)
+            .BeginHorizontal()
             .AddLabel("天赋点数：",100).AddLabel(_readedHeroData?.heroTagPoint.ToString(CultureInfo.InvariantCulture) ?? "")
             .AddButton("+100", () =>
             {
@@ -743,11 +801,21 @@ public class Plugin : MelonMod
         builder.BeginFoldout("其他相关").Space(10)
             .AddAutoSaveRow("官府功绩倍率", GovernContributionRate, "探险耐力锁定", Explore)
             .AddAutoSaveRow("探险去除迷雾", ExploreSeeAllFlag, "探险随意移动", ExploreFreeMoveFlag)
-            .AddAutoSaveRow("跳过战斗",BattleSkipFlag,"999回合后进入疲劳", BattleMaxTime999Flag)
+            .AddAutoSaveRow("跳过战斗",BattleSkipFlag, "跳过战斗加经验", BattleSkipAddExpFlag)
+            .AddAutoSave("999回合后进入疲劳", BattleMaxTime999Flag)
             .AddAutoSaveRow("按R键重新Roll", _breakRollFlag, "时间暂停", TimeFreezeFlag)
             .AddAutoSaveRow("自动鉴宝",AutoJianBaoFlag, "斗酒一回胜利", DrinkOneWinFlag)
             .AddAutoSaveRow("喝酒自动倒满", DrinkUiAutoFillFlag, "藏宝阁价值容量1亿", ExternalStorageFlag)
-            .AddAutoSaveRow("难度经验倍率", ExpRateMultiplier, "难度经验是否对自门派生效", ExpRateMultiplierSelfForceFlag)
+          
+            .AddAutoSave("指定玩家门派服装（99999默认为不修改）", SpecifiedSkinId)
+            .AddLabelRow("服装ID,名称（只用填入ID）")
+            .AddLabelRow("-10,邪道服;-9,杀手服;-8,强盗服;-7,游侠服;-6,才子服;-5,官差服;")
+            .AddLabelRow("-4,杂役服;-3,商人服;-2,农民服;-1,常服;0,锦袍;1,夜行衣;")
+            .AddLabelRow("2,医袍;3,百衲衣;4,戎装;5,法服;6,甲胄;7,避毒服;")
+            .AddLabelRow("8,铁衣;9,襕衫;10,袈裟;11,道袍;12,胡裘;13,鹤氅;")
+            .AddLabelRow("14,瑶衣;15,奇装;16,匠服;17,火浣布;18,羌姆袍;19,貂裘;")
+            .AddLabelRow("-100,白马红妆;-101,风起青萍")
+            
             .AddSlider("窗体/字体缩放", WindowScaling,0.5f, 2.0f, _otherCategory, labelWidth:100, sliderWidth:200, useFixedLayout:true)
             .AddButtonRow("重置缩放", () =>
             {
@@ -755,7 +823,96 @@ public class Plugin : MelonMod
                 _otherCategory.SaveToFile();
             })
             .EndFoldout();
-
+        
+        builder.BeginFoldout("难度相关").Space(10)
+            .AddLabelRow("自定义难度即时修改（仅支持V1.0.1f3存档）")
+            .BeginVertical()
+            .BeginHorizontal()
+            .AddLinkedInt("经验倍率", () => ExpRate, 
+                value => ExpRate = value,
+                "expRate")
+            .AddLabel($"经验倍率 {(ExpRate > 0 ? "+" : "-")}{(ExpRate > 0 ? ExpRate * 20 : ExpRate * 10)}%", width:200)
+            .EndHorizontal()
+            .BeginHorizontal()
+            .AddLinkedInt("声望倍率", () => FameRate, 
+                value => FameRate = value,
+                "fameRate")
+            .AddLabel($"声望倍率 {(FameRate > 0 ? "+" : "-")}{(FameRate > 0 ? FameRate * 20 : FameRate * 10)}%", width:200)
+            .EndHorizontal()
+            .BeginHorizontal()
+            .AddLinkedInt("负重倍率", () => MaxweightRate, 
+                value => MaxweightRate = value,
+                "maxweightRate")
+            .AddLabel($"负重倍率 {(MaxweightRate > 0 ? "+" : "-")}{(MaxweightRate > 0 ? MaxweightRate * 20 : MaxweightRate * 10)}%", width:200)
+            .EndHorizontal()
+            .BeginHorizontal()
+            .AddLinkedInt("本门弟子经验倍率", () => SelfforceExpRate, 
+                value => SelfforceExpRate = value,
+                "selfforceExpRate", labelWidth:170)
+            .AddLabel($"本门弟子经验倍率 {(SelfforceExpRate > 0 ? "+" : "-")}{(SelfforceExpRate > 0 ? SelfforceExpRate * 20 : SelfforceExpRate * 10)}%", width:250)
+            .EndHorizontal()
+            .BeginHorizontal()
+            .AddLinkedInt("非本门弟子经验倍率", () => OtherforceExpRate, 
+                value => OtherforceExpRate = value,
+                "otherforceExpRate", labelWidth:170)
+            .AddLabel($"非本门弟子经验倍率 {(OtherforceExpRate > 0 ? "+" : "-")}{(OtherforceExpRate > 0 ? OtherforceExpRate * 20 : OtherforceExpRate * 10)}%", width:250)
+            .EndHorizontal()
+            .BeginHorizontal()
+            .AddLinkedInt("随机敌人强度", () => RandomEnemyStrength, 
+                value => RandomEnemyStrength = value,
+                "randomEnemyStrength", labelWidth:120)
+            .AddLabel($"随机敌人强度 {(RandomEnemyStrength > 0 ? "+" : "-")}{(RandomEnemyStrength > 0 ? RandomEnemyStrength * 20 : RandomEnemyStrength * 10)}%", width:200)
+            .EndHorizontal()
+            .BeginHorizontal()
+            .AddLinkedInt("随机敌人数量", () => RandomEnemyNum, 
+                value => RandomEnemyNum = value,
+                "randomEnemyNum", labelWidth:120)
+            .AddLabel($"随机敌人数量 {(RandomEnemyNum > 0 ? "+" : "-")}{(RandomEnemyNum > 0 ? RandomEnemyNum * 20 : RandomEnemyNum * 10)}%", width:200)
+            .EndHorizontal()
+            .BeginHorizontal()
+            .AddLinkedInt("恶名获取", () => BadfameRate, 
+                value => BadfameRate = value,
+                "badfameRate")
+            .AddLabel($"恶名获取 {(BadfameRate > 0 ? "+" : "-")}{(BadfameRate > 0 ? BadfameRate * 20 : BadfameRate * 10)}%", width:200)
+            .EndHorizontal()
+            .BeginHorizontal()
+            .AddLinkedInt("武学上限", () => MaxSkillNum, 
+                value => MaxSkillNum = Math.Clamp(value, 0, 5),
+                "maxSkillNum")
+            .AddLabel($"武学上限 +{(MaxSkillNum != 5 ? MaxSkillNum.ToString() : "∞")}", width:200)
+            .EndHorizontal()
+            .BeginHorizontal()
+            .AddLinkedInt("组队限制", () => TeammateLimit, 
+                value => TeammateLimit = Math.Clamp(value, -3, 1),
+                "teammateLimit")
+            .AddLabel($"组队限制 {CustomDifficultyData.teammateLimitName[TeammateLimit+3]}", width:200)
+            .EndHorizontal()
+            
+            .AddButtonRow("保存自定义难度配置", () =>
+            {
+                var gc = GameController.Instance;
+                if (gc == null) return;
+                var dict = new Il2CppSystem.Collections.Generic.Dictionary<int, int>
+                {
+                    [0] = ExpRate,
+                    [1] = FameRate,
+                    [2] = MaxweightRate,
+                    [3] = SelfforceExpRate,
+                    [4] = OtherforceExpRate,
+                    [5] = RandomEnemyStrength,
+                    [6] = RandomEnemyNum,
+                    [7] = BadfameRate,
+                    [8] = MaxSkillNum,
+                    [9] = TeammateLimit
+                };
+                gc.worldData.customDifficultyData.customDifficultyLv = dict;
+            }, width:180)
+            .EndVertical()
+            
+            .AddLabelRow("支持新老版本")
+            .AddAutoSaveRow("难度经验倍率", ExpRateMultiplier, "难度经验是否对自门派生效", ExpRateMultiplierSelfForceFlag)
+            .EndFoldout();
+            
         builder.BeginFoldout("新档相关").Space(10)
             .BeginHorizontal().AddButtonRow("新档人物属性点数999", () =>
             {
@@ -767,6 +924,14 @@ public class Plugin : MelonMod
             }, 225).EndHorizontal()
             .AddAutoSave("新档天赋点数999(选中后重启生效)", NewGameTagNumFlag, labelWidth:280)
             .AddAutoSave("新档天赋无视要求", NewGameAnyTagFlag, labelWidth:150)
+            
+            .AddLabelRow("新档自定义难度滑块范围：")
+            .AddAutoSaveRow("最小值", NewSaveSliderMin,"最大值", NewSaveSliderMax)
+            .AddButtonRow("设置生效", () =>
+            {
+                StartMenuController.Instance.Start();
+            }, 100)
+            
             .BeginHorizontal()
             .AddLinkedBool("仙霞初建存档地块最大化：", ()=>MaxAreaFlag, val => MaxAreaFlag = val, labelWidth:220)
             .AddLinkedBool("需要城墙：", ()=>MaxAreaFlag1, val => MaxAreaFlag1 = val, labelWidth:95)

@@ -95,12 +95,15 @@ public static class BattleSkip
                 playerUnit.battleInfo.enemyKillScorePercent = _storedEnemyTotalHp;
             }
 
-            var teams = __instance.teams;
-            foreach (var team in teams)
+            if (Plugin.Instance.BattleSkipAddExpFlag.Value)
             {
-                foreach (var unit in team.battleUnits)
+                var teams = __instance.teams;
+                foreach (var team in teams)
                 {
-                    unit.heroData.AutoGetFightExp();
+                    foreach (var unit in team.battleUnits)
+                    {
+                        unit.heroData.AutoGetFightExp();
+                    }
                 }
             }
         }

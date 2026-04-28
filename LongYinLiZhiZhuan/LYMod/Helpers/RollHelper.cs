@@ -98,14 +98,16 @@ public class RollHelper
     }
 
 
-    // 中元鬼市roll + 官府兑换
+    // 中元鬼市roll + 官府兑换 + 商店
     public static void TryZhongyuanRoll()
     {
         var tuic = TradeUIController.Instance;
         var plotController = PlotController.Instance;
         var gc = GameController.Instance;
-        if (tuic == null || !tuic.tradeUI.activeInHierarchy || gc == null) return;
-        if (tuic.tradeUIType != TradeUIType.GovernStorage)
+        var flag = HeroHelper.TryReadPlayer(out var player);
+        if (!flag || tuic == null || !tuic.tradeUI.activeInHierarchy || gc == null) return;
+        
+        if (player.GetArea() == null)
         {
             if (plotController == null || plotController.nowEvent == null) return;
             var currentEvent = plotController.nowEvent;
@@ -121,10 +123,38 @@ public class RollHelper
             gc.GenerateRandomItem(rightItemListData, oldCount, null, Plugin.Instance.ZhongyuanLv.Value, 0f, false);
             tuic.rightList.RefreshItemList(rightItemListData, ItemListInteractType.TradeRight, false);
         }
-        else
+        else if(tuic.tradeUIType == TradeUIType.GovernStorage)
         {
             gc.RefreshGovernStorage();
             tuic.rightList.RefreshItemList(false);
+        }
+        else
+        {
+            var buildUI = BuildingUIController.Instance;
+            if (buildUI == null) return;
+
+            var buildingData = buildUI.targetBuildingData;
+            if (buildingData == null) return;
+            var shopItemList = buildingData.shopItemList;
+            var shopData = buildingData.DataBase()?.areaBuildingShopData;
+            if (shopItemList == null || shopData == null) return;
+            
+            
+            var rightItemListData = tuic.rightList.targetItemList;
+            
+            var oldCount = rightItemListData.allItem?.Count ?? shopData.itemNum;
+            // 清空旧物品
+            shopItemList.ClearAllItem();
+
+            // 重新生成商店物品
+            gc.GenerateRandomItem(rightItemListData, (int)oldCount, shopData.itemType, buildingData.lv, shopData.itemBossLv, false);
+
+            // 刷新UI
+            var tradeUI = TradeUIController.Instance;
+            if (tradeUI != null && tradeUI.rightList != null)
+            {
+                tradeUI.rightList.RefreshItemList(true);
+            }
         }
     }
 
