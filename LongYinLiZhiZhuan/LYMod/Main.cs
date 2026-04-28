@@ -318,76 +318,31 @@ public class Plugin : MelonMod
             RollHelper.TryRefreshRecruitList();
             RollHelper.TrySpePoisonRoll();
             RollHelper.TryFightMatchRewardRoll();
-            HeroHelper.TryReadPlayer(out var player);
-        }
-
-        if (Input.GetKeyDown(KeyCode.KeypadDivide))
-        {
-            var buildUI = BuildingUIController.Instance;
-            if (buildUI == null) return;
-    
-            var building = buildUI.targetBuildingData;
-            if (building == null) return;
-    
-            var shopList = building.shopItemList;
-            var db = building.DataBase();
-            var shopData = db?.areaBuildingShopData;
-            
-            MelonLogger.Msg($"=== 商店调试信息 ===");
-            MelonLogger.Msg($"建筑ID: {building.buildingID}, 等级: {building.lv}");
-            MelonLogger.Msg($"当前物品数量: {shopList?.allItem?.Count ?? 0}");
-    
-            if (shopData != null)
-            {
-                MelonLogger.Msg($"配置 itemNum: {shopData.itemNum}");
-                MelonLogger.Msg($"配置 money (shopLv): {buildUI.targetBuildingData.lv}");
-                MelonLogger.Msg($"配置 itemBossLv: {shopData.itemBossLv}");
-                MelonLogger.Msg($"配置 subType: {shopData.subType}");
-                MelonLogger.Msg($"配置 itemType 数量: {shopData.itemType?.Count ?? 0}");
-            }
         }
         
-        if (Input.GetKeyDown(KeyCode.KeypadPlus))
-        {
-            //PlotController.Instance.ChooseQingMingFestivalPlot();
-            // HeroHelper.TryReadPlayer(out var player);
-            // player.heroNickName = "天下无双";
-            // var list = GameController.Instance.worldData.Heros;
-            // foreach (var hero in list)
-            // {
-            //     Plugin.LOG.Msg($"name:{hero.heroName}, nickName:{hero.heroNickName}");
-            // }
-            // var a  = GameController.Instance.worldData.customDifficultyData.customDifficultyLv;
-            // foreach (var b in a)
-            // {
-            //     LOG.Msg($"key:{b.Key}, val:{b.Value}");
-            // }
-            // 在游戏运行时查看当前设置
-            WorldData worldData = GameController.Instance.worldData;
-
-            LOG.Msg($"=== 敌人成长速度相关设置 ===");
-            LOG.Msg($"游戏难度 (gameDifficulty): {worldData.gameDifficulty}");
-            LOG.Msg($"时间难度 (TimeDifficulty): {worldData.TimeDifficulty}");
-            LOG.Msg($"休闲模式 (relaxMode): {worldData.relaxMode}");
-
-            var a = CustomDifficultyData.customDifficultyName;
-            var b = CustomDifficultyData.teammateLimitName;
-            foreach (var v in a)
-            {
-                LOG.Msg(v);
-            }
-            foreach (var v in b)
-            {
-                LOG.Msg(v);
-            }
-            
-            
-            var dict = worldData.customDifficultyData.customDifficultyLv;
-            foreach (var kv in dict)
-            {
-                LOG.Msg($"key: {CustomDifficultyData.customDifficultyName[kv.Key]}, value: {kv.Value}");
-            }
-        }
+        
+        // if (Input.GetKeyDown(KeyCode.KeypadPlus))
+        // {
+        //     //PlotController.Instance.ChooseQingMingFestivalPlot();
+        //     // HeroHelper.TryReadPlayer(out var player);
+        //     // player.heroNickName = "天下无双";
+        //     // var list = GameController.Instance.worldData.Heros;
+        //     // foreach (var hero in list)
+        //     // {
+        //     //     Plugin.LOG.Msg($"name:{hero.heroName}, nickName:{hero.heroNickName}");
+        //     // }
+        //     // var a  = GameController.Instance.worldData.customDifficultyData.customDifficultyLv;
+        //     // foreach (var b in a)
+        //     // {
+        //     //     LOG.Msg($"key:{b.Key}, val:{b.Value}");
+        //     // }
+        //     // 在游戏运行时查看当前设置
+        //     WorldData worldData = GameController.Instance.worldData;
+        //
+        //     LOG.Msg($"=== 敌人成长速度相关设置 ===");
+        //     LOG.Msg($"游戏难度 (gameDifficulty): {worldData.gameDifficulty}");
+        //     LOG.Msg($"时间难度 (TimeDifficulty): {worldData.TimeDifficulty}");
+        // }
 
         
         

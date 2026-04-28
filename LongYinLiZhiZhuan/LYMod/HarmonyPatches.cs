@@ -532,8 +532,6 @@ public class ChooseControllerPatches
         GameObject _sendResultFucTarget, string _sendResultFuc, string _sendResultParam, ChooseFilterType _filterType,
         HeroData? targetFavorHero, string _cancelFuc)
     {
-        Plugin.LOG.Msg(_filterType);
-        
         if (_sendResultFuc == "SpeRemoveSkillChoosen" && Plugin.Instance.RemoveAnySkill.Value)
         {
             var flag = HeroHelper.TryReadPlayer(out var player);
