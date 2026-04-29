@@ -1077,11 +1077,17 @@ public class BookWriterUIControllerPatches
     }
 }
 
+/// <summary>
+/// 练功经验倍率
+/// </summary>
 public class StudySkillPatches
 {
-    [HarmonyPostfix]
+    /// <summary>
+    /// 轻功经验倍率
+    /// </summary>
+    [HarmonyPrefix]
     [HarmonyPatch(typeof(StudyDodgeSkillController), nameof(StudyDodgeSkillController.FinishStudyDodgeSkill))]
-    public static void StudyDodgeSkillController_FinishStudyDodgeSkill_Postfix(StudyDodgeSkillController __instance,
+    public static void StudyDodgeSkillController_FinishStudyDodgeSkill_Prefix(StudyDodgeSkillController __instance,
         StudySkillResult studyDodgeResult)
     {
         if (__instance != null && Plugin.Instance.StudyUniqeRate.Value > 1)
@@ -1089,35 +1095,49 @@ public class StudySkillPatches
             __instance.totalExp *= Plugin.Instance.StudyUniqeRate.Value;
         }
     }
-    
-    [HarmonyPostfix]
+    /// <summary>
+    /// 内功经验倍率
+    /// </summary>
+    [HarmonyPrefix]
     [HarmonyPatch(typeof(StudyInternalSkillController), nameof(StudyInternalSkillController.FinishStudyInternalSkill))]
-    public static void StudyInternalSkillController_FinishStudyInternalSkill_Postfix(StudyInternalSkillController __instance,
+    public static void StudyInternalSkillController_FinishStudyInternalSkill_Prefix(StudyInternalSkillController __instance,
         StudyInternalResult studyInternalResult)
     {
-        if (__instance != null)
+        if (__instance != null && Plugin.Instance.StudyUniqeRate.Value > 1)
         {
             __instance.totalExp *= Plugin.Instance.StudyUniqeRate.Value;
         }
     }
-    [HarmonyPostfix]
+    /// <summary>
+    /// 绝技经验倍率
+    /// </summary>
+    [HarmonyPrefix]
     [HarmonyPatch(typeof(StudyUniqueSkillController), nameof(StudyUniqueSkillController.FinishStudyUniqueSkill))]
-    public static void StudyUniqueSkillController_FinishStudyUniqueSkill_Postfix(StudyUniqueSkillController __instance,
+    public static void StudyUniqueSkillController_FinishStudyUniqueSkill_Prefix(StudyUniqueSkillController __instance,
         StudySkillResult studyUniqueResult)
     {
-        if (__instance != null)
+        if (__instance != null && Plugin.Instance.StudyUniqeRate.Value > 1)
         {
             __instance.totalExp *= Plugin.Instance.StudyUniqeRate.Value;
         }
     }
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(StudyAttackSkillController), nameof(StudyAttackSkillController.FinishStudyFightSkill))]
-    public static void StudyAttackSkillController_FinishStudyFightSkill_Postfix(StudyAttackSkillController __instance,
-        StudySkillResult studyDodgeResult)
+    // [HarmonyPrefix]
+    // [HarmonyPatch(typeof(StudyAttackSkillController), nameof(StudyAttackSkillController.FinishStudyFightSkill))]
+    // public static void StudyAttackSkillController_FinishStudyFightSkill_Prefix(StudyAttackSkillController __instance,
+    //     StudySkillResult studyDodgeResult)
+    // {
+    //     if (__instance != null && Plugin.Instance.StudyFightRate.Value > 1)
+    //     {
+    //         __instance.totalExp *= Plugin.Instance.StudyFightRate.Value;
+    //     }
+    // }
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(StudySkillController), nameof(StudySkillController.FinishStudySkill))]
+    public static void StudySkillController_FinishStudySkill_Prefix(StudySkillController __instance, ref float expNum)
     {
         if (__instance != null && Plugin.Instance.StudyFightRate.Value > 1)
         {
-            __instance.totalExp *= Plugin.Instance.StudyFightRate.Value;
+            expNum *= Plugin.Instance.StudyFightRate.Value;
         }
     }
 }
