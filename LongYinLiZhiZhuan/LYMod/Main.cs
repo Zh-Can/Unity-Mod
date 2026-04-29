@@ -120,16 +120,16 @@ public class Plugin : MelonMod
     public bool MaxAreaFlag; //是否仙霞初建存档地块最大化
     public bool MaxAreaFlag1; //是否需要城墙
     
-    public static int ExpRate = 0;
-    public static int FameRate = 0;
-    public static int MaxweightRate = 0;
-    public static int SelfforceExpRate = 0;
-    public static int OtherforceExpRate = 0;
-    public static int RandomEnemyStrength = 0;
-    public static int RandomEnemyNum = 0;
-    public static int BadfameRate = 0;
-    public static int MaxSkillNum = 0;
-    public static int TeammateLimit = 0;
+    public static int ExpRate;
+    public static int FameRate;
+    public static int MaxweightRate;
+    public static int SelfforceExpRate;
+    public static int OtherforceExpRate;
+    public static int RandomEnemyStrength;
+    public static int RandomEnemyNum;
+    public static int BadfameRate;
+    public static int MaxSkillNum;
+    public static int TeammateLimit;
     
     
     
@@ -308,12 +308,6 @@ public class Plugin : MelonMod
                 HeroHelper.TryReadNowHero(out _readedHeroData);
             }
             OtherHelper.ChaneMaxNum();
-
-            var a = _readedHeroData.hobby;
-            foreach (var v in a)
-            {
-                LOG.Msg(v);
-            }
         }
 
         // 按 R 重刷几个可复用的 Roll 场景
