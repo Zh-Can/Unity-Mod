@@ -312,8 +312,8 @@ namespace SmartTrade
                 if (area != null && expensiveList.Contains(icon.itemData.subType)) continue;
                 
                 if (netIncome > 1 
-                    || (Plugin.Instance.RedQuality.Value && !icon.itemData.treasureData.fullIdentified)
-                    || (Plugin.Instance.GoodTreasure.Value && !icon.itemData.treasureData.fullIdentified)
+                    || (Plugin.Instance.RedQuality && !icon.itemData.treasureData.fullIdentified)
+                    || (Plugin.Instance.GoodTreasure && !icon.itemData.treasureData.fullIdentified)
                     ) icon.OnClick();
             }
             yield break;
