@@ -98,6 +98,7 @@ public class Plugin : MelonMod
     public MelonPreferences_Entry<int> NewSaveSliderMin = null!; // 新档自定义难度滑块最小值
     public MelonPreferences_Entry<int> NewSaveSliderMax = null!; // 新档自定义难度滑块最大值
     public MelonPreferences_Entry<bool> AnyDifficultUnlockAchFlag = null!; // 任意难度都可以解锁成就
+    public MelonPreferences_Entry<bool> BreakMaxLimitNotForPlayerFlag = null!; // 突破潜力限制不对玩家生效
     
     
     private MelonPreferences_Entry<bool> _useModifier = null!; // 使用组合键
@@ -238,6 +239,7 @@ public class Plugin : MelonMod
         ZmywFlag = MainCategory.CreateEntry("ZMYWFlag", true,  description: "掌门演武");
         Dlc0Flag = MainCategory.CreateEntry("Dlc0Flag", true,  description: "Dlc0解锁开关");
         AnyDifficultUnlockAchFlag = MainCategory.CreateEntry("AnyDifficultUnlockACHFlag", false,  description: "任意难度都可解锁成功");
+        BreakMaxLimitNotForPlayerFlag = MainCategory.CreateEntry("BreakMaxLimitNotForPlayerFlag", false,  description: "突破潜力限制不对玩家生效");
         #endregion
       
         var harmony = new HarmonyLib.Harmony("LYMod");
@@ -306,6 +308,12 @@ public class Plugin : MelonMod
                 HeroHelper.TryReadNowHero(out _readedHeroData);
             }
             OtherHelper.ChaneMaxNum();
+
+            var a = _readedHeroData.hobby;
+            foreach (var v in a)
+            {
+                LOG.Msg(v);
+            }
         }
 
         // 按 R 重刷几个可复用的 Roll 场景
@@ -319,7 +327,6 @@ public class Plugin : MelonMod
             RollHelper.TrySpePoisonRoll();
             RollHelper.TryFightMatchRewardRoll();
         }
-        
         
         // if (Input.GetKeyDown(KeyCode.KeypadPlus))
         // {
@@ -585,15 +592,13 @@ public class Plugin : MelonMod
             })
             .EndHorizontal()
             .BeginHorizontal()
-            .AddButton("修改喜好为食物", () =>
+            .AddButton("添加喜好佳肴/丹药", () =>
             {
                 if (_readedHeroData == null) return;
                 
-                if (_readedHeroData.hobby == null)
-                    _readedHeroData.hobby = new Il2CppSystem.Collections.Generic.List<int>();
-                else
-                    _readedHeroData.hobby.Clear();
-                _readedHeroData.hobby.Add((int)ItemType.Food);
+                _readedHeroData.hobby ??= new Il2CppSystem.Collections.Generic.List<int>();
+                _readedHeroData.hobby.Add(10);
+                _readedHeroData.hobby.Add(20);
             }, width:150)
             .EndHorizontal()
             .Space(5)
@@ -607,7 +612,7 @@ public class Plugin : MelonMod
             .Space(5)
             .AddAutoSaveRow("无前置天赋要求", AnyTagFlag, "武学修炼限制倍数", KungFuMaxLimitTimes, labelWidth:150)
             .AddAutoSaveRow("玩家天赋数量上限", PlayerMaxTagNum, "Npc天赋数量上限", NpcMaxTagNum,  labelWidth:150)
-            .AddAutoSave("突破潜力限制(无限制)",BreakMaxLimitFlag)
+            .AddAutoSaveRow("突破潜力限制(无限制)",BreakMaxLimitFlag, "突破潜力限制不对玩家生效", BreakMaxLimitNotForPlayerFlag)
             .AddLabelRow("修改读取到人物的潜力：", 200)
             .Space(5)
             .BeginHorizontal()
@@ -757,7 +762,7 @@ public class Plugin : MelonMod
             .AddAutoSaveRow("官府功绩倍率", GovernContributionRate, "探险耐力锁定", Explore)
             .AddAutoSaveRow("探险去除迷雾", ExploreSeeAllFlag, "探险随意移动", ExploreFreeMoveFlag)
             .AddAutoSaveRow("跳过战斗",BattleSkipFlag, "跳过战斗加经验", BattleSkipAddExpFlag)
-            .AddAutoSave("999回合后进入疲劳", BattleMaxTime999Flag)
+            .AddAutoSaveRow("999回合后进入疲劳", BattleMaxTime999Flag, "DLC解锁", Dlc0Flag)
             .AddAutoSaveRow("按R键重新Roll", _breakRollFlag, "时间暂停", TimeFreezeFlag)
             .AddAutoSaveRow("自动鉴宝",AutoJianBaoFlag, "斗酒一回胜利", DrinkOneWinFlag)
             .AddAutoSaveRow("喝酒自动倒满", DrinkUiAutoFillFlag, "藏宝阁价值容量1亿", ExternalStorageFlag)

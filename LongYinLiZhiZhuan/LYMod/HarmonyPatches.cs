@@ -1229,7 +1229,7 @@ public class HeroDataPatch
         bool showText, bool skillUpgrade)
     {
         if (__instance == null || !skillUpgrade || num <= 0 || !Plugin.Instance.BreakMaxLimitFlag.Value) return;
-        
+        if (__instance.heroID == 0 && Plugin.Instance.BreakMaxLimitNotForPlayerFlag.Value) return;
         var baseAttri = __instance.baseAttri;
         var maxAttri = __instance.maxAttri;
         if (baseAttri == null || maxAttri == null) return;
@@ -1249,7 +1249,7 @@ public class HeroDataPatch
         bool showText, bool skillUpgrade)
     {
         if (__instance == null || !skillUpgrade || num <= 0 || !Plugin.Instance.BreakMaxLimitFlag.Value) return;
-        
+        if (__instance.heroID == 0 && Plugin.Instance.BreakMaxLimitNotForPlayerFlag.Value) return;
         var baseFightSkill = __instance.baseFightSkill;
         var maxFightSkill = __instance.maxFightSkill;
         if (baseFightSkill == null || maxFightSkill == null) return;

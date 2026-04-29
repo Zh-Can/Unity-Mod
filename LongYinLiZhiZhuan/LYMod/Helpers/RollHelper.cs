@@ -143,6 +143,7 @@ public class RollHelper
             var rightItemListData = tuic.rightList.targetItemList;
             
             var oldCount = rightItemListData.allItem?.Count ?? shopData.itemNum;
+            oldCount = oldCount == 0 ? shopData.itemNum * 2  : oldCount;
             // 清空旧物品
             shopItemList.ClearAllItem();
 
