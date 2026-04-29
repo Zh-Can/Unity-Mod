@@ -9,7 +9,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
-[assembly: MelonInfo(typeof(SmartTrade.Plugin), "SmartTrade", "1.7.1", "Can")]
+[assembly: MelonInfo(typeof(SmartTrade.Plugin), "SmartTrade", "1.7.2", "Can")]
 [assembly: MelonGame("TppStudio", "LongYinLiZhiZhuan")]
 [assembly: MelonPlatformDomain(MelonPlatformDomainAttribute.CompatibleDomains.IL2CPP)]
 
@@ -20,7 +20,8 @@ namespace SmartTrade
         public static Plugin Instance;
         public static MelonLogger.Instance LOG => Instance.LoggerInstance;
         private MelonPreferences_Category _mainCategory= null!;
-        public MelonPreferences_Entry<bool> RedQuality= null!; // 珍宝品质修改当前等级全红
+        public MelonPreferences_Entry<bool> RedQuality= null!; // 所有物品品质为红
+        public MelonPreferences_Entry<bool> GoodTreasure= null!; // 珍宝品质修改当前等级全红
         
         #region 配置
 
@@ -78,6 +79,7 @@ namespace SmartTrade
             _mainCategory = MelonPreferences.CreateCategory("LYModConfig", "功能配置");
             _mainCategory.SetFilePath(MelonEnvironment.UserDataDirectory + "\\LYModConfig.cfg");
             RedQuality = _mainCategory.GetEntry<bool>("RedQuality");
+            GoodTreasure = _mainCategory.GetEntry<bool>("GoodTreasure");
         }
 
         public override void OnUpdate()
