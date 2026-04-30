@@ -812,7 +812,7 @@ public class Plugin : MelonMod
             .AddLinkedInt("非本门弟子经验倍率", () => OtherforceExpRate, 
                 value => OtherforceExpRate = value,
                 "otherforceExpRate", labelWidth:170)
-            .AddLabel($"非本门弟子经验倍率 {(OtherforceExpRate > 0 ? "+" : "-")}{(OtherforceExpRate > 0 ? OtherforceExpRate * 20 : OtherforceExpRate * 10)}%", width:250)
+            .AddLabel($"非本门弟子经验倍率 {(OtherforceExpRate > 0 ? "+" : "-")}{(OtherforceExpRate > 0 ? OtherforceExpRate * 40 : OtherforceExpRate * 10)}%", width:250)
             .EndHorizontal()
             .BeginHorizontal()
             .AddLinkedInt("随机敌人强度", () => RandomEnemyStrength, 
