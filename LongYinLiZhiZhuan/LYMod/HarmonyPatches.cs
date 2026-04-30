@@ -1787,6 +1787,8 @@ public class ItemListDataPatches
     [HarmonyPatch(typeof(ItemData), nameof(ItemData.GetHorseMaxWeightAdd))]
     public static void ItemData_GetHorseMaxWeightAdd_Postfix(ItemData __instance, ref float __result)
     {
+        var flag = HeroHelper.TryReadPlayer(out var player);
+        if (!flag || Plugin.Instance.HorseMaxWeightTimes.Value == 1 || !__instance.IsHeroEquip(player)) return;
         __result *= Plugin.Instance.HorseMaxWeightTimes.Value;
     }
     /// <summary>
@@ -1796,6 +1798,8 @@ public class ItemListDataPatches
     [HarmonyPatch(typeof(ItemData), nameof(ItemData.GetHorseSeeRange))]
     public static void ItemData_GetHorseSeeRange_Postfix(ItemData __instance, ref float __result)
     {
+        var flag = HeroHelper.TryReadPlayer(out var player);
+        if (!flag || Plugin.Instance.HorseMaxSeeRangeTimes.Value == 1 || !__instance.IsHeroEquip(player))return;
         __result *= Plugin.Instance.HorseMaxSeeRangeTimes.Value;
     }
     /// <summary>
@@ -1805,23 +1809,27 @@ public class ItemListDataPatches
     [HarmonyPatch(typeof(ItemData), nameof(ItemData.GetHorseStepAddRate))]
     public static void ItemData_GetHorseStepAddRate_Postfix(ItemData __instance, ref float __result)
     {
+        var flag = HeroHelper.TryReadPlayer(out var player);
+        if (!flag || Plugin.Instance.HorseStepAddRateTimes.Value == 1 || !__instance.IsHeroEquip(player)) return;
         __result *= Plugin.Instance.HorseStepAddRateTimes.Value;
     }
     
+    
+    /// <summary>
+    /// 一眼鉴宝
+    /// </summary>
     [HarmonyPrefix]
-    [HarmonyPatch(typeof(ItemIconController), nameof(ItemIconController.Update))]
-    public static bool ItemIconController_Update_Prefix(ItemIconController __instance)
+    [HarmonyPatch(typeof(QuickDetail), nameof(QuickDetail.ShowTreasureQuickDetail))]
+    public static bool QuickDetail_ShowTreasureQuickDetail_Prefix(QuickDetail __instance, GameObject target, 
+        ItemData treasureData)
     {
-        if (__instance != null && __instance.itemData.type == ItemType.Treasure 
-                               && Plugin.Instance.JianBaoFlag.Value)
+        if (__instance == null || !Plugin.Instance.JianBaoFlag.Value || treasureData.treasureData.fullIdentified) return true;
+        var list = treasureData.treasureData.treasureLv;
+        var list1 =  treasureData.treasureData.playerGuessTreasureLv;
+        for (int i = 0; i < 4; i++)
         {
-            var list = __instance.itemData.treasureData.treasureLv;
-            var list1 =  __instance.itemData.treasureData.playerGuessTreasureLv;
-            for (int i = 0; i < 4; i++)
-            {
-                list1[i].Clear();
-                list1[i].Add(list[i]);
-            }
+            list1[i].Clear();
+            list1[i].Add(list[i]);
         }
         return true;
     }

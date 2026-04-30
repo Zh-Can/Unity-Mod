@@ -10,23 +10,24 @@ namespace LYMod.Patches;
 [HarmonyPatch]
 public static class UIPatches
 {
-    [HarmonyPrefix]
-    [HarmonyPatch(typeof(BuildQuickButtonController), nameof(BuildQuickButtonController.Update))]
-    public static bool BuildQuickButtonController_Update(BuildQuickButtonController __instance)
-    {
-        if (AllowGamePointerInput())
-        {
-            return true;
-        }
-
-        if (__instance != null)
-        {
-            __instance.onHover = false;
-            __instance.hoverTime = 0f;
-        }
-
-        return false;
-    }
+    // [HarmonyPrefix]
+    // [HarmonyPatch(typeof(BuildQuickButtonController), nameof(BuildQuickButtonController.Update))]
+    // public static bool BuildQuickButtonController_Update(BuildQuickButtonController __instance)
+    // {
+    //     if (__instance == null) return true;
+    //     if (AllowGamePointerInput())
+    //     {
+    //         return true;
+    //     }
+    //
+    //     if (__instance != null)
+    //     {
+    //         __instance.onHover = false;
+    //         __instance.hoverTime = 0f;
+    //     }
+    //
+    //     return false;
+    // }
 
     // Game/UI click paths vary, so pointer blocking stays at the Unity input layer.
     private static bool AllowGamePointerInput()

@@ -322,28 +322,32 @@ public class Plugin : MelonMod
             RollHelper.TryFightMatchRewardRoll();
         }
         
-        // if (Input.GetKeyDown(KeyCode.KeypadPlus))
-        // {
-        //     //PlotController.Instance.ChooseQingMingFestivalPlot();
-        //     // HeroHelper.TryReadPlayer(out var player);
-        //     // player.heroNickName = "天下无双";
-        //     // var list = GameController.Instance.worldData.Heros;
-        //     // foreach (var hero in list)
-        //     // {
-        //     //     Plugin.LOG.Msg($"name:{hero.heroName}, nickName:{hero.heroNickName}");
-        //     // }
-        //     // var a  = GameController.Instance.worldData.customDifficultyData.customDifficultyLv;
-        //     // foreach (var b in a)
-        //     // {
-        //     //     LOG.Msg($"key:{b.Key}, val:{b.Value}");
-        //     // }
-        //     // 在游戏运行时查看当前设置
-        //     WorldData worldData = GameController.Instance.worldData;
-        //
-        //     LOG.Msg($"=== 敌人成长速度相关设置 ===");
-        //     LOG.Msg($"游戏难度 (gameDifficulty): {worldData.gameDifficulty}");
-        //     LOG.Msg($"时间难度 (TimeDifficulty): {worldData.TimeDifficulty}");
-        // }
+        if (Input.GetKeyDown(KeyCode.KeypadPlus))
+        {
+            //PlotController.Instance.ChooseQingMingFestivalPlot();
+            // HeroHelper.TryReadPlayer(out var player);
+            // player.heroNickName = "天下无双";
+            // var list = GameController.Instance.worldData.Heros;
+            // foreach (var hero in list)
+            // {
+            //     Plugin.LOG.Msg($"name:{hero.heroName}, nickName:{hero.heroNickName}");
+            // }
+            // var a  = GameController.Instance.worldData.customDifficultyData.customDifficultyLv;
+            // foreach (var b in a)
+            // {
+            //     LOG.Msg($"key:{b.Key}, val:{b.Value}");
+            // }
+            
+            // 在游戏运行时查看当前设置
+            // WorldData worldData = GameController.Instance.worldData;
+            //
+            // LOG.Msg($"=== 敌人成长速度相关设置 ===");
+            // LOG.Msg($"游戏难度 (gameDifficulty): {worldData.gameDifficulty}");
+            // LOG.Msg($"时间难度 (TimeDifficulty): {worldData.TimeDifficulty}");
+
+            
+            
+        }
 
         
         
@@ -367,7 +371,6 @@ public class Plugin : MelonMod
             return;
         }
         
-
         var currentEvent = Event.current;
         // IMGUI 先决定这次鼠标事件是否由 MOD 窗口接管
         var shouldConsumePointerEvent = UpdateMainWindowPointerCapture(currentEvent);
