@@ -306,6 +306,7 @@ public class Plugin : MelonMod
             if (_showMainWindow)
             {
                 HeroHelper.TryReadNowHero(out _readedHeroData);
+                GameCustomDifficultyPatches.GetCustomDifficultyData();
             }
             OtherHelper.ChaneMaxNum();
         }
@@ -345,8 +346,9 @@ public class Plugin : MelonMod
             // LOG.Msg($"游戏难度 (gameDifficulty): {worldData.gameDifficulty}");
             // LOG.Msg($"时间难度 (TimeDifficulty): {worldData.TimeDifficulty}");
 
-            
-            
+            HeroHelper.TryReadPlayer(out var player);
+            Plugin.LOG.Msg(player.talent);
+
         }
 
         
@@ -596,7 +598,7 @@ public class Plugin : MelonMod
                 _readedHeroData.hobby ??= new Il2CppSystem.Collections.Generic.List<int>();
                 _readedHeroData.hobby.Add(10);
                 _readedHeroData.hobby.Add(20);
-            }, width:150)
+            }, width:180)
             .EndHorizontal()
             .Space(5)
             .BeginHorizontal()
@@ -888,6 +890,7 @@ public class Plugin : MelonMod
             {
                 StartMenuController.Instance.Start();
             }, 100)
+            .AddAutoSave("任何难度都可获取成就", AnyDifficultUnlockAchFlag)
             
             .BeginHorizontal()
             .AddLinkedBool("仙霞初建存档地块最大化：", ()=>MaxAreaFlag, val => MaxAreaFlag = val, labelWidth:220)

@@ -7,10 +7,14 @@ namespace LYMod.Patches;
 
 public class LoadSavePostPatches
 {
-     // 读取存档后
+   
+    
+    /// <summary>
+    /// 
+    /// </summary>
     [HarmonyPostfix]
-    [HarmonyPatch(typeof(GameDataController), nameof(GameDataController.GameDataIntoGame))]
-    public static void GameDataController_GameDataIntoGame_Postfix(GameDataController __instance)
+    [HarmonyPatch(typeof(GameController), nameof(GameController.GameStartTeleportPlayer))]
+    public static void GameController_GameStartTeleportPlayer_Postfix(GameController __instance)
     {
         var allMods = MelonBase.RegisteredMelons.OfType<MelonMod>();
         Plugin.LOG.Msg("===================================================");
@@ -63,22 +67,6 @@ public class LoadSavePostPatches
                 heros[i].skinLv = heros[i].heroForceLv;
             }
         }
-        
-        // 读取自定义难度数据
-        var dict = GameController.Instance.worldData.customDifficultyData.customDifficultyLv;
-        Plugin.ExpRate = GetValue(dict, CustomDifficultyType.expRate);
-        Plugin.FameRate = GetValue(dict, CustomDifficultyType.fameRate);
-        Plugin.MaxweightRate = GetValue(dict, CustomDifficultyType.maxweightRate);
-        Plugin.SelfforceExpRate = GetValue(dict, CustomDifficultyType.selfforceExpRate);
-        Plugin.OtherforceExpRate = GetValue(dict, CustomDifficultyType.otherforceExpRate);
-        Plugin.RandomEnemyStrength = GetValue(dict, CustomDifficultyType.randomEnemyStrength);
-        Plugin.RandomEnemyNum = GetValue(dict, CustomDifficultyType.randomEnemyNum);
-        Plugin.BadfameRate = GetValue(dict, CustomDifficultyType.badfameRate);
-        Plugin.MaxSkillNum = GetValue(dict, CustomDifficultyType.maxSkillNum);
-        Plugin.TeammateLimit = GetValue(dict, CustomDifficultyType.teammateLimit);
     }
-    private static int GetValue(Il2CppSystem.Collections.Generic.Dictionary<int, int> dict, CustomDifficultyType type)
-    {
-        return dict.TryGetValue((int)type, out var v) ? v : 0;
-    }
+    
 }

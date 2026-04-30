@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using UnityEngine;
@@ -874,6 +875,7 @@ public class ManageTagControllerPatches
         }
         else
         {
+            if (OriginalHeroTagDataBases.Count == 0) return;
             GameDataController.Instance.heroTagDataBase = OriginalHeroTagDataBases;
         }
     }
