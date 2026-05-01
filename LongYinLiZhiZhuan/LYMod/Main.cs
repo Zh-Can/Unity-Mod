@@ -323,33 +323,29 @@ public class Plugin : MelonMod
             RollHelper.TryFightMatchRewardRoll();
         }
         
-        if (Input.GetKeyDown(KeyCode.KeypadPlus))
-        {
-            //PlotController.Instance.ChooseQingMingFestivalPlot();
-            // HeroHelper.TryReadPlayer(out var player);
-            // player.heroNickName = "天下无双";
-            // var list = GameController.Instance.worldData.Heros;
-            // foreach (var hero in list)
-            // {
-            //     Plugin.LOG.Msg($"name:{hero.heroName}, nickName:{hero.heroNickName}");
-            // }
-            // var a  = GameController.Instance.worldData.customDifficultyData.customDifficultyLv;
-            // foreach (var b in a)
-            // {
-            //     LOG.Msg($"key:{b.Key}, val:{b.Value}");
-            // }
-            
-            // 在游戏运行时查看当前设置
-            // WorldData worldData = GameController.Instance.worldData;
-            //
-            // LOG.Msg($"=== 敌人成长速度相关设置 ===");
-            // LOG.Msg($"游戏难度 (gameDifficulty): {worldData.gameDifficulty}");
-            // LOG.Msg($"时间难度 (TimeDifficulty): {worldData.TimeDifficulty}");
-
-            HeroHelper.TryReadPlayer(out var player);
-            Plugin.LOG.Msg(player.talent);
-
-        }
+        // if (Input.GetKeyDown(KeyCode.KeypadPlus))
+        // {
+        //     //PlotController.Instance.ChooseQingMingFestivalPlot();
+        //     // HeroHelper.TryReadPlayer(out var player);
+        //     // player.heroNickName = "天下无双";
+        //     // var list = GameController.Instance.worldData.Heros;
+        //     // foreach (var hero in list)
+        //     // {
+        //     //     Plugin.LOG.Msg($"name:{hero.heroName}, nickName:{hero.heroNickName}");
+        //     // }
+        //     // var a  = GameController.Instance.worldData.customDifficultyData.customDifficultyLv;
+        //     // foreach (var b in a)
+        //     // {
+        //     //     LOG.Msg($"key:{b.Key}, val:{b.Value}");
+        //     // }
+        //     
+        //     // 在游戏运行时查看当前设置
+        //     // WorldData worldData = GameController.Instance.worldData;
+        //     //
+        //     // LOG.Msg($"=== 敌人成长速度相关设置 ===");
+        //     // LOG.Msg($"游戏难度 (gameDifficulty): {worldData.gameDifficulty}");
+        //     // LOG.Msg($"时间难度 (TimeDifficulty): {worldData.TimeDifficulty}");
+        // }
 
         
         
@@ -766,6 +762,7 @@ public class Plugin : MelonMod
             .AddAutoSaveRow("自动鉴宝",AutoJianBaoFlag, "斗酒一回胜利", DrinkOneWinFlag)
             .AddAutoSaveRow("喝酒自动倒满", DrinkUiAutoFillFlag, "藏宝阁价值容量1亿", ExternalStorageFlag)
           
+            .BeginVertical()
             .AddAutoSave("指定玩家门派服装（99999默认为不修改）", SpecifiedSkinId)
             .AddLabelRow("服装ID,名称（只用填入ID）")
             .AddLabelRow("-10,邪道服;-9,杀手服;-8,强盗服;-7,游侠服;-6,才子服;-5,官差服;")
@@ -774,6 +771,7 @@ public class Plugin : MelonMod
             .AddLabelRow("8,铁衣;9,襕衫;10,袈裟;11,道袍;12,胡裘;13,鹤氅;")
             .AddLabelRow("14,瑶衣;15,奇装;16,匠服;17,火浣布;18,羌姆袍;19,貂裘;")
             .AddLabelRow("-100,白马红妆;-101,风起青萍")
+            .EndVertical()
             
             .AddSlider("窗体/字体缩放", WindowScaling,0.5f, 2.0f, _otherCategory, labelWidth:100, sliderWidth:200, useFixedLayout:true)
             .AddButtonRow("重置缩放", () =>

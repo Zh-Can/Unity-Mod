@@ -104,7 +104,7 @@ namespace SmartTrade
             while (waited < maxWait)
             {
                 var icons = merchantList.itemGrid.GetComponentsInChildren<ItemIconController>(true);
-                if (icons != null && icons.Length > 0)
+                if (icons is { Length: > 0 })
                 {
                     break;
                 }
@@ -573,8 +573,9 @@ public static class TradeUIControllerPatch
         TradeFuncModule.SetCurrentTradeUI(__instance);
         TradeFuncModule.CreateButtons(__instance);
 
-        var leftText = __instance.leftDiscount.GetComponent<SimpleDetailText>().text;
-        var areaText = __instance.areaDiscount.GetComponent<SimpleDetailText>().text;
+        var leftText = __instance.leftDiscount.GetComponent<SimpleDetailText>()?.text;
+        var areaText = __instance.areaDiscount.GetComponent<SimpleDetailText>()?.text;
+        if (leftText == null || areaText == null) return;
         var sell = int.Parse(Regex.Match(leftText, @"出售价格(\d+)%").Groups[1].Value);
         var area = int.Parse(Regex.Match(areaText, @"买卖价格x(\d+)%").Groups[1].Value);
         Plugin.SellRate = sell / 100f;
