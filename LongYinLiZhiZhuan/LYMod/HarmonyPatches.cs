@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
@@ -785,7 +786,9 @@ public class ChooseControllerPatches
         {
             __result = 1;
         }
+        
     }
+    
     [HarmonyPostfix]
     [HarmonyPatch(typeof(HeroTagDataBase), nameof(HeroTagDataBase.GetCostTime))]
     public static void GetCostTime_Postfix(HeroTagDataBase __instance, ref int __result)
@@ -799,27 +802,54 @@ public class ChooseControllerPatches
 public class IdentifyMatchControllerPatches
 {
      [HarmonyPrefix]
-     [HarmonyPatch(typeof(IdentifyMatchController), nameof(IdentifyMatchController.SureButtonClicked))]
-     public static bool IdentifyMatchController_SureButtonClicked_Prefix(IdentifyMatchController __instance)
+     [HarmonyPatch(typeof(IdentifyMatchController), nameof(IdentifyMatchController.StartNewRound))]
+     public static bool IdentifyMatchController_StartNewRound_Prefix(IdentifyMatchController __instance, ref float waitTime)
      {
-         if (__instance != null && __instance.identifyMatchUIPanel != null && Plugin.Instance.AutoJianBaoFlag.Value)
-         {
-             List<float> list = new List<float>();
-             var il2CppArrayBase = __instance.identifyMatchUIPanel.GetComponentsInChildren<ItemIconController>();
-             if (il2CppArrayBase is { Length: > 0 })
-             {
-                 foreach (ItemIconController itemIconController in il2CppArrayBase)
-                 {
-                     if (itemIconController != null && itemIconController.itemData != null)
-                     {
-                         list.Add(itemIconController.itemData.GetTreasureRealValue());
-                     }
-                 }
-                 int index = list.IndexOf(list.Max());
-                 __instance.SetNowChooseTreasure(il2CppArrayBase[index].gameObject);
-             }
-         }
+         if (!Plugin.Instance.AutoJianBaoFlag.Value) return true;
+         waitTime = 0.1f;
          return true;
+     }
+     
+     [HarmonyPostfix]
+     [HarmonyPatch(typeof(IdentifyMatchController), nameof(IdentifyMatchController.StartNewRound))]
+     public static void IdentifyMatchController_StartNewRound_Postfix(IdentifyMatchController __instance,float waitTime)
+     {
+         if (!Plugin.Instance.AutoJianBaoFlag.Value) return;
+         
+         MelonCoroutines.Start(WaitAndSelect(__instance));
+     }
+     private static System.Collections.IEnumerator WaitAndSelect(IdentifyMatchController controller)
+     {
+         // 等待一小段时间让UI完全显示
+         yield return new WaitForSeconds(1f);
+            
+         // 等待状态变为 Choose（可选择状态）
+         while (controller.identifyMatchState != IdentifyMatchState.Choose)
+         {
+             yield return null;
+         }
+            
+         // 再等待一小段时间确保所有宝藏都已创建
+         yield return new WaitForSeconds(0.1f);
+            
+         AutoSelectHighestValueTreasure(controller);
+     }
+     private static void AutoSelectHighestValueTreasure(IdentifyMatchController controller)
+     {
+         List<float> list = new List<float>();
+         var il2CppArrayBase = controller.identifyMatchUIPanel.GetComponentsInChildren<ItemIconController>();
+         if (il2CppArrayBase is { Length: > 0 })
+         {
+             foreach (ItemIconController itemIconController in il2CppArrayBase)
+             {
+                 if (itemIconController != null && itemIconController.itemData != null)
+                 {
+                     list.Add(itemIconController.itemData.GetTreasureRealValue());
+                 }
+             }
+             int index = list.IndexOf(list.Max());
+             controller.SetNowChooseTreasure(il2CppArrayBase[index].gameObject);
+         }
      }
 }
 

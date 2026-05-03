@@ -99,6 +99,7 @@ public class Plugin : MelonMod
     public MelonPreferences_Entry<int> NewSaveSliderMax = null!; // 新档自定义难度滑块最大值
     public MelonPreferences_Entry<bool> AnyDifficultUnlockAchFlag = null!; // 任意难度都可以解锁成就
     public MelonPreferences_Entry<bool> BreakMaxLimitNotForPlayerFlag = null!; // 突破潜力限制不对玩家生效
+    public MelonPreferences_Entry<bool> WeatherLockSunnyFlag = null!; // 天气锁定晴天
     
     
     private MelonPreferences_Entry<bool> _useModifier = null!; // 使用组合键
@@ -240,6 +241,7 @@ public class Plugin : MelonMod
         Dlc0Flag = MainCategory.CreateEntry("Dlc0Flag", true,  description: "Dlc0解锁开关");
         AnyDifficultUnlockAchFlag = MainCategory.CreateEntry("AnyDifficultUnlockACHFlag", false,  description: "任意难度都可解锁成功");
         BreakMaxLimitNotForPlayerFlag = MainCategory.CreateEntry("BreakMaxLimitNotForPlayerFlag", false,  description: "突破潜力限制不对玩家生效");
+        WeatherLockSunnyFlag = MainCategory.CreateEntry("WeatherLockSunnyFlag", false,  description: "天气锁定晴天开关");
         #endregion
       
         var harmony = new HarmonyLib.Harmony("LYMod");
@@ -276,10 +278,13 @@ public class Plugin : MelonMod
         harmony.PatchAll(typeof(GameCustomDifficultyPatches));
         harmony.PatchAll(typeof(AutoChangeSkinPatches));
         harmony.PatchAll(typeof(LoadSavePostPatches));
+        harmony.PatchAll(typeof(WeatherControllerPatches));
         
         LOG.Msg("===================================================");
         LOG.Msg("【LYMod】LYMod is loaded! 默认打开窗体：左alt + e !");
         LOG.Msg("===================================================");
+        
+        
         
     }
 
@@ -323,29 +328,31 @@ public class Plugin : MelonMod
             RollHelper.TryFightMatchRewardRoll();
         }
         
-        // if (Input.GetKeyDown(KeyCode.KeypadPlus))
-        // {
-        //     //PlotController.Instance.ChooseQingMingFestivalPlot();
-        //     // HeroHelper.TryReadPlayer(out var player);
-        //     // player.heroNickName = "天下无双";
-        //     // var list = GameController.Instance.worldData.Heros;
-        //     // foreach (var hero in list)
-        //     // {
-        //     //     Plugin.LOG.Msg($"name:{hero.heroName}, nickName:{hero.heroNickName}");
-        //     // }
-        //     // var a  = GameController.Instance.worldData.customDifficultyData.customDifficultyLv;
-        //     // foreach (var b in a)
-        //     // {
-        //     //     LOG.Msg($"key:{b.Key}, val:{b.Value}");
-        //     // }
-        //     
-        //     // 在游戏运行时查看当前设置
-        //     // WorldData worldData = GameController.Instance.worldData;
-        //     //
-        //     // LOG.Msg($"=== 敌人成长速度相关设置 ===");
-        //     // LOG.Msg($"游戏难度 (gameDifficulty): {worldData.gameDifficulty}");
-        //     // LOG.Msg($"时间难度 (TimeDifficulty): {worldData.TimeDifficulty}");
-        // }
+        if (Input.GetKeyDown(KeyCode.KeypadPlus))
+        {
+            var weather = WeatherController.Instance;
+            weather.ChangeWeather(1, 1);
+            //PlotController.Instance.ChooseQingMingFestivalPlot();
+            // HeroHelper.TryReadPlayer(out var player);
+            // player.heroNickName = "天下无双";
+            // var list = GameController.Instance.worldData.Heros;
+            // foreach (var hero in list)
+            // {
+            //     Plugin.LOG.Msg($"name:{hero.heroName}, nickName:{hero.heroNickName}");
+            // }
+            // var a  = GameController.Instance.worldData.customDifficultyData.customDifficultyLv;
+            // foreach (var b in a)
+            // {
+            //     LOG.Msg($"key:{b.Key}, val:{b.Value}");
+            // }
+
+            // 在游戏运行时查看当前设置
+            // WorldData worldData = GameController.Instance.worldData;
+            //
+            // LOG.Msg($"=== 敌人成长速度相关设置 ===");
+            // LOG.Msg($"游戏难度 (gameDifficulty): {worldData.gameDifficulty}");
+            // LOG.Msg($"时间难度 (TimeDifficulty): {worldData.TimeDifficulty}");
+        }
 
         
         
@@ -761,7 +768,7 @@ public class Plugin : MelonMod
             .AddAutoSaveRow("按R键重新Roll", _breakRollFlag, "时间暂停", TimeFreezeFlag)
             .AddAutoSaveRow("自动鉴宝",AutoJianBaoFlag, "斗酒一回胜利", DrinkOneWinFlag)
             .AddAutoSaveRow("喝酒自动倒满", DrinkUiAutoFillFlag, "藏宝阁价值容量1亿", ExternalStorageFlag)
-          
+            .AddAutoSave("天气锁定晴天", WeatherLockSunnyFlag)
             .BeginVertical()
             .AddAutoSave("指定玩家门派服装（99999默认为不修改）", SpecifiedSkinId)
             .AddLabelRow("服装ID,名称（只用填入ID）")
