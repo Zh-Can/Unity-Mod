@@ -760,7 +760,7 @@ public class Plugin : MelonMod
             .EndHorizontal()
             .EndFoldout();
         
-        builder.BeginFoldout("其他相关").Space(10)
+        builder.BeginFoldout("其他相关").Space(10) 
             .AddAutoSaveRow("官府功绩倍率", GovernContributionRate, "探险耐力锁定", Explore)
             .AddAutoSaveRow("探险去除迷雾", ExploreSeeAllFlag, "探险随意移动", ExploreFreeMoveFlag)
             .AddAutoSaveRow("跳过战斗",BattleSkipFlag, "跳过战斗加经验", BattleSkipAddExpFlag)
