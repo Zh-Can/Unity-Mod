@@ -29,11 +29,12 @@ public class GameDataControllerPatches
         __result = 100000000;
     }
 
-    [HarmonyPostfix]
+    [HarmonyPrefix]
     [HarmonyPatch(typeof(BattleController), nameof(BattleController.StartBattleButtonClicked))]
-    public static void StartBattleButtonClicked_Postfix(BattleController __instance)
+    public static void StartBattleButtonClicked_Prefix(BattleController __instance)
     {
         if (__instance == null || !Plugin.Instance.BattleMaxTime999Flag.Value) return;
+        
         var newList = new Il2CppSystem.Collections.Generic.List<float>();
         newList.Add(999);
         newList.Add(999);
