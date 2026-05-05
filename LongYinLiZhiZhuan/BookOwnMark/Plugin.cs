@@ -9,7 +9,7 @@ using Il2CppConsolation;
 using UnityEngine;
 using UnityEngine.UI;
 
-[assembly: MelonInfo(typeof(BookOwnMark.Plugin), "BookOwnMark", "2.3", "Can")]
+[assembly: MelonInfo(typeof(BookOwnMark.Plugin), "BookOwnMark", "4.0", "Can")]
 [assembly: MelonGame("TppStudio", "LongYinLiZhiZhuan")]
 [assembly: MelonPlatformDomain(MelonPlatformDomainAttribute.CompatibleDomains.IL2CPP)]
 
@@ -21,7 +21,9 @@ namespace BookOwnMark
         public static readonly MelonLogger.Instance LOG = Melon<Plugin>.Logger;
 
         private static HashSet<string> _ownedBookNames = [];
+        private static HashSet<string> _speBookNames = [];
         private const string OWNED_MARK = " <color=#33cc86>☑</color>";
+        private const string SPE_BOOK_MARK = " <color=#ff3333>☑</color>";
         private static bool _addedMark = false;
 
         private static int _currentSkillTypeFilter = -1;
@@ -221,6 +223,7 @@ namespace BookOwnMark
         private static void ScanOwnedBooks()
         {
             _ownedBookNames.Clear();
+            _speBookNames.Clear();
 
             var gc = GameController.Instance;
             var player = gc.worldData?.Player();
@@ -256,7 +259,21 @@ namespace BookOwnMark
                 }
             }
 
-            // LOG.Msg($"[BookOwnMark] 扫描到 {_ownedBookNames.Count} 本秘籍");
+            // 扫描特殊书籍仓库
+            var speBookStorage = gc.worldData?.speBookStorage?.allItem;
+            if (speBookStorage != null)
+            {
+                foreach (var item in speBookStorage)
+                {
+                    if (item is { type: ItemType.Book })
+                    {
+                        // 去掉可能存在的标记后再添加
+                        _speBookNames.Add(RemoveOwnedMark(item.Name()));
+                    }
+                }
+            }
+
+            // LOG.Msg($"[BookOwnMark] 扫描到 {_ownedBookNames.Count} 本秘籍, {_speBookNames.Count} 本特殊秘籍");
         }
 
         private static bool IsBookOwned(string itemName)
@@ -264,10 +281,15 @@ namespace BookOwnMark
             return _ownedBookNames.Contains(itemName);
         }
 
+        private static bool IsSpeBook(string itemName)
+        {
+            return _speBookNames.Contains(itemName);
+        }
+
         private static string RemoveOwnedMark(string name)
         {
             if (string.IsNullOrEmpty(name)) return name;
-            return name.Replace(OWNED_MARK, "");
+            return name.Replace(OWNED_MARK, "").Replace(SPE_BOOK_MARK, "");
         }
 
         private static IEnumerator MarkOwnedBooksOnTradeUICoroutine(TradeUIController tradeUI)
@@ -316,19 +338,32 @@ namespace BookOwnMark
                 var itemType = icon.itemData.type;
                 if (itemType != ItemType.Book) continue;
                 var bookName = icon.itemData.Name();
+                var newName = bookName;
+                var hasMark = false;
 
-                if (IsBookOwned(bookName) && !bookName.EndsWith("☑</color>"))
+                // 检查普通仓库（绿色标记）
+                if (IsBookOwned(bookName) && !bookName.Contains(OWNED_MARK))
                 {
-                    var newName = bookName + OWNED_MARK;
+                    newName += OWNED_MARK;
+                    hasMark = true;
+                }
+                // 检查特殊仓库（蓝色标记）
+                if (IsSpeBook(bookName) && !bookName.Contains(SPE_BOOK_MARK))
+                {
+                    newName += SPE_BOOK_MARK;
+                    hasMark = true;
+                }
+
+                if (hasMark)
+                {
                     icon.itemData.name = newName;
                     _addedMark = true;
                 }
             }
         }
 
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(TradeUIController), nameof(TradeUIController.ShowTradeUI), typeof(TradeUIType), typeof(ItemListData), typeof(ItemListData), typeof(bool))]
-        public static void ShowTradeUI_Postfix(TradeUIController __instance, TradeUIType targetType, ItemListData leftItemList, ItemListData rightItemList)
+        // 统一的处理逻辑
+        private static void HandleShowTradeUI(TradeUIController __instance, TradeUIType targetType, ItemListData rightItemList)
         {
             // LOG.Msg($"ShowTradeUI called: {targetType}");
             if (__instance == null) return;
@@ -344,6 +379,38 @@ namespace BookOwnMark
                 _bookList = _currentItemListController.targetItemList.itemTypeList[(int)ItemType.Book];
                 HideFilterUI();
             }
+        }
+
+        // 重载1: ShowTradeUI(TradeUIType, ItemListData, ItemListData, bool)
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(TradeUIController), nameof(TradeUIController.ShowTradeUI), typeof(TradeUIType), typeof(ItemListData), typeof(ItemListData), typeof(bool))]
+        public static void ShowTradeUI_Postfix1(TradeUIController __instance, TradeUIType targetType, ItemListData leftItemList, ItemListData rightItemList)
+        {
+            HandleShowTradeUI(__instance, targetType, rightItemList);
+        }
+
+        // 重载2: ShowTradeUI(TradeUIType, ItemListType, ItemListData, ItemListData)
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(TradeUIController), nameof(TradeUIController.ShowTradeUI), typeof(TradeUIType), typeof(ItemListType), typeof(ItemListData), typeof(ItemListData))]
+        public static void ShowTradeUI_Postfix2(TradeUIController __instance, TradeUIType targetType, ItemListType targetItemListType, ItemListData leftItemList, ItemListData rightItemList)
+        {
+            HandleShowTradeUI(__instance, targetType, rightItemList);
+        }
+
+        // 重载3: ShowTradeUI(TradeUIType, ItemListData, ItemListData, int, int)
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(TradeUIController), nameof(TradeUIController.ShowTradeUI), typeof(TradeUIType), typeof(ItemListData), typeof(ItemListData), typeof(int), typeof(int))]
+        public static void ShowTradeUI_Postfix3(TradeUIController __instance, TradeUIType targetType, ItemListData leftItemList, ItemListData rightItemList, int _minItemLv, int _maxItemLv)
+        {
+            HandleShowTradeUI(__instance, targetType, rightItemList);
+        }
+
+        // 重载4: ShowTradeUI(TradeUIType, ItemListType, ItemListData, ItemListData, int, int, bool, bool, float, float) - FameExchange 使用
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(TradeUIController), nameof(TradeUIController.ShowTradeUI), typeof(TradeUIType), typeof(ItemListType), typeof(ItemListData), typeof(ItemListData), typeof(int), typeof(int), typeof(bool), typeof(bool), typeof(float), typeof(float))]
+        public static void ShowTradeUI_Postfix4(TradeUIController __instance, TradeUIType targetType, ItemListType targetItemListType, ItemListData leftItemList, ItemListData rightItemList, int _minItemLv, int _maxItemLv, bool _useAreaItemPrice, bool _noSell, float _speSellValueRate, float _speBuyValueRate)
+        {
+            HandleShowTradeUI(__instance, targetType, rightItemList);
         }
 
         private static void ClearAllOwnedMarks(TradeUIController tuc)
