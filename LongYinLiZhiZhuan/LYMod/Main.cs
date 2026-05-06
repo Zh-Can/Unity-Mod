@@ -78,7 +78,6 @@ public class Plugin : MelonMod
     public MelonPreferences_Entry<bool> AnyTagFlag = null!; // 天赋无视要求和前置
     public MelonPreferences_Entry<bool> NewGameAnyTagFlag = null!; // 新档天赋无视要求和前置
     public MelonPreferences_Entry<bool> ExternalStorageFlag = null!; // 藏宝阁价值容量锁定1亿开关
-    public MelonPreferences_Entry<bool> BookWriteChangeFlag = null!; // 抄书/默写逻辑变更
     public MelonPreferences_Entry<bool> DodgeHitFlag = null!; // 轻功训练不受击
     public MelonPreferences_Entry<bool> DrinkUiAutoFillFlag = null!; // 喝酒自动倒满
     public MelonPreferences_Entry<bool> ExploreSeeAllFlag = null!; // 探险去除迷雾
@@ -228,7 +227,6 @@ public class Plugin : MelonMod
         AnyTagFlag = MainCategory.CreateEntry("AnyTagFlag", false,  description: "天赋无视前置要求");
         NewGameAnyTagFlag = MainCategory.CreateEntry("NewGameAnyTagFlag", false,  description: "新档天赋无视前置要求");
         ExternalStorageFlag = MainCategory.CreateEntry("ExternalStorageFlag", false,  description: "藏宝阁价值容量锁定1亿开关");
-        BookWriteChangeFlag = MainCategory.CreateEntry("BookWriteChangeFlag", false,  description: "抄书/默写逻辑变更");
         DodgeHitFlag = MainCategory.CreateEntry("DodgeHitFlag", false,  description: "轻功训练不受击");
         ExploreSeeAllFlag = MainCategory.CreateEntry("ExploreSeeAllFlag", false,  description: "探险去除迷雾");
         ExploreFreeMoveFlag = MainCategory.CreateEntry("ExploreFreeMoveFlag", false,  description: "探险随意移动");
@@ -273,7 +271,6 @@ public class Plugin : MelonMod
         harmony.PatchAll(typeof(UIPatches));
         harmony.PatchAll(typeof(BattleSkip));
         harmony.PatchAll(typeof(GameDataControllerPatches));
-        harmony.PatchAll(typeof(BookWriterDataPatches));
         harmony.PatchAll(typeof(StudyDodgePlayerPatches));
         harmony.PatchAll(typeof(DrinkUIControllerPatches));
         harmony.PatchAll(typeof(ForceTeachNewSkillPlotPatches));
@@ -706,7 +703,7 @@ public class Plugin : MelonMod
             .AddAutoSaveRow("突破倍率:", RedBreak, "抄书一天", CopyBookFlag)
             .AddAutoSaveRow("获得金钱倍数:",MoneyTimes, "莫高窟遗忘任意技能", RemoveAnySkill)
             .AddAutoSaveRow("生活经验倍率:", LivingSkillExpRate, "生活潜力倍数:", MaxLivingSkillExpTimes)
-            .AddAutoSaveRow("抄书/默写逻辑变更", BookWriteChangeFlag, "轻功训练不受击", DodgeHitFlag)
+            .AddAutoSave("轻功训练不受击", DodgeHitFlag)
             .Space(10)
             .AddLabelRow("突破属性修改方案1：")
             .BeginHorizontal()
