@@ -4,13 +4,26 @@ using LYMod.Helpers;
 using MelonLoader;
 
 namespace LYMod.Patches;
-
+/// <summary>
+/// 初始化数据
+/// </summary>
 public class LoadSavePostPatches
 {
-   
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(GameDataController), nameof(GameDataController.Awake))]
+    public static void GameDataController_Awake_Postfix(GameDataController __instance)
+    {
+        // GameDataController初始化后 保存原始天赋数据
+        ManageTagControllerPatches.OriginalHeroTagDataBases = GameDataController.Instance.heroTagDataBase;
+        
+        GlobalData.MaxLoverNum = 99;
+        GlobalData.MaxFriendNum = 99;
+        GlobalData.MaxBrotherNum = 99;
+    }
+    
     
     /// <summary>
-    /// 
+    /// 读档后触发
     /// </summary>
     [HarmonyPostfix]
     [HarmonyPatch(typeof(GameController), nameof(GameController.GameStartTeleportPlayer))]
@@ -41,6 +54,9 @@ public class LoadSavePostPatches
                     Plugin.LOG.Msg("【LYMod】由于加载了 HaveReadBookPlus，LYMod的 读书显示所有格子 失效");
                     ModConfig.HaveReadBookPlus = true;
                     break;
+                case "BookOwnMark":
+                    ModConfig.HaveBookOwnMark = true;
+                    break;
             }
         }
         Plugin.LOG.Msg("===================================================");
@@ -50,14 +66,28 @@ public class LoadSavePostPatches
         // 修改武学修炼数量限制倍数
         OtherHelper.ChaneMaxNum();
         
-        // 进入存档保存原始天赋数据
-        ManageTagControllerPatches.OriginalHeroTagDataBases = GameDataController.Instance.heroTagDataBase;
-        
         // 进入存档后自动修改玩家门派衣服为指定衣服
         var flag = HeroHelper.TryReadPlayer(out var player);
         if (Plugin.Instance.SpecifiedSkinId.Value != 99999 && flag && player.belongForceID != -1)
         {
             Plugin.LOG.Msg($"自动设置玩家门派服装为：{Plugin.Instance.SpecifiedSkinId.Value}");
+            var skinDataBase = GameDataController.Instance.skinDataBase;
+            var skinIdFlag = true;
+            foreach (var skin in skinDataBase)
+            {
+                if (skin.skinID == Plugin.Instance.SpecifiedSkinId.Value)
+                {
+                    skinIdFlag = false;
+                }
+            }
+
+            if (skinIdFlag)
+            {
+                Plugin.LOG.Msg($"写入了错误的皮肤ID:{Plugin.Instance.SpecifiedSkinId.Value}，已被恢复为默认值 99999");
+                Plugin.Instance.SpecifiedSkinId.Value = 99999;
+                return;
+            }
+            
             var heros = player.GetForce().GetOwnHeros();
             for (var i = 0; i < heros.Count; i++)
             {

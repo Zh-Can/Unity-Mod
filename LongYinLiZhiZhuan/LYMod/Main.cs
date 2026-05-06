@@ -100,6 +100,8 @@ public class Plugin : MelonMod
     public MelonPreferences_Entry<bool> AnyDifficultUnlockAchFlag = null!; // 任意难度都可以解锁成就
     public MelonPreferences_Entry<bool> BreakMaxLimitNotForPlayerFlag = null!; // 突破潜力限制不对玩家生效
     public MelonPreferences_Entry<bool> WeatherLockSunnyFlag = null!; // 天气锁定晴天
+    public MelonPreferences_Entry<bool> FastRemoveTag = null!; // 快速遗忘天赋
+    public MelonPreferences_Entry<bool> Relation999Flag = null!; // 快速遗忘天赋
     
     
     private MelonPreferences_Entry<bool> _useModifier = null!; // 使用组合键
@@ -242,6 +244,8 @@ public class Plugin : MelonMod
         AnyDifficultUnlockAchFlag = MainCategory.CreateEntry("AnyDifficultUnlockACHFlag", false,  description: "任意难度都可解锁成功");
         BreakMaxLimitNotForPlayerFlag = MainCategory.CreateEntry("BreakMaxLimitNotForPlayerFlag", false,  description: "突破潜力限制不对玩家生效");
         WeatherLockSunnyFlag = MainCategory.CreateEntry("WeatherLockSunnyFlag", false,  description: "天气锁定晴天开关");
+        FastRemoveTag = MainCategory.CreateEntry("FastRemoveTag", false,  description: "快速遗忘天赋开关");
+        Relation999Flag = MainCategory.CreateEntry("Relation999Flag", false,  description: "友人/结义/情侣上限99");
         #endregion
       
         var harmony = new HarmonyLib.Harmony("LYMod");
@@ -279,6 +283,8 @@ public class Plugin : MelonMod
         harmony.PatchAll(typeof(AutoChangeSkinPatches));
         harmony.PatchAll(typeof(LoadSavePostPatches));
         harmony.PatchAll(typeof(WeatherControllerPatches));
+        harmony.PatchAll(typeof(TagRemoveConfirmPatches));
+        
         
         LOG.Msg("===================================================");
         LOG.Msg("【LYMod】LYMod is loaded! 默认打开窗体：左alt + e !");
@@ -314,6 +320,12 @@ public class Plugin : MelonMod
                 GameCustomDifficultyPatches.GetCustomDifficultyData();
             }
             OtherHelper.ChaneMaxNum();
+            if (Relation999Flag.Value)
+            {
+                GlobalData.MaxLoverNum = 99;
+                GlobalData.MaxFriendNum = 99;
+                GlobalData.MaxBrotherNum = 99;
+            }
         }
 
         // 按 R 重刷几个可复用的 Roll 场景
@@ -330,8 +342,9 @@ public class Plugin : MelonMod
         
         if (Input.GetKeyDown(KeyCode.KeypadPlus))
         {
-            var weather = WeatherController.Instance;
-            weather.ChangeWeather(1, 1);
+            // var weather = WeatherController.Instance;
+            // weather.ChangeWeather(1, 1);
+            
             //PlotController.Instance.ChooseQingMingFestivalPlot();
             // HeroHelper.TryReadPlayer(out var player);
             // player.heroNickName = "天下无双";
@@ -352,6 +365,7 @@ public class Plugin : MelonMod
             // LOG.Msg($"=== 敌人成长速度相关设置 ===");
             // LOG.Msg($"游戏难度 (gameDifficulty): {worldData.gameDifficulty}");
             // LOG.Msg($"时间难度 (TimeDifficulty): {worldData.TimeDifficulty}");
+            
         }
 
         
@@ -572,12 +586,7 @@ public class Plugin : MelonMod
             .AddButton("解锁所有服装", HeroHelper.UnlockSkins,150)
             .EndHorizontal().Space(5)
             .BeginHorizontal()
-            .AddButton("友人/结义/情侣上限99", () =>
-            {
-                GlobalData.MaxLoverNum = 99;
-                GlobalData.MaxFriendNum = 99;
-                GlobalData.MaxBrotherNum = 99;
-            }, 220)
+            .AddAutoSave("友人/结义/情侣上限99", Relation999Flag)
             .EndHorizontal()
             .BeginHorizontal()
             .AddInfoRow(60,
@@ -613,6 +622,7 @@ public class Plugin : MelonMod
             .EndHorizontal()
             .Space(5)
             .AddAutoSaveRow("无前置天赋要求", AnyTagFlag, "武学修炼限制倍数", KungFuMaxLimitTimes, labelWidth:150)
+            .AddAutoSave("快速移除天赋", FastRemoveTag)
             .AddAutoSaveRow("玩家天赋数量上限", PlayerMaxTagNum, "Npc天赋数量上限", NpcMaxTagNum,  labelWidth:150)
             .AddAutoSaveRow("突破潜力限制(无限制)",BreakMaxLimitFlag, "突破潜力限制不对玩家生效", BreakMaxLimitNotForPlayerFlag)
             .AddLabelRow("修改读取到人物的潜力：", 200)
@@ -733,6 +743,7 @@ public class Plugin : MelonMod
                 GameController.Instance.worldData.ChangeSpeEnhanceStoneNum(10,true);
             }, width:150)
             .AddAutoSave("掌门演武", ZmywFlag)
+            .AddButtonRow("添加所有书籍到星辰楼", OtherHelper.GenAllBookToSpeBookStorage, width:200)
             .EndFoldout();
         
         builder.BeginFoldout("交互相关").Space(10)
@@ -769,6 +780,19 @@ public class Plugin : MelonMod
             .AddAutoSaveRow("自动鉴宝",AutoJianBaoFlag, "斗酒一回胜利", DrinkOneWinFlag)
             .AddAutoSaveRow("喝酒自动倒满", DrinkUiAutoFillFlag, "藏宝阁价值容量1亿", ExternalStorageFlag)
             .AddAutoSave("天气锁定晴天", WeatherLockSunnyFlag)
+            .BeginHorizontal()
+           
+            .AddButton("解锁成就", () =>
+            {
+                var achs = GameDataController.Instance.AchievementData;
+                for (var i = 0; i < achs.Count; i++)
+                {
+                    GameDataController.Instance.UnlockAchievement(i);
+                }
+            }, 100)
+            .AddButton("解锁图鉴", OtherHelper.UnlockHandBook, 100)
+            .EndHorizontal()
+            
             .BeginVertical()
             .AddAutoSave("指定玩家门派服装（99999默认为不修改）", SpecifiedSkinId)
             .AddLabelRow("服装ID,名称（只用填入ID）")

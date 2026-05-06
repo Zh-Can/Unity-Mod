@@ -1,7 +1,10 @@
 ﻿﻿using HarmonyLib;
 using Il2Cpp;
 using UnityEngine;
+using UnityEngine.UI;
 using Object = UnityEngine.Object;
+using System.Collections;
+using MelonLoader;
 
 namespace LYMod.Helpers;
 
@@ -98,6 +101,8 @@ public class RollHelper
     }
 
 
+    #region 中元鬼市/商店 Roll 与 BookOwnMark 标记
+    
     // 中元鬼市roll + 官府兑换 + 商店
     public static void TryZhongyuanRoll()
     {
@@ -121,15 +126,28 @@ public class RollHelper
             rightItemListData.ClearAllItem();
 
             gc.GenerateRandomItem(rightItemListData, oldCount, null, Plugin.Instance.ZhongyuanLv.Value, 0f, false);
-            tuic.rightList.RefreshItemList(rightItemListData, ItemListInteractType.TradeRight, false);
+            tuic.RealManageTrade();
+            
+            // 如果存在 BookOwnMark Mod，为新生成的秘籍添加标记
+            if (ModConfig.HaveBookOwnMark)
+            {
+                MelonCoroutines.Start(MarkOwnedBooksCoroutine(tuic));
+            }
         }
         else if(tuic.tradeUIType == TradeUIType.GovernStorage)
         {
             gc.RefreshGovernStorage();
-            tuic.rightList.RefreshItemList(false);
+            tuic.RealManageTrade();
+            
+            // 如果存在 BookOwnMark Mod，为新生成的秘籍添加标记
+            if (ModConfig.HaveBookOwnMark)
+            {
+                MelonCoroutines.Start(MarkOwnedBooksCoroutine(tuic));
+            }
         }
         else
         {
+            Plugin.LOG.Msg($"ModConfig.HaveBookOwnMark:{ModConfig.HaveBookOwnMark}");
             var buildUI = BuildingUIController.Instance;
             if (buildUI == null) return;
 
@@ -149,17 +167,245 @@ public class RollHelper
 
             // 重新生成商店物品
             gc.GenerateRandomItem(rightItemListData, (int)oldCount, shopData.itemType, buildingData.lv, shopData.itemBossLv, false);
-
-            // 刷新UI
-            var tradeUI = TradeUIController.Instance;
-            if (tradeUI != null && tradeUI.rightList != null)
+            tuic.RealManageTrade();
+            // 如果存在 BookOwnMark Mod，为新生成的秘籍添加标记
+            if (ModConfig.HaveBookOwnMark)
             {
-                tradeUI.rightList.RefreshItemList(true);
+                MelonCoroutines.Start(MarkOwnedBooksCoroutine(tuic));
             }
         }
     }
+    
+    /// <summary>
+    /// 协程：延迟标记已拥有的秘籍（等待UI渲染完成）
+    /// </summary>
+    private static IEnumerator MarkOwnedBooksCoroutine(TradeUIController tradeUI)
+    {
+        if (tradeUI == null) yield break;
+        if (tradeUI.tradeUIType == TradeUIType.Storage) yield break;
 
+        var merchantList = tradeUI.rightList;
+        if (merchantList == null || merchantList.itemGrid == null) yield break;
+
+        Plugin.LOG.Msg($"[BookOwnMark] 开始标记协程，TradeUIType: {tradeUI.tradeUIType}");
+
+        // 等待一帧，确保UI开始渲染
+        yield return null;
+
+        // 最多等待50帧，等待图标创建完成
+        var maxWait = 50;
+        var waited = 0;
+        while (waited < maxWait)
+        {
+            var icons = merchantList.itemGrid.GetComponentsInChildren<ItemIconController>(true);
+            if (icons is { Length: > 0 })
+            {
+                Plugin.LOG.Msg($"[BookOwnMark] 等待 {waited} 帧后找到 {icons.Length} 个图标");
+                break;
+            }
+            waited++;
+            yield return null;
+        }
+
+        // 获取所有图标并标记
+        var finalIcons = merchantList.itemGrid.GetComponentsInChildren<ItemIconController>(true);
+        if (finalIcons == null || finalIcons.Length == 0) 
+        {
+            Plugin.LOG.Msg($"[BookOwnMark] 未找到任何图标");
+            yield break;
+        }
+
+        var ownedBookNames = GetOwnedBookNames();
+        var speBookNames = GetSpeBookNames();
+        Plugin.LOG.Msg($"[BookOwnMark] 扫描到 {ownedBookNames.Count} 本普通秘籍, {speBookNames.Count} 本特殊秘籍");
+        
+        const string OWNED_MARK = " <color=#33cc86>☑</color>";
+        const string SPE_BOOK_MARK = " <color=#ff3333>☑</color>";
+
+        var markedCount = 0;
+        var bookCount = 0;
+        foreach (var icon in finalIcons)
+        {
+            if (icon?.itemData == null) continue;
+
+            var itemType = icon.itemData.type;
+            if (itemType != ItemType.Book) continue;
+            
+            bookCount++;
+            var bookName = icon.itemData.name;
+            var newName = bookName;
+            var hasMark = false;
+
+            // 获取干净的名称（去除已有标记）用于比较
+            var cleanName = RemoveBookMark(bookName);
+
+            // 检查普通仓库（绿色标记）
+            if (ownedBookNames.Contains(cleanName) && !bookName.Contains(OWNED_MARK))
+            {
+                newName += OWNED_MARK;
+                hasMark = true;
+                Plugin.LOG.Msg($"[BookOwnMark] 标记普通秘籍: {cleanName}");
+            }
+            // 检查特殊仓库（红色标记）
+            if (speBookNames.Contains(cleanName) && !bookName.Contains(SPE_BOOK_MARK))
+            {
+                newName += SPE_BOOK_MARK;
+                hasMark = true;
+                Plugin.LOG.Msg($"[BookOwnMark] 标记特殊秘籍: {cleanName}");
+            }
+
+            if (hasMark)
+            {
+                icon.itemData.name = newName;
+                // 直接修改UI上的Text组件
+                var nameText = icon.transform.Find("Name")?.GetComponent<Text>();
+                if (nameText != null)
+                {
+                    nameText.text = newName;
+                }
+                markedCount++;
+            }
+        }
+        
+        Plugin.LOG.Msg($"[BookOwnMark] 完成标记，共找到 {bookCount} 本秘籍，标记了 {markedCount} 本");
+    }
+    
+    /// <summary>
+    /// 为物品列表中的秘籍添加 BookOwnMark 标记
+    /// </summary>
+    private static void ApplyBookOwnMark(ItemListData itemListData)
+    {
+        if (itemListData?.allItem == null) return;
+        
+        var ownedBookNames = GetOwnedBookNames();
+        var speBookNames = GetSpeBookNames();
+        const string OWNED_MARK = " <color=#33cc86>☑</color>";
+        const string SPE_BOOK_MARK = " <color=#ff3333>☑</color>";
+        
+        foreach (var item in itemListData.allItem)
+        {
+            if (item?.type != ItemType.Book) continue;
+            
+            var bookName = item.name;
+            var newName = bookName;
+            var hasMark = false;
+            
+            // 获取干净的名称（去除已有标记）用于比较
+            var cleanName = RemoveBookMark(bookName);
+            
+            // 检查普通仓库（绿色标记）
+            if (ownedBookNames.Contains(cleanName) && !bookName.Contains(OWNED_MARK))
+            {
+                newName += OWNED_MARK;
+                hasMark = true;
+            }
+            // 检查特殊仓库（红色标记）
+            if (speBookNames.Contains(cleanName) && !bookName.Contains(SPE_BOOK_MARK))
+            {
+                newName += SPE_BOOK_MARK;
+                hasMark = true;
+            }
+            
+            if (hasMark)
+            {
+                item.name = newName;
+            }
+        }
+    }
+    
+    /// <summary>
+    /// 获取玩家已拥有的秘籍名称集合
+    /// </summary>
+    private static HashSet<string> GetOwnedBookNames()
+    {
+        var ownedBookNames = new HashSet<string>();
+        var gc = GameController.Instance;
+        if (gc?.worldData == null) 
+        {
+            Plugin.LOG.Msg("[BookOwnMark] GetOwnedBookNames: worldData is null");
+            return ownedBookNames;
+        }
+        
+        var player = gc.worldData.Player();
+        if (player == null) 
+        {
+            Plugin.LOG.Msg("[BookOwnMark] GetOwnedBookNames: player is null");
+            return ownedBookNames;
+        }
+
+        // 扫描玩家个人仓库
+        var storageList = player.selfStorage?.allItem;
+        var selfCount = 0;
+        if (storageList != null)
+        {
+            foreach (var item in storageList)
+            {
+                if (item is { type: ItemType.Book })
+                {
+                    ownedBookNames.Add(RemoveBookMark(item.name));
+                    selfCount++;
+                }
+            }
+        }
+
+        // 扫描门派藏书阁
+        var forceCount = 0;
+        if (player.belongForceID != -1)
+        {
+            var forceData = gc.worldData.GetHeroForce(0);
+            var bookStorage = forceData.bookStorage?.allItem;
+            if (bookStorage != null)
+            {
+                foreach (var item in bookStorage)
+                {
+                    if (item is { type: ItemType.Book })
+                    {
+                        ownedBookNames.Add(RemoveBookMark(item.name));
+                        forceCount++;
+                    }
+                }
+            }
+        }
+
+        Plugin.LOG.Msg($"[BookOwnMark] 个人仓库: {selfCount} 本, 门派藏书阁: {forceCount} 本, 总计: {ownedBookNames.Count} 本");
+        return ownedBookNames;
+    }
+    
+    /// <summary>
+    /// 获取特殊秘籍名称集合
+    /// </summary>
+    private static HashSet<string> GetSpeBookNames()
+    {
+        var speBookNames = new HashSet<string>();
+        var gc = GameController.Instance;
+        if (gc?.worldData?.speBookStorage?.allItem == null) return speBookNames;
+
+        foreach (var item in gc.worldData.speBookStorage.allItem)
+        {
+            if (item is { type: ItemType.Book })
+            {
+                speBookNames.Add(RemoveBookMark(item.name));
+            }
+        }
+
+        return speBookNames;
+    }
+    
+    /// <summary>
+    /// 移除秘籍名称中的标记
+    /// </summary>
+    private static string RemoveBookMark(string name)
+    {
+        if (string.IsNullOrEmpty(name)) return name;
+        return name.Replace(" <color=#33cc86>☑</color>", "").Replace(" <color=#ff3333>☑</color>", "");
+    }
+    
+    #endregion
+
+    
+    
     private static float _recruitLv = 0;
+    private static int _heroNum = 0;
     
     // roll招募 - 按R键触发，关闭并重新打开招募界面以刷新人物列表
     public static void TryRefreshRecruitList()
@@ -174,7 +420,7 @@ public class RollHelper
         var recruitType = ruic.recruitUIType;
         
         ruic.HideRecruitUI();
-        ruic.ShowRecruitUI(recruitType, 6, _recruitLv);
+        ruic.ShowRecruitUI(recruitType, _heroNum, _recruitLv);
         
         Plugin.LOG.Msg($"[Recruit] 正在刷新招募列表...");
     }
@@ -184,6 +430,7 @@ public class RollHelper
     public static void RecruitUIController_ShowRecruitUI_Postfix(RecruitUIController __instance, RecruitUIType targetType, int heroNum, float recruitLv)
     {
         _recruitLv = recruitLv;
+        _heroNum = heroNum;
         Plugin.LOG.Msg(_recruitLv);
     }
 

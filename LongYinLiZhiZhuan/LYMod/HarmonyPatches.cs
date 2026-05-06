@@ -894,6 +894,12 @@ public class ManageTagControllerPatches
     public static void ManageTagController_ShowManageTagUI_Prefix(ManageTagController __instance, 
         HeroData _targetHero, bool _useMoney)
     {
+        // 优先遗忘，如果已开启无前置则关闭
+        if (Plugin.Instance.FastRemoveTag.Value && Plugin.Instance.AnyTagFlag.Value)
+        {
+            Plugin.Instance.AnyTagFlag.Value = false;
+        } 
+        
         if (Plugin.Instance.AnyTagFlag.Value)
         {
             var list = GameDataController.Instance.heroTagDataBase;
@@ -1981,4 +1987,5 @@ public class SpeEnhanceEquipControllerPatches
         __result = 1;
     }
 }
+
     
