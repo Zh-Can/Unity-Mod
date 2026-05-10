@@ -28,6 +28,7 @@ public class Plugin : MelonMod
     public MelonPreferences_Entry<bool> ReadBookChangePatient1Flag = null!; // 读书耐心1
     public MelonPreferences_Entry<bool> Explore= null!; // 探险耐力锁
     public MelonPreferences_Entry<bool> Cost0= null!; // 建筑升级资源消耗0
+    public MelonPreferences_Entry<bool> BuildingDestroyFlag= null!; // 建筑可拆除开关
     public MelonPreferences_Entry<bool> RedBook= null!; // 必获得完本
     public MelonPreferences_Entry<float> RedBreak= null!; // 突破倍率
     public MelonPreferences_Entry<bool> RedTreasure= null!; // 必红色珍宝
@@ -102,9 +103,10 @@ public class Plugin : MelonMod
     public MelonPreferences_Entry<bool> FastRemoveTag = null!; // 快速遗忘天赋
     public MelonPreferences_Entry<bool> Relation999Flag = null!; // 友人/结义/情侣上限99
     public MelonPreferences_Entry<bool> LoyalLockFlag = null!; // 自门派忠诚不减
-    public MelonPreferences_Entry<bool> EnableChangeForceJobCDZero = null!; // 门派职位变更cd0开关
+    public MelonPreferences_Entry<bool> EnableChangeForceJobCdZero = null!; // 门派职位变更cd0开关
     public MelonPreferences_Entry<bool> EnableNpcEquipAndSkill = null!; // Npc管理装备和技能
     public MelonPreferences_Entry<bool> EnablePrivateHouseNpcTag = null!; // 私宅管理npc天赋
+    public MelonPreferences_Entry<bool> BzemFlag = null!; // 不增恶名
     
     
     private MelonPreferences_Entry<bool> _useModifier = null!; // 使用组合键
@@ -213,6 +215,7 @@ public class Plugin : MelonMod
         StealRate = MainCategory.CreateEntry("stealRate", false,  description: "偷窃偷师必成功");
         Hgbj = MainCategory.CreateEntry("hfbj", false,  description: "好感度不会减少");
         Cost0 = MainCategory.CreateEntry("cost0", false,  description: "建筑升级资源零消耗");
+        BuildingDestroyFlag = MainCategory.CreateEntry("buildingDestroyFlag", true,  description: "建筑可拆除开关");
         RedTreasure = MainCategory.CreateEntry("redTreasure", false,  description: "必定是红色珍宝");
         JianBaoFlag = MainCategory.CreateEntry("JianBaoFlag", false,  description: "一眼看穿宝物品质");
         AutoJianBaoFlag = MainCategory.CreateEntry("AutoJianBaoFlag", false,  description: "自动鉴宝");
@@ -251,7 +254,8 @@ public class Plugin : MelonMod
         LoyalLockFlag = MainCategory.CreateEntry("LoyalLockFlag", false,  description: "自门派忠诚度不减");
         EnableNpcEquipAndSkill = MainCategory.CreateEntry("EnableNpcEquipAndSkill", false,  description: "Npc管理装备和技能开关");
         EnablePrivateHouseNpcTag = MainCategory.CreateEntry("EnablePrivateHouseNpcTag", false,  description: "私宅管理npc天赋");
-        EnableChangeForceJobCDZero = MainCategory.CreateEntry("EnableChangeForceJobCDZero", false,  description: "门派职位变更cd0开关");
+        EnableChangeForceJobCdZero = MainCategory.CreateEntry("EnableChangeForceJobCDZero", false,  description: "门派职位变更cd0开关");
+        BzemFlag = MainCategory.CreateEntry("bzemFlag", false,  description: "不增恶名");
         #endregion
       
         var harmony = new HarmonyLib.Harmony("LYMod");
@@ -290,12 +294,9 @@ public class Plugin : MelonMod
         harmony.PatchAll(typeof(WeatherControllerPatches));
         harmony.PatchAll(typeof(TagRemoveConfirmPatches));
         
-        
         LOG.Msg("===================================================");
         LOG.Msg("【LYMod】LYMod is loaded! 默认打开窗体：左alt + e !");
         LOG.Msg("===================================================");
-        
-        
         
     }
 
@@ -332,6 +333,12 @@ public class Plugin : MelonMod
                 GlobalData.MaxLoverNum = 99;
                 GlobalData.MaxFriendNum = 99;
                 GlobalData.MaxBrotherNum = 99;
+            }
+            else
+            {
+                GlobalData.MaxLoverNum = 4;
+                GlobalData.MaxBrotherNum = 4;
+                GlobalData.MaxFriendNum = 16;
             }
         }
 
@@ -758,7 +765,7 @@ public class Plugin : MelonMod
             .AddAutoSaveRow("非本门功绩倍率:", ForceContributionRate,"特殊建筑上限", MaxSpeBuildingNum)
             .AddAutoSaveRow("添加可建造的特殊建筑", AddSpeBuildingsFlag, "剑池天工简单模式", SwordPoolEasyFlag)
             .AddAutoSaveRow("掌门演武", ZmywFlag, "自门派忠诚不减", LoyalLockFlag)
-            .AddAutoSave("门派职位变更CD0", EnableChangeForceJobCDZero)
+            .AddAutoSaveRow("门派职位变更CD0", EnableChangeForceJobCdZero,"建筑可拆除", BuildingDestroyFlag)
             .AddButtonRow("添加10块陨铁", () =>
             {
                 GameController.Instance.worldData.ChangeSpeEnhanceStoneNum(10,true);
@@ -781,7 +788,7 @@ public class Plugin : MelonMod
             .AddAutoSaveRow("好感倍数",FavorTimes,"好感上限:", FavorMax)
             .AddAutoSaveRow("指点满级",TeachNpc,"传授满级:", TeachNewSkillToNpc)
             .AddAutoSaveRow("无限交互",Interaction,"传授任意技能:", TeachAnyNewSkill)
-            .AddAutoSave("队友离队天数", TeammateLeaveDay)
+            .AddAutoSaveRow("队友离队天数", TeammateLeaveDay, "不加恶名", BzemFlag)
             .EndFoldout();
         
         builder.BeginFoldout("道具相关").Space(10)

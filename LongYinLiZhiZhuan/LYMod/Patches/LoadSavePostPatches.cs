@@ -15,10 +15,20 @@ public class LoadSavePostPatches
     {
         // GameDataController初始化后 保存原始天赋数据
         ManageTagControllerPatches.OriginalHeroTagDataBases = GameDataController.Instance.heroTagDataBase;
-        
-        GlobalData.MaxLoverNum = 99;
-        GlobalData.MaxFriendNum = 99;
-        GlobalData.MaxBrotherNum = 99;
+
+        if (Plugin.Instance.Relation999Flag.Value)
+        {
+            GlobalData.MaxLoverNum = 99;
+            GlobalData.MaxFriendNum = 99;
+            GlobalData.MaxBrotherNum = 99;
+        }
+        else
+        {
+            GlobalData.MaxLoverNum = 4;
+            GlobalData.MaxBrotherNum = 4;
+            GlobalData.MaxFriendNum = 16;
+        }
+            
     }
     
     

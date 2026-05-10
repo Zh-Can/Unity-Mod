@@ -835,14 +835,151 @@ public class AreaBuildingDataPatches
     public static void AreaBuildController_ShowBuildNewPanel_Postfix(AreaBuildController __instance, bool show)
     {
         if (__instance == null || !show || !Plugin.Instance.AddSpeBuildingsFlag.Value) return;
-        var buildingIDsToAdd = new List<int> { 42,43,44,45,46,47,48,49,50,51,52,16,18,21,24,26,74,75 };
+        var buildingIDsToAdd = new List<int> { 16,17,18,21,22,23,24,25,26,42,43,44,45,46,47,48,49,50,51,52,74,75 };
         foreach (var buildingID in buildingIDsToAdd)
         {
             __instance.GenerateBuildNewButton(buildingID);
         }
     }
+
+    #region 建筑可拆除开关
+
+    // 检查建筑ID是否在排除列表中
+    private static List<int> excludeIds = new(){0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
     
-   
+    /// <summary>
+    /// 建筑可拆除开关
+    /// </summary>
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(AreaBuildController), nameof(AreaBuildController.ShowBuildChoiceGrid))]
+    public static void AreaBuildController_ShowBuildChoiceGrid_Postfix(
+        AreaBuildController __instance,
+        bool show
+    )
+    {
+        
+        if (!Plugin.Instance.BuildingDestroyFlag.Value || !show || __instance?.buildChoiceGrid == null)
+            return;
+        MelonCoroutines.Start(AddDestroyNextFrame(__instance));
+    }
+
+    private static IEnumerator AddDestroyNextFrame(AreaBuildController controller)
+    {
+        yield return null;
+
+        if (controller == null ||
+            controller.buildChoiceGrid == null ||
+            !controller.buildChoiceGrid.activeInHierarchy)
+            yield break;
+
+        var grid = controller.buildChoiceGrid.transform;
+
+        // 检查现有按钮状态
+        var hasDestroyButton = false;
+        var hasCancelDestroyButton = false;
+        for (var i = 0; i < grid.childCount; i++)
+        {
+            var child = grid.GetChild(i);
+            if (child == null) continue;
+            
+            // 获取按钮文本 - 遍历子对象查找 Text 组件
+            var buttonText = "";
+            for (var j = 0; j < child.childCount; j++)
+            {
+                var grandChild = child.GetChild(j);
+                if (grandChild == null) continue;
+                var txt = grandChild.GetComponent<Text>();
+                if (txt != null)
+                {
+                    buttonText = txt.text;
+                    break;
+                }
+            }
+            
+            if (child.name == "DestroyButton")
+            {
+                hasDestroyButton = true;
+            }
+            // 检查是否是"取消拆除"按钮（通过文本判断）
+            else if (buttonText.Contains("取消拆除"))
+            {
+                hasCancelDestroyButton = true;
+            }
+        }
+
+        // 如果已有拆除按钮或是取消拆除模式，不添加
+        if (hasDestroyButton)
+        {
+            Plugin.LOG.Msg("Destroy button already exists");
+            yield break;
+        }
+        
+        if (hasCancelDestroyButton)
+        {
+            Plugin.LOG.Msg("Cancel destroy mode detected, skip destroy button");
+            yield break;
+        }
+
+        CreateDestroyButton(controller);
+    }
+
+    private static void CreateDestroyButton(AreaBuildController controller)
+    {
+        var prefab = controller.buildChoiceButtonPrefab;
+        var grid = controller.buildChoiceGrid;
+
+        if (prefab == null || grid == null)
+            return;
+
+        // 尝试从 buildTargetIcon 获取建筑数据
+        var targetData = controller.buildTargetIcon?
+            .GetComponent<AreaBuildingIconController>()?
+            .buildingData;
+
+        // 如果失败，尝试从 buildTargetObj 获取
+        if (targetData == null && controller.buildTargetObj != null)
+        {
+            targetData = controller.buildTargetObj
+                .GetComponent<AreaBuildingIconController>()?
+                .buildingData;
+        }
+
+        if (targetData == null)
+        {
+            Plugin.LOG.Msg($"CreateDestroyButton failed: targetData null. buildTargetIcon={controller.buildTargetIcon != null}, buildTargetObj={controller.buildTargetObj != null}");
+            return;
+        }
+        
+        if (excludeIds.Contains(targetData.buildingID))
+        {
+            return;
+        }
+
+        var buttonObj = UnityEngine.Object.Instantiate(prefab, grid.transform);
+        buttonObj.name = "DestroyButton";
+        buttonObj.SetActive(true);
+
+        // 设置文本
+        var text = buttonObj.GetComponentInChildren<Text>();
+        if (text != null)
+        {
+            text.text = "拆除";
+        }
+
+        // 绑定事件
+        var listener = buttonObj.GetComponent<UIEventListener>();
+        if (listener == null)
+            listener = buttonObj.AddComponent<UIEventListener>();
+
+        listener.onClick = new Action<GameObject>(_ =>
+        {
+            Plugin.LOG.Msg("Destroy clicked");
+
+            GameController.Instance?.ObstacleDestroyStart(targetData, true);
+            controller.ShowBuildChoiceGrid(false);
+        });
+    }
+    #endregion
 }
 // 指定突破加的什么属性
 public class BreakThroughChoiceControllerPatch
@@ -950,16 +1087,7 @@ public class StudySkillPatches
             __instance.totalExp *= Plugin.Instance.StudyUniqeRate.Value;
         }
     }
-    // [HarmonyPrefix]
-    // [HarmonyPatch(typeof(StudyAttackSkillController), nameof(StudyAttackSkillController.FinishStudyFightSkill))]
-    // public static void StudyAttackSkillController_FinishStudyFightSkill_Prefix(StudyAttackSkillController __instance,
-    //     StudySkillResult studyDodgeResult)
-    // {
-    //     if (__instance != null && Plugin.Instance.StudyFightRate.Value > 1)
-    //     {
-    //         __instance.totalExp *= Plugin.Instance.StudyFightRate.Value;
-    //     }
-    // }
+ 
     [HarmonyPrefix]
     [HarmonyPatch(typeof(StudySkillController), nameof(StudySkillController.FinishStudySkill))]
     public static void StudySkillController_FinishStudySkill_Prefix(StudySkillController __instance, ref float expNum)
@@ -974,12 +1102,27 @@ public class StudySkillPatches
 
 public class HeroDataPatch
 {
-   
+    /// <summary>
+    /// 不增恶名
+    /// </summary>
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(HeroData), nameof(HeroData.ChangeBadFame))]
+    public static bool HeroData_ChangeBadFame_Prefix(HeroData __instance, ref float num)
+    {
+        if (__instance is { heroID: 0 } && Plugin.Instance.BzemFlag.Value && num > 0f)
+        {
+            num = 0f;
+        }
+        return true; 
+    }
+    /// <summary>
+    /// 设置门派职务cd
+    /// </summary>
     [HarmonyPostfix]
     [HarmonyPatch(typeof(ForceData), nameof(ForceData.SetForceJob))]
     public static void SetForceJob_Postfix(ForceData __instance, int jobType, int jobID, HeroData targetHero)
     { 
-        if (Plugin.Instance.EnableChangeForceJobCDZero.Value)
+        if (Plugin.Instance.EnableChangeForceJobCdZero.Value)
         {
             targetHero.forceJobCD = 0;
         }

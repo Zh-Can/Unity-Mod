@@ -102,27 +102,36 @@ public class RollHelper
 
 
     #region 中元鬼市/商店 Roll 与 BookOwnMark 标记
+
+    private static string _shopParam;
     
-    // 野外商人 + 官府兑换 + 商店
+    
+    // 野外商人+鬼市 + 官府兑换 + 商店
     public static void TryZhongyuanRoll()
     {
         var tuic = TradeUIController.Instance;
         var gc = GameController.Instance;
+        var pc = PlotController.Instance;
         var flag = HeroHelper.TryReadPlayer(out var player);
-        if (!flag || tuic == null || !tuic.tradeUI.activeInHierarchy || gc == null) return;
+        if (pc == null || !flag || tuic == null || !tuic.tradeUI.activeInHierarchy || gc == null) return;
         
         if (player.GetArea() == null)
         {
+            var eventName = pc.nowEvent.eventName;
             var rightItemListData = tuic.rightList.targetItemList;
-            
-            var oldCount = rightItemListData.allItem?.Count ?? 0;
-
+            var itemNum = rightItemListData.allItem.Count == 0 ? 20 : rightItemListData.allItem.Count;
             tuic.rightList.ClearAllItem();
-            
-            gc.GenerateRandomItem(rightItemListData, oldCount, null, Plugin.Instance.ZhongyuanLv.Value, 0f, false);
-            
+            rightItemListData.allItem.Clear();
+            if (eventName == "中元鬼市")
+            {
+                gc.GenerateRandomItem(rightItemListData, itemNum, null, Plugin.Instance.ZhongyuanLv.Value, 0f, false);
+            }
+            else
+            {
+                gc.GenerateRandomItem(rightItemListData,itemNum,pc.nowEvent.GetEventRareLv()*2,0f);
+            }
             tuic.rightList.RefreshItemList(true);
-            
+           
             // 如果存在 BookOwnMark Mod，为新生成的秘籍添加标记
             if (ModConfig.HaveBookOwnMark)
             {
