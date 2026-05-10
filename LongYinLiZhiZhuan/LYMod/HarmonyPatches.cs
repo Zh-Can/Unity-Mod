@@ -1241,19 +1241,6 @@ public class HeroDataPatch
         return true;
     }
 
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(HeroDetailController), nameof(HeroDetailController.ClothChoiceButtonClicked))]
-    public static void HeroDetailController_ClothChoiceButtonClicked_Postfix(HeroDetailController __instance, int skinID, int skinLv)
-    {
-        if (__instance == null) return;
-        var n = __instance.nowShowHero;
-        if (n == null) return;
-        
-        int[] cdTable = { 30, 20, 15, 10, 5, 1, 0 };
-        var lv = Mathf.Clamp(n.heroForceLv, 0, 6);
-        n.changeSkinCd = cdTable[lv];
-    }
-    
     [HarmonyPrefix]
     [HarmonyPatch(typeof(HeroData), "ChangeBadFame")]
     public static bool HeroData_ChangeBadFame_Prefix(ref float num)
@@ -1672,6 +1659,7 @@ public class ItemListDataPatches
             // 所有是红品质
             if (Plugin.Instance.RedQuality.Value)
             {
+                var newDict = new Il2CppSystem.Collections.Generic.Dictionary<int, float>();
                 if (targetItem.type == ItemType.Book)
                 {
                     targetItem = targetItem.SetBookData(targetItem.bookData.skillID, 5);
@@ -1684,6 +1672,39 @@ public class ItemListDataPatches
                         list[i] = 5;
                     }
                     targetItem.rareLv = 5;
+                    targetItem.value = targetItem.GetTreasureRealValue();
+                }
+                else if (targetItem.type == ItemType.Equip)
+                {
+                    var oldDict = targetItem.equipmentData.extraAddData.heroSpeAddData;
+                    foreach (var dict in oldDict)
+                    {
+                        if (dict.Value > 0)
+                        {
+                            newDict[dict.Key] = dict.Value;
+                        }
+                        else
+                        {
+                            newDict[dict.Key] = dict.Value * -1;
+                        }
+                    }
+                    targetItem.equipmentData.extraAddData.heroSpeAddData = newDict;
+                }
+                else if  (targetItem.type == ItemType.Material)
+                {
+                    var oldDict = targetItem.materialData.extraAddData.heroSpeAddData;
+                    foreach (var dict in oldDict)
+                    {
+                        if (dict.Value > 0)
+                        {
+                            newDict[dict.Key] = dict.Value;
+                        }
+                        else
+                        {
+                            newDict[dict.Key] = dict.Value * -1;
+                        }
+                    }
+                    targetItem.materialData.extraAddData.heroSpeAddData = newDict;
                 }
                 else
                 {
@@ -1739,8 +1760,6 @@ public class ItemListDataPatches
             
         }
     }
-    
-   
 }
 
 public class BreakThroughControllerPatches

@@ -1,11 +1,13 @@
-﻿using UnityEngine;
+﻿using LYMod.Helpers;
+using UnityEngine;
 
 namespace LYMod;
 
 public static class OtherElement
 {
-    
-    
+    private static string _searchText = "";
+    private static Vector2 _scrollPosition;
+
     public static void ForceSpeFunction()
     {
         var scale = Plugin.Instance.WindowScaling.Value;
@@ -19,8 +21,6 @@ public static class OtherElement
             .EndFoldout();
     }
 
-    
-    
     public static void Label()
     {
         const float fontScale = 1.5f;
@@ -95,27 +95,47 @@ public static class OtherElement
             "212:好感获取", "214:恶名减少", "213:本门武学威力"
         };
 
-        GUILayout.BeginVertical("Box"); 
+        GUILayout.BeginVertical("Box");
+        
+        // 搜索框
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("拼音搜索:", GUILayout.Width(50));
+        _searchText = GUILayout.TextField(_searchText, GUILayout.Height(25));
+        if (GUILayout.Button("清除", GUILayout.Width(50)))
+        {
+            _searchText = "";
+        }
+        GUILayout.EndHorizontal();
 
-        for (var i = 0; i < attrLabels.Length; i += columnCount)
+        GUILayout.Space(10);
+
+        // 过滤标签
+        var filteredLabels = string.IsNullOrEmpty(_searchText)
+            ? attrLabels
+            : Array.FindAll(attrLabels, label =>
+                PinyinHelper.ContainsPinyinOrChinese(label, _searchText));
+
+        // 滚动视图 - 使用剩余空间
+        _scrollPosition = GUILayout.BeginScrollView(_scrollPosition, GUILayout.Height(990));
+
+        for (var i = 0; i < filteredLabels.Length; i += columnCount)
         {
             GUILayout.BeginHorizontal(GUILayout.Height(rowHeight));
             GUILayout.Space(spacing);
 
-            // 绘制当前行的每一列
             for (var col = 0; col < columnCount; col++)
             {
                 var index = i + col;
-                if (index >= attrLabels.Length) break; // 超出数组范围就跳出，避免越界
+                if (index >= filteredLabels.Length) break;
 
-                GUILayout.Label(attrLabels[index], gridStyle);
+                GUILayout.Label(filteredLabels[index], gridStyle);
             }
 
-            // GUILayout.FlexibleSpace(); 
             GUILayout.EndHorizontal();
             GUILayout.Space(spacing);
         }
 
+        GUILayout.EndScrollView();
         GUILayout.EndVertical();
     }
 }

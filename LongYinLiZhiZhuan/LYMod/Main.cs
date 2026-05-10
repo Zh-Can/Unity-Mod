@@ -100,7 +100,7 @@ public class Plugin : MelonMod
     public MelonPreferences_Entry<bool> BreakMaxLimitNotForPlayerFlag = null!; // 突破潜力限制不对玩家生效
     public MelonPreferences_Entry<bool> WeatherLockSunnyFlag = null!; // 天气锁定晴天
     public MelonPreferences_Entry<bool> FastRemoveTag = null!; // 快速遗忘天赋
-    public MelonPreferences_Entry<bool> Relation999Flag = null!; // 快速遗忘天赋
+    public MelonPreferences_Entry<bool> Relation999Flag = null!; // 友人/结义/情侣上限99
     
     
     private MelonPreferences_Entry<bool> _useModifier = null!; // 使用组合键
@@ -299,16 +299,17 @@ public class Plugin : MelonMod
         }
         return Input.GetKey(_key1.Value) && Input.GetKeyDown(_key2.Value);
     }
+
     public override void OnUpdate()
     {
         ReadBookAutoReadPatches.HandleAutoReadButton();
-        
+
         // Alt+E 切换主面板
         if (IsOpenWindowTriggered())
         {
             _showMainWindow = !_showMainWindow;
             _isCapturingMainWindowPointer = false;
-            
+
             UIBuilderExtensions.RefreshForceList();
             UIBuilderExtensions.RefreshBuildingList();
             if (_showMainWindow)
@@ -316,6 +317,7 @@ public class Plugin : MelonMod
                 HeroHelper.TryReadNowHero(out _readedHeroData);
                 GameCustomDifficultyPatches.GetCustomDifficultyData();
             }
+
             OtherHelper.ChaneMaxNum();
             if (Relation999Flag.Value)
             {
@@ -336,34 +338,53 @@ public class Plugin : MelonMod
             RollHelper.TrySpePoisonRoll();
             RollHelper.TryFightMatchRewardRoll();
         }
-        
         if (Input.GetKeyDown(KeyCode.KeypadPlus))
         {
-            // var weather = WeatherController.Instance;
-            // weather.ChangeWeather(1, 1);
-            
-            //PlotController.Instance.ChooseQingMingFestivalPlot();
-            // HeroHelper.TryReadPlayer(out var player);
-            // player.heroNickName = "天下无双";
-            // var list = GameController.Instance.worldData.Heros;
-            // foreach (var hero in list)
-            // {
-            //     Plugin.LOG.Msg($"name:{hero.heroName}, nickName:{hero.heroNickName}");
-            // }
-            // var a  = GameController.Instance.worldData.customDifficultyData.customDifficultyLv;
-            // foreach (var b in a)
-            // {
-            //     LOG.Msg($"key:{b.Key}, val:{b.Value}");
-            // }
-
-            // 在游戏运行时查看当前设置
-            // WorldData worldData = GameController.Instance.worldData;
-            //
-            // LOG.Msg($"=== 敌人成长速度相关设置 ===");
-            // LOG.Msg($"游戏难度 (gameDifficulty): {worldData.gameDifficulty}");
-            // LOG.Msg($"时间难度 (TimeDifficulty): {worldData.TimeDifficulty}");
-            
+            var a = GlobalData.HeroForceLvName;
+            foreach (var b in a)
+            {
+                LOG.Msg(b);
+            }
+            a = GlobalData.HeroServantForceLvName;
+            foreach (var b in a)
+            {
+                LOG.Msg(b);
+            }
+            a = GlobalData.HeroFreeForceLvName;
+            foreach (var b in a)
+            {
+                LOG.Msg(b);
+            }
         }
+        // if (Input.GetKeyDown(KeyCode.KeypadPlus))
+        // {
+        //     // HeroHelper.TryReadPlayer(out var player);
+        //     // player.itemListData.money += 100000;
+        //     // var weather = WeatherController.Instance;
+        //     // weather.ChangeWeather(1, 1);
+        //
+        //     //PlotController.Instance.ChooseQingMingFestivalPlot();
+        //     // HeroHelper.TryReadPlayer(out var player);
+        //     // player.heroNickName = "天下无双";
+        //     // var list = GameController.Instance.worldData.Heros;
+        //     // foreach (var hero in list)
+        //     // {
+        //     //     Plugin.LOG.Msg($"name:{hero.heroName}, nickName:{hero.heroNickName}");
+        //     // }
+        //     // var a  = GameController.Instance.worldData.customDifficultyData.customDifficultyLv;
+        //     // foreach (var b in a)
+        //     // {
+        //     //     LOG.Msg($"key:{b.Key}, val:{b.Value}");
+        //     // }
+        //
+        //     // 在游戏运行时查看当前设置
+        //     // WorldData worldData = GameController.Instance.worldData;
+        //     //
+        //     // LOG.Msg($"=== 敌人成长速度相关设置 ===");
+        //     // LOG.Msg($"游戏难度 (gameDifficulty): {worldData.gameDifficulty}");
+        //     // LOG.Msg($"时间难度 (TimeDifficulty): {worldData.TimeDifficulty}");
+        //
+        // }
 
         
         
@@ -605,8 +626,14 @@ public class Plugin : MelonMod
                 if (_readedHeroData == null) return;
                 
                 _readedHeroData.hobby ??= new Il2CppSystem.Collections.Generic.List<int>();
-                _readedHeroData.hobby.Add(10);
-                _readedHeroData.hobby.Add(20);
+                if (!_readedHeroData.hobby.Contains(10))
+                {
+                    _readedHeroData.hobby.Add(10);
+                }
+                if (!_readedHeroData.hobby.Contains(20))
+                {
+                    _readedHeroData.hobby.Add(20);
+                }
             }, width:180)
             .EndHorizontal()
             .Space(5)
@@ -619,7 +646,7 @@ public class Plugin : MelonMod
             .EndHorizontal()
             .Space(5)
             .AddAutoSaveRow("无前置天赋要求", AnyTagFlag, "武学修炼限制倍数", KungFuMaxLimitTimes, labelWidth:150)
-            .AddAutoSave("快速移除天赋", FastRemoveTag)
+            .AddAutoSave("在闭关/私宅快速移除天赋", FastRemoveTag)
             .AddAutoSaveRow("玩家天赋数量上限", PlayerMaxTagNum, "Npc天赋数量上限", NpcMaxTagNum,  labelWidth:150)
             .AddAutoSaveRow("突破潜力限制(无限制)",BreakMaxLimitFlag, "突破潜力限制不对玩家生效", BreakMaxLimitNotForPlayerFlag)
             .AddLabelRow("修改读取到人物的潜力：", 200)
@@ -740,7 +767,17 @@ public class Plugin : MelonMod
                 GameController.Instance.worldData.ChangeSpeEnhanceStoneNum(10,true);
             }, width:150)
             .AddAutoSave("掌门演武", ZmywFlag)
-            .AddButtonRow("添加所有书籍到星辰楼", OtherHelper.GenAllBookToSpeBookStorage, width:200)
+            .BeginHorizontal()
+            .AddButton("添加所有书籍到星辰楼", OtherHelper.GenAllBookToSpeBookStorage, width:200)
+            .Space(10)
+            .AddButton("从星辰楼移除所有秘籍", () =>
+            {
+                var gc = GameController.Instance;
+                if (gc == null) return;
+                gc.worldData.speBookStorage.allItem.Clear();
+                SpeBookStorageController.Instance.RefreshBookStorageSpeAdd();
+            },width:200)
+            .EndHorizontal()
             .EndFoldout();
         
         builder.BeginFoldout("交互相关").Space(10)

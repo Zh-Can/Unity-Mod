@@ -199,7 +199,8 @@ public class ReadBookAutoReadPatches
     {
         new[] { "提纲", "注释", "明朗" },
         new[] { "预习" },
-        new[] { "文本", "精要", "清醒" },
+        new[] { "精要", "清醒" },
+        new[] { "文本" },
         new[] { "融汇" }
     };
     /// <summary>
@@ -251,42 +252,5 @@ public class ReadBookAutoReadPatches
                 }
             }
         }
-        yield break;
-        
-        //
-        // var count = textGrid.transform.childCount;
-        // for (var i = 0; i < count; i++)
-        // {
-        //     var child = textGrid.transform.GetChild(i);
-        //     if (child == null) continue;
-        //     var controller = child.GetComponent<ReadBookTextController>();
-        //     if (controller == null || controller.textData == null || string.IsNullOrEmpty(controller.textData.fullName)) continue;
-        //     // Plugin.LOG.Msg(controller.textData.fullName);
-        //     if (controller.textData.fullName is "提纲" or "注释" or "明朗") controller.OnClick();
-        // }
-        // for (var i = 0; i < count; i++)
-        // {
-        //     var child = textGrid.transform.GetChild(i);
-        //     if (child == null) continue;
-        //     var controller = child.GetComponent<ReadBookTextController>();
-        //     if (controller == null || controller.textData == null || string.IsNullOrEmpty(controller.textData.fullName)) continue;
-        //     if (controller.textData.fullName == "预习") controller.OnClick();
-        // }
-        // for (var i = 0; i < count; i++)
-        // {
-        //     var child = textGrid.transform.GetChild(i);
-        //     if (child == null) continue;
-        //     var controller = child.GetComponent<ReadBookTextController>();
-        //     if (controller == null || controller.textData == null || string.IsNullOrEmpty(controller.textData.fullName)) continue;
-        //     if (controller.textData.fullName is "文本" or "精要" or "清醒") controller.OnClick();
-        // }
-        // for (var i = 0; i < count; i++)
-        // {
-        //     var child = textGrid.transform.GetChild(i);
-        //     if (child == null) continue;
-        //     var controller = child.GetComponent<ReadBookTextController>();
-        //     if (controller == null || controller.textData == null || string.IsNullOrEmpty(controller.textData.fullName)) continue;
-        //     if (controller.textData.fullName == "融汇") controller.OnClick();
-        // }
     }
 }

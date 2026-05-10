@@ -103,30 +103,25 @@ public class RollHelper
 
     #region 中元鬼市/商店 Roll 与 BookOwnMark 标记
     
-    // 中元鬼市roll + 官府兑换 + 商店
+    // 野外商人 + 官府兑换 + 商店
     public static void TryZhongyuanRoll()
     {
         var tuic = TradeUIController.Instance;
-        var plotController = PlotController.Instance;
         var gc = GameController.Instance;
         var flag = HeroHelper.TryReadPlayer(out var player);
         if (!flag || tuic == null || !tuic.tradeUI.activeInHierarchy || gc == null) return;
         
         if (player.GetArea() == null)
         {
-            if (plotController == null || plotController.nowEvent == null) return;
-            var currentEvent = plotController.nowEvent;
-
-            if (!currentEvent.eventName.Contains("中元鬼市")) return;
-            
             var rightItemListData = tuic.rightList.targetItemList;
             
             var oldCount = rightItemListData.allItem?.Count ?? 0;
 
-            rightItemListData.ClearAllItem();
-
+            tuic.rightList.ClearAllItem();
+            
             gc.GenerateRandomItem(rightItemListData, oldCount, null, Plugin.Instance.ZhongyuanLv.Value, 0f, false);
-            tuic.RealManageTrade();
+            
+            tuic.rightList.RefreshItemList(true);
             
             // 如果存在 BookOwnMark Mod，为新生成的秘籍添加标记
             if (ModConfig.HaveBookOwnMark)
@@ -136,8 +131,9 @@ public class RollHelper
         }
         else if(tuic.tradeUIType == TradeUIType.GovernStorage)
         {
+            
             gc.RefreshGovernStorage();
-            tuic.RealManageTrade();
+            tuic.rightList.RefreshItemList(true);
             
             // 如果存在 BookOwnMark Mod，为新生成的秘籍添加标记
             if (ModConfig.HaveBookOwnMark)
@@ -149,7 +145,7 @@ public class RollHelper
         {
             Plugin.LOG.Msg($"ModConfig.HaveBookOwnMark:{ModConfig.HaveBookOwnMark}");
             var buildUI = BuildingUIController.Instance;
-            if (buildUI == null) return;
+            if (buildUI == null || buildUI.targetBuildingData == null) return;
 
             var buildingData = buildUI.targetBuildingData;
             if (buildingData == null) return;
@@ -157,17 +153,17 @@ public class RollHelper
             var shopData = buildingData.DataBase()?.areaBuildingShopData;
             if (shopItemList == null || shopData == null) return;
             
-            
             var rightItemListData = tuic.rightList.targetItemList;
             
             var oldCount = rightItemListData.allItem?.Count ?? shopData.itemNum;
             oldCount = oldCount == 0 ? shopData.itemNum * 2  : oldCount;
-            // 清空旧物品
+            
             shopItemList.ClearAllItem();
-
+            tuic.rightList.ClearAllItem();
+            
             // 重新生成商店物品
             gc.GenerateRandomItem(rightItemListData, (int)oldCount, shopData.itemType, buildingData.lv, shopData.itemBossLv, false);
-            tuic.RealManageTrade();
+            tuic.rightList.RefreshItemList(true);
             // 如果存在 BookOwnMark Mod，为新生成的秘籍添加标记
             if (ModConfig.HaveBookOwnMark)
             {
