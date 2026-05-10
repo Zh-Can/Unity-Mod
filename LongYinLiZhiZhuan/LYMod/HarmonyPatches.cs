@@ -974,6 +974,16 @@ public class StudySkillPatches
 
 public class HeroDataPatch
 {
+   
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(ForceData), nameof(ForceData.SetForceJob))]
+    public static void SetForceJob_Postfix(ForceData __instance, int jobType, int jobID, HeroData targetHero)
+    { 
+        if (Plugin.Instance.EnableChangeForceJobCDZero.Value)
+        {
+            targetHero.forceJobCD = 0;
+        }
+    }
     /// <summary>
     /// 装备/技能可操控
     /// </summary>
@@ -981,8 +991,22 @@ public class HeroDataPatch
     [HarmonyPatch(typeof(HeroData), nameof(HeroData.ItemControlable))]
     public static void ItemControlable_Postfix(HeroData __instance, ref bool __result)
     {
-        if (__instance == null || !Plugin.Instance.EnableNpcEquipAndSkill.Value) return;
-        __result = true;
+        var flag = HeroHelper.TryReadPlayer(out var player);
+        if (flag &&
+            __instance != null &&
+            __instance is { hide: false, dead: false } &&
+            Plugin.Instance.EnableNpcEquipAndSkill.Value &&
+            (
+                player.HaveBrother(__instance.heroID) ||
+                player.HaveFriend(__instance.heroID) ||
+                player.Lover == __instance.heroID ||
+                player.HavePrelover(__instance.heroID) ||
+                player.Teacher == __instance.heroID ||
+                player.HaveStudent(__instance.heroID)
+            ))
+        {
+            __result = true;
+        }
     }
     /// <summary>
     /// 装备/技能 锁
@@ -1025,7 +1049,6 @@ public class HeroDataPatch
             __instance == null ||
             !Plugin.Instance.EnablePrivateHouseNpcTag.Value)
         {
-            Plugin.LOG.Msg("11111111111");
             return true;
         }
         
@@ -1036,7 +1059,7 @@ public class HeroDataPatch
             if (heroId <= 0) return;
 
             var hero = gc.worldData.GetHero(heroId);
-            if (hero != null)
+            if (hero is { dead: false, hide: false })
                 list.Add(hero);
         }
 

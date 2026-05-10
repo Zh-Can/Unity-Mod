@@ -102,6 +102,7 @@ public class Plugin : MelonMod
     public MelonPreferences_Entry<bool> FastRemoveTag = null!; // 快速遗忘天赋
     public MelonPreferences_Entry<bool> Relation999Flag = null!; // 友人/结义/情侣上限99
     public MelonPreferences_Entry<bool> LoyalLockFlag = null!; // 自门派忠诚不减
+    public MelonPreferences_Entry<bool> EnableChangeForceJobCDZero = null!; // 门派职位变更cd0开关
     public MelonPreferences_Entry<bool> EnableNpcEquipAndSkill = null!; // Npc管理装备和技能
     public MelonPreferences_Entry<bool> EnablePrivateHouseNpcTag = null!; // 私宅管理npc天赋
     
@@ -250,6 +251,7 @@ public class Plugin : MelonMod
         LoyalLockFlag = MainCategory.CreateEntry("LoyalLockFlag", false,  description: "自门派忠诚度不减");
         EnableNpcEquipAndSkill = MainCategory.CreateEntry("EnableNpcEquipAndSkill", false,  description: "Npc管理装备和技能开关");
         EnablePrivateHouseNpcTag = MainCategory.CreateEntry("EnablePrivateHouseNpcTag", false,  description: "私宅管理npc天赋");
+        EnableChangeForceJobCDZero = MainCategory.CreateEntry("EnableChangeForceJobCDZero", false,  description: "门派职位变更cd0开关");
         #endregion
       
         var harmony = new HarmonyLib.Harmony("LYMod");
@@ -344,10 +346,10 @@ public class Plugin : MelonMod
             RollHelper.TrySpePoisonRoll();
             RollHelper.TryFightMatchRewardRoll();
         }
-        if (Input.GetKeyDown(KeyCode.KeypadPlus))
-        {
-            
-        }
+        // if (Input.GetKeyDown(KeyCode.KeypadPlus))
+        // {
+        //     
+        // }
         // if (Input.GetKeyDown(KeyCode.KeypadPlus))
         // {
         //     // HeroHelper.TryReadPlayer(out var player);
@@ -755,11 +757,12 @@ public class Plugin : MelonMod
             .AddAutoSaveRow("建筑资源零消耗",Cost0, "建造升级移动拆除1天", UpgradeDay1)
             .AddAutoSaveRow("非本门功绩倍率:", ForceContributionRate,"特殊建筑上限", MaxSpeBuildingNum)
             .AddAutoSaveRow("添加可建造的特殊建筑", AddSpeBuildingsFlag, "剑池天工简单模式", SwordPoolEasyFlag)
+            .AddAutoSaveRow("掌门演武", ZmywFlag, "自门派忠诚不减", LoyalLockFlag)
+            .AddAutoSave("门派职位变更CD0", EnableChangeForceJobCDZero)
             .AddButtonRow("添加10块陨铁", () =>
             {
                 GameController.Instance.worldData.ChangeSpeEnhanceStoneNum(10,true);
             }, width:150)
-            .AddAutoSaveRow("掌门演武", ZmywFlag, "自门派忠诚不减", LoyalLockFlag)
             .BeginHorizontal()
             .AddButton("添加所有书籍到星辰楼", OtherHelper.GenAllBookToSpeBookStorage, width:200)
             .Space(10)
