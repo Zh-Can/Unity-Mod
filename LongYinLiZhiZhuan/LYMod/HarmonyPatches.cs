@@ -975,6 +975,104 @@ public class StudySkillPatches
 public class HeroDataPatch
 {
     /// <summary>
+    /// 装备/技能可操控
+    /// </summary>
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(HeroData), nameof(HeroData.ItemControlable))]
+    public static void ItemControlable_Postfix(HeroData __instance, ref bool __result)
+    {
+        if (__instance == null || !Plugin.Instance.EnableNpcEquipAndSkill.Value) return;
+        __result = true;
+    }
+    /// <summary>
+    /// 装备/技能 锁
+    /// </summary>
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(HeroData), nameof(HeroData.ItemLockable))]
+    public static void ItemLockable_Postfix(HeroData __instance, ref bool __result)
+    {
+        var flag = HeroHelper.TryReadPlayer(out var player);
+        if (flag &&
+            __instance != null &&
+            __instance.heroID != 0 &&
+            __instance is { hide: false, dead: false } &&
+            Plugin.Instance.EnableNpcEquipAndSkill.Value &&
+            (
+                player.HaveBrother(__instance.heroID) ||
+                player.HaveFriend(__instance.heroID) ||
+                player.Lover == __instance.heroID ||
+                player.HavePrelover(__instance.heroID) ||
+                player.Teacher == __instance.heroID ||
+                player.HaveStudent(__instance.heroID)
+            ))
+        {
+            __result = true;
+        }
+    }
+    /// <summary>
+    /// 有关系的可以在私宅修改天赋
+    /// </summary>
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(PlotController), nameof(PlotController.ChooseManageTagTargetSelfHouse))]
+    public static bool PlotController_ChooseManageTagTargetSelfHouse_Prefix(PlotController __instance)
+    {
+        var gc = GameController.Instance;
+        var cc = ChooseController.Instance;
+
+        if (cc == null ||
+            !HeroHelper.TryReadPlayer(out var player) ||
+            gc?.worldData == null ||
+            __instance == null ||
+            !Plugin.Instance.EnablePrivateHouseNpcTag.Value)
+        {
+            Plugin.LOG.Msg("11111111111");
+            return true;
+        }
+        
+        var list = new Il2CppSystem.Collections.Generic.List<HeroData>();
+
+        void AddHero(int heroId)
+        {
+            if (heroId <= 0) return;
+
+            var hero = gc.worldData.GetHero(heroId);
+            if (hero != null)
+                list.Add(hero);
+        }
+
+        void AddHeroes(Il2CppSystem.Collections.Generic.List<int> heroIds)
+        {
+            foreach (var id in heroIds)
+            {
+                AddHero(id);
+            }
+        }
+
+        AddHero(player.Lover);
+        AddHero(player.Teacher);
+        AddHeroes(player.Friends);
+        AddHeroes(player.Brothers);
+        AddHeroes(player.PreLovers);
+
+        if (list.Count == 0) return true;
+        
+        cc.ShowChoosePanel(
+            ChooseType.Hero,
+            list,
+            __instance.gameObject,
+            "ChooseManageTagTargetResult"
+        );
+        return false;
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(PlotController), nameof(PlotController.ChooseManageTagTargetSelfHouse))]
+    public static void PlotController_ChooseManageTagTargetSelfHouse_Postfix(PlotController __instance)
+    {
+        __instance.HideInteractUI();
+    }
+
+    /// <summary>
     /// 晋升要求不受武学限制数量修改后影响影响
     /// </summary>
     /// <param name="__instance"></param>
@@ -991,7 +1089,7 @@ public class HeroDataPatch
     /// 玩家/Npc 最大天赋数量设置
     /// </summary>
     [HarmonyPostfix]
-    [HarmonyPatch(typeof(HeroData), "GetMaxTagNum")]
+    [HarmonyPatch(typeof(HeroData), nameof(HeroData.GetMaxTagNum))]
     public static void GetMaxTagNum_Postfix(HeroData __instance, ref int __result)
     {
         if (ModConfig.HaveNpcMod) return;
@@ -1157,7 +1255,9 @@ public class HeroDataPatch
         }
         return true;
     }
-
+    /// <summary>
+    /// 官府功绩
+    /// </summary>
     [HarmonyPrefix]
     [HarmonyPatch(typeof(HeroData), nameof(HeroData.ChangeGovernContribution))]
     public static bool HeroData_ChangeGovernContribution_Prefix(HeroData __instance, ref float num)
@@ -1186,6 +1286,9 @@ public class HeroDataPatch
 
         if (UIBuilderExtensions.EnabledForceIDs.Contains(forceID)) __result = true;
     }
+    /// <summary>
+    /// 战斗获得经验倍率
+    /// </summary>
     [HarmonyPrefix]
     [HarmonyPatch(typeof(HeroData), nameof(HeroData.BattleChangeSkillFightExp))]
     public static bool HeroData_BattleChangeSkillFightExp_Prefix(HeroData __instance, ref float num, 
@@ -1198,6 +1301,9 @@ public class HeroDataPatch
         
         return true;
     }
+    /// <summary>
+    /// 最大好感度
+    /// </summary>
     [HarmonyPostfix]
     [HarmonyPatch(typeof(HeroData), nameof(HeroData.GetMaxFavor))]
     public static void HeroData_GetMaxFavor_Postfix(HeroData __instance, float maxFavor, 
@@ -1206,7 +1312,9 @@ public class HeroDataPatch
         if (__instance != null && Mathf.Approximately(__result, 100) && Plugin.Instance.FavorMax.Value > 100) 
             __result = Plugin.Instance.FavorMax.Value;
     }
-    
+    /// <summary>
+    /// 金钱倍数
+    /// </summary>
     [HarmonyPrefix]
     [HarmonyPatch(typeof(HeroData), nameof(HeroData.ChangeMoney))]
     public static bool HeroData_ChangeMoney_Prefix(HeroData __instance, ref int num, bool showInfo)
@@ -1217,7 +1325,9 @@ public class HeroDataPatch
         }
         return true;
     }
-    
+    /// <summary>
+    /// 装备重量
+    /// </summary>
     [HarmonyPrefix]
     [HarmonyPatch(typeof(HeroData), nameof(HeroData.EquipItem))]
     public static bool HeroData_EquipItem_Prefix(ItemData itemData, bool playSound = false, bool showInfo = false)
@@ -1227,9 +1337,11 @@ public class HeroDataPatch
         return true;
     }
 
-    
+    /// <summary>
+    /// 好感不减
+    /// </summary>
     [HarmonyPrefix]
-    [HarmonyPatch(typeof(HeroData), "ChangeFavor")]
+    [HarmonyPatch(typeof(HeroData), nameof(HeroData.ChangeFavor))]
     public static bool HeroData_ChangeFavor_Prefix(ref float num)
     {
         if (Plugin.Instance.Hgbj.Value && num < 0f) 
@@ -1240,16 +1352,17 @@ public class HeroDataPatch
         
         return true;
     }
-
+     /// <summary>
+     /// 忠诚度
+     /// </summary>
     [HarmonyPrefix]
-    [HarmonyPatch(typeof(HeroData), "ChangeBadFame")]
-    public static bool HeroData_ChangeBadFame_Prefix(ref float num)
+    [HarmonyPatch(typeof(HeroData), nameof(HeroData.ChangeLoyal))]
+    public static bool Prefix(HeroData __instance, ref float num, bool showInfo)
     {
-        if (Plugin.Instance.Hgbj.Value && num > 0f)
-        {
-            num = 0f;
-        }
-        return true; 
+        var flag = HeroHelper.TryReadPlayer(out var player);
+        if (!Plugin.Instance.LoyalLockFlag.Value || !flag || __instance == null || player.belongForceID != __instance.belongForceID || num >= 0) return true;
+        num = 0;
+        return true;
     }
 }
 

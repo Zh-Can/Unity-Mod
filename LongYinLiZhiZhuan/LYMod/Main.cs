@@ -101,6 +101,9 @@ public class Plugin : MelonMod
     public MelonPreferences_Entry<bool> WeatherLockSunnyFlag = null!; // 天气锁定晴天
     public MelonPreferences_Entry<bool> FastRemoveTag = null!; // 快速遗忘天赋
     public MelonPreferences_Entry<bool> Relation999Flag = null!; // 友人/结义/情侣上限99
+    public MelonPreferences_Entry<bool> LoyalLockFlag = null!; // 自门派忠诚不减
+    public MelonPreferences_Entry<bool> EnableNpcEquipAndSkill = null!; // Npc管理装备和技能
+    public MelonPreferences_Entry<bool> EnablePrivateHouseNpcTag = null!; // 私宅管理npc天赋
     
     
     private MelonPreferences_Entry<bool> _useModifier = null!; // 使用组合键
@@ -244,6 +247,9 @@ public class Plugin : MelonMod
         WeatherLockSunnyFlag = MainCategory.CreateEntry("WeatherLockSunnyFlag", false,  description: "天气锁定晴天开关");
         FastRemoveTag = MainCategory.CreateEntry("FastRemoveTag", false,  description: "快速遗忘天赋开关");
         Relation999Flag = MainCategory.CreateEntry("Relation999Flag", false,  description: "友人/结义/情侣上限99");
+        LoyalLockFlag = MainCategory.CreateEntry("LoyalLockFlag", false,  description: "自门派忠诚度不减");
+        EnableNpcEquipAndSkill = MainCategory.CreateEntry("EnableNpcEquipAndSkill", false,  description: "Npc管理装备和技能开关");
+        EnablePrivateHouseNpcTag = MainCategory.CreateEntry("EnablePrivateHouseNpcTag", false,  description: "私宅管理npc天赋");
         #endregion
       
         var harmony = new HarmonyLib.Harmony("LYMod");
@@ -340,21 +346,7 @@ public class Plugin : MelonMod
         }
         if (Input.GetKeyDown(KeyCode.KeypadPlus))
         {
-            var a = GlobalData.HeroForceLvName;
-            foreach (var b in a)
-            {
-                LOG.Msg(b);
-            }
-            a = GlobalData.HeroServantForceLvName;
-            foreach (var b in a)
-            {
-                LOG.Msg(b);
-            }
-            a = GlobalData.HeroFreeForceLvName;
-            foreach (var b in a)
-            {
-                LOG.Msg(b);
-            }
+            
         }
         // if (Input.GetKeyDown(KeyCode.KeypadPlus))
         // {
@@ -646,7 +638,8 @@ public class Plugin : MelonMod
             .EndHorizontal()
             .Space(5)
             .AddAutoSaveRow("无前置天赋要求", AnyTagFlag, "武学修炼限制倍数", KungFuMaxLimitTimes, labelWidth:150)
-            .AddAutoSave("在闭关/私宅快速移除天赋", FastRemoveTag)
+            .AddAutoSaveRow("在闭关/私宅快速移除天赋", FastRemoveTag, "Npc技能和装备管理", EnableNpcEquipAndSkill)
+            .AddAutoSave("私宅管理有关系的NPC天赋", EnablePrivateHouseNpcTag)
             .AddAutoSaveRow("玩家天赋数量上限", PlayerMaxTagNum, "Npc天赋数量上限", NpcMaxTagNum,  labelWidth:150)
             .AddAutoSaveRow("突破潜力限制(无限制)",BreakMaxLimitFlag, "突破潜力限制不对玩家生效", BreakMaxLimitNotForPlayerFlag)
             .AddLabelRow("修改读取到人物的潜力：", 200)
@@ -766,7 +759,7 @@ public class Plugin : MelonMod
             {
                 GameController.Instance.worldData.ChangeSpeEnhanceStoneNum(10,true);
             }, width:150)
-            .AddAutoSave("掌门演武", ZmywFlag)
+            .AddAutoSaveRow("掌门演武", ZmywFlag, "自门派忠诚不减", LoyalLockFlag)
             .BeginHorizontal()
             .AddButton("添加所有书籍到星辰楼", OtherHelper.GenAllBookToSpeBookStorage, width:200)
             .Space(10)
