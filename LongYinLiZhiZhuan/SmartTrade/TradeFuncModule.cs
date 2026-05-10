@@ -576,8 +576,16 @@ public static class TradeUIControllerPatch
         var leftText = __instance.leftDiscount.GetComponent<SimpleDetailText>()?.text;
         var areaText = __instance.areaDiscount.GetComponent<SimpleDetailText>()?.text;
         if (leftText == null || areaText == null) return;
-        var sell = int.Parse(Regex.Match(leftText, @"出售价格(\d+)%").Groups[1].Value);
-        var area = int.Parse(Regex.Match(areaText, @"买卖价格x(\d+)%").Groups[1].Value);
+        var sellMatch = Regex.Match(leftText, @"出售价格(\d+)%");
+        var areaMatch = Regex.Match(areaText, @"买卖价格x(\d+)%");
+        if (!sellMatch.Success || !areaMatch.Success) 
+        {
+            Plugin.SellRate = 1f;
+            Plugin.AreaRate = 1f;
+            return;
+        }
+        var sell = int.Parse(sellMatch.Groups[1].Value);
+        var area = int.Parse(areaMatch.Groups[1].Value);
         Plugin.SellRate = sell / 100f;
         Plugin.AreaRate = area / 100f;
     }
