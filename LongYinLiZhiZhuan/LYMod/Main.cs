@@ -647,7 +647,7 @@ public class Plugin : MelonMod
             .EndHorizontal()
             .Space(5)
             .AddAutoSaveRow("无前置天赋要求", AnyTagFlag, "武学修炼限制倍数", KungFuMaxLimitTimes, labelWidth:150)
-            .AddAutoSaveRow("在闭关/私宅快速移除天赋", FastRemoveTag, "Npc技能和装备管理", EnableNpcEquipAndSkill)
+            .AddAutoSaveRow("在闭关/私宅快速移除天赋", FastRemoveTag, "有关系的Npc技能和装备管理", EnableNpcEquipAndSkill)
             .AddAutoSave("私宅管理有关系的NPC天赋", EnablePrivateHouseNpcTag)
             .AddAutoSaveRow("玩家天赋数量上限", PlayerMaxTagNum, "Npc天赋数量上限", NpcMaxTagNum,  labelWidth:150)
             .AddAutoSaveRow("突破潜力限制(无限制)",BreakMaxLimitFlag, "突破潜力限制不对玩家生效", BreakMaxLimitNotForPlayerFlag)
