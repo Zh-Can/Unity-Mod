@@ -2025,6 +2025,7 @@ public class ItemListDataPatches
             {
                 if (Plugin.Instance.RedTreasure.Value)
                 {
+                    var tempItem = new ItemData(ItemType.Treasure).SetTreasureData(targetItem.subType, 5, 5);
                     var list = targetItem.treasureData.treasureLv;
                     for (int i = 0; i < list.Count; i++)
                     {
@@ -2033,6 +2034,8 @@ public class ItemListDataPatches
                     targetItem.itemLv = 5;
                     targetItem.value = targetItem.GetTreasureRealValue();
                     targetItem.rareLv = 5;
+                    targetItem.name = tempItem.name;
+                    targetItem.subType = tempItem.subType;
                 }
                 if (Plugin.Instance.GoodTreasure.Value)
                 {
