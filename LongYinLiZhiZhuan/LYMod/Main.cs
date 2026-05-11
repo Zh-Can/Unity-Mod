@@ -791,7 +791,7 @@ public class Plugin : MelonMod
             .AddAutoSaveRow("指点满级",TeachNpc,"传授满级:", TeachNewSkillToNpc)
             .AddAutoSaveRow("无限交互",Interaction,"传授任意技能:", TeachAnyNewSkill)
             .AddAutoSaveRow("队友离队天数", TeammateLeaveDay, "不加恶名", BzemFlag)
-            .AddAutoSave("玩家触发伴侣不开心事件", PlayerLoverUnHappyEventFlag)
+            .AddAutoSave("关闭玩家伴侣不开心事件", PlayerLoverUnHappyEventFlag)
             .EndFoldout();
         
         builder.BeginFoldout("道具相关").Space(10)

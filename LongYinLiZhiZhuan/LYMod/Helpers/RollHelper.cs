@@ -120,17 +120,27 @@ public class RollHelper
             var eventName = pc.nowEvent.eventName;
             var rightItemListData = tuic.rightList.targetItemList;
             var itemNum = rightItemListData.allItem.Count == 0 ? 20 : rightItemListData.allItem.Count;
+            
             tuic.rightList.ClearAllItem();
+            tuic.rightList.targetItemList.ClearAllItem();
             rightItemListData.allItem.Clear();
+            var availableItemType = new Il2CppSystem.Collections.Generic.List<int>();
+            availableItemType.Add(0);
+            availableItemType.Add(1);
+            availableItemType.Add(2);
+            availableItemType.Add(3);
+            availableItemType.Add(4);
+            availableItemType.Add(5);
+            availableItemType.Add(6);
             if (eventName == "中元鬼市")
             {
-                gc.GenerateRandomItem(rightItemListData, itemNum, null, Plugin.Instance.ZhongyuanLv.Value, 0f, false);
+                gc.GenerateRandomItem(rightItemListData, itemNum, availableItemType, Plugin.Instance.ZhongyuanLv.Value, 0f, false);
             }
             else
             {
                 gc.GenerateRandomItem(rightItemListData,itemNum,pc.nowEvent.GetEventRareLv()*2,0f);
             }
-            tuic.rightList.RefreshItemList(true);
+            tuic.rightList.RefreshItemList(false);
            
             // 如果存在 BookOwnMark Mod，为新生成的秘籍添加标记
             if (ModConfig.HaveBookOwnMark)
