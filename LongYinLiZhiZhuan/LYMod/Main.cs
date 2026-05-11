@@ -107,6 +107,7 @@ public class Plugin : MelonMod
     public MelonPreferences_Entry<bool> EnableNpcEquipAndSkill = null!; // Npc管理装备和技能
     public MelonPreferences_Entry<bool> EnablePrivateHouseNpcTag = null!; // 私宅管理npc天赋
     public MelonPreferences_Entry<bool> BzemFlag = null!; // 不增恶名
+    public MelonPreferences_Entry<bool> PlayerLoverUnHappyEventFlag = null!; // 玩家是否让自己的伴侣不开心了
     
     
     private MelonPreferences_Entry<bool> _useModifier = null!; // 使用组合键
@@ -256,6 +257,7 @@ public class Plugin : MelonMod
         EnablePrivateHouseNpcTag = MainCategory.CreateEntry("EnablePrivateHouseNpcTag", false,  description: "私宅管理npc天赋");
         EnableChangeForceJobCdZero = MainCategory.CreateEntry("EnableChangeForceJobCDZero", false,  description: "门派职位变更cd0开关");
         BzemFlag = MainCategory.CreateEntry("bzemFlag", false,  description: "不增恶名");
+        PlayerLoverUnHappyEventFlag = MainCategory.CreateEntry("PlayerLoverUnHappyEventFlag", false,  description: "玩家是否让自己的伴侣不开心了");
         #endregion
       
         var harmony = new HarmonyLib.Harmony("LYMod");
@@ -789,6 +791,7 @@ public class Plugin : MelonMod
             .AddAutoSaveRow("指点满级",TeachNpc,"传授满级:", TeachNewSkillToNpc)
             .AddAutoSaveRow("无限交互",Interaction,"传授任意技能:", TeachAnyNewSkill)
             .AddAutoSaveRow("队友离队天数", TeammateLeaveDay, "不加恶名", BzemFlag)
+            .AddAutoSave("玩家触发伴侣不开心事件", PlayerLoverUnHappyEventFlag)
             .EndFoldout();
         
         builder.BeginFoldout("道具相关").Space(10)

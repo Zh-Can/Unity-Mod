@@ -1103,6 +1103,15 @@ public class StudySkillPatches
 public class HeroDataPatch
 {
     /// <summary>
+    /// 玩家情侣争风吃醋发生不愉快事件
+    /// </summary>
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(HeroData), nameof(HeroData.CheckPlayerMakeLoverUnhappy))]
+    public static bool HeroData_CheckPlayerMakeLoverUnhappy_Patch(HeroData __instance)
+    {
+        return !Plugin.Instance.PlayerLoverUnHappyEventFlag.Value;
+    }
+    /// <summary>
     /// 不增恶名
     /// </summary>
     [HarmonyPrefix]
