@@ -57,7 +57,7 @@ public class LoadSavePostPatches
                     break;
                 case "NPC管理Mod" or "TeammateManagerMod":
                     OtherHelper.AddInfoTab("【LYMod】由于加载了 <color=#FF8C06>NPC管理Mod</color>，LYMod的<color=#9A7CFF>【天赋上限设置】</color>，<color=#9A7CFF>【武学修习数量上限】</color>，<color=#9A7CFF>【入队时间修改】</color><color=#FF0000>失效</color>", lastTime:20f);
-                    Plugin.LOG.Msg("【LYMod】由于加载了 NPC管理Mod，LYMod的【天赋上限设置】，【武学修习数量上限】，【入队时间修改】失效");
+                    Plugin.LOG.Msg("【LYMod】由于加载了 NPC管理Mod，LYMod的【天赋上限设置】，【入队时间修改】失效");
                     ModConfig.HaveNpcMod = true;
                     break;
                 case "ReadBookPlus":
@@ -74,7 +74,7 @@ public class LoadSavePostPatches
         // 游戏进入时自动加载建筑倍率配置
         UIBuilderExtensions.RefreshBuildingList();
         // 修改武学修炼数量限制倍数
-        OtherHelper.ChaneMaxNum();
+        // OtherHelper.ChaneMaxNum();
         
         // 进入存档后自动修改玩家门派衣服为指定衣服
         var flag = HeroHelper.TryReadPlayer(out var player);

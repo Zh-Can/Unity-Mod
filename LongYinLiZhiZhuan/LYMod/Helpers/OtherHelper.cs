@@ -1,4 +1,5 @@
-﻿using Il2Cpp;
+﻿using System.Collections;
+using Il2Cpp;
 using UnityEngine;
 
 namespace LYMod.Helpers;
@@ -75,22 +76,22 @@ public static class OtherHelper
         infoController.AddInfoTab(infoText, atlasName, infoPic, soundName, volumn, lastTime, picColor);
     }
 
-    /// <summary>
-    ///     修改武学修炼数量限制倍数
-    /// </summary>
-    public static void ChaneMaxNum()
-    {
-        if (ModConfig.HaveNpcMod) return;
-
-        List<float> skillBaseNum = new() { 12, 10, 8, 6, 4, 2 };
-
-        var maxSkillNum = GlobalData.MaxSkillNum;
-        if (maxSkillNum.Count == 6)
-            for (var i = 0; i < 6; i++)
-                maxSkillNum[i] = skillBaseNum[i] * Plugin.Instance.KungFuMaxLimitTimes.Value;
-
-        GlobalData.MaxSkillNum = maxSkillNum;
-    }
+    // /// <summary>
+    // ///     修改武学修炼数量限制倍数
+    // /// </summary>
+    // public static void ChaneMaxNum()
+    // {
+    //     if (ModConfig.HaveNpcMod) return;
+    //
+    //     List<float> skillBaseNum = new() { 12, 10, 8, 6, 4, 2 };
+    //
+    //     var maxSkillNum = GlobalData.MaxSkillNum;
+    //     if (maxSkillNum.Count == 6)
+    //         for (var i = 0; i < 6; i++)
+    //             maxSkillNum[i] = skillBaseNum[i] * Plugin.Instance.KungFuMaxLimitTimes.Value;
+    //
+    //     GlobalData.MaxSkillNum = maxSkillNum;
+    // }
 
     /// <summary>
     ///     添加所有书到星辰阁
@@ -222,4 +223,34 @@ public static class OtherHelper
             Plugin.LOG.Msg("所有图鉴已经解锁，无需重复操作");
         }
     }
+
+    public static IEnumerator OverrideExtraAddData()
+    {
+        yield return null;
+        if (HeroHelper.TryReadPlayer(out var player))
+        {
+            var skills = player.kungfuSkills;
+            var arr = new[] {1, 1, 2, 2, 3, 3};
+            foreach (var skill in skills)
+            {
+                var ids = skill.GetBreakThroughAvailableChoice();
+                var dict = new Il2CppSystem.Collections.Generic.Dictionary<int, float>();
+                foreach (var id in ids)
+                {
+                    bool hasForceBonus = player.HaveForceFunction(14);
+                    // 计算倍数
+                    var rareLv = 5;
+                    float multiplier = Mathf.Max(0.5f, (hasForceBonus ? 1 : 0) + rareLv);
+                    
+                    // 获取突破选项基础数据
+                    var speAddBase = GameDataController.Instance.speAddDataBase[id];
+                    // 设置最终数值
+                    int skillRareLv = Mathf.Clamp(skill.DataBase().rareLv, 0, arr.Length - 1);
+                    dict[id] = multiplier * speAddBase.speValue * arr[skillRareLv];
+                }
+                skill.extraAddData.heroSpeAddData = dict;
+            }
+        }
+    }
+
 }

@@ -11,6 +11,7 @@ using Il2Cpp;
 using LYMod.Helpers;
 using MelonLoader;
 using UnityEngine.UI;
+using Debug = System.Diagnostics.Debug;
 
 namespace LYMod;
 
@@ -577,7 +578,6 @@ public class ChooseControllerPatches
         {
             __result = 1;
         }
-        
     }
     
     [HarmonyPostfix]
@@ -590,58 +590,101 @@ public class ChooseControllerPatches
         }
     }
 }
+
 public class IdentifyMatchControllerPatches
 {
-     [HarmonyPrefix]
-     [HarmonyPatch(typeof(IdentifyMatchController), nameof(IdentifyMatchController.StartNewRound))]
-     public static bool IdentifyMatchController_StartNewRound_Prefix(IdentifyMatchController __instance, ref float waitTime)
-     {
-         if (!Plugin.Instance.AutoJianBaoFlag.Value) return true;
-         waitTime = 0.1f;
-         return true;
-     }
-     
-     [HarmonyPostfix]
-     [HarmonyPatch(typeof(IdentifyMatchController), nameof(IdentifyMatchController.StartNewRound))]
-     public static void IdentifyMatchController_StartNewRound_Postfix(IdentifyMatchController __instance,float waitTime)
-     {
-         if (!Plugin.Instance.AutoJianBaoFlag.Value) return;
-         
-         MelonCoroutines.Start(WaitAndSelect(__instance));
-     }
-     private static System.Collections.IEnumerator WaitAndSelect(IdentifyMatchController controller)
-     {
-         // 等待一小段时间让UI完全显示
-         yield return new WaitForSeconds(1f);
-            
-         // 等待状态变为 Choose（可选择状态）
-         while (controller.identifyMatchState != IdentifyMatchState.Choose)
-         {
-             yield return null;
-         }
-            
-         // 再等待一小段时间确保所有宝藏都已创建
-         yield return new WaitForSeconds(0.1f);
-            
-         AutoSelectHighestValueTreasure(controller);
-     }
-     private static void AutoSelectHighestValueTreasure(IdentifyMatchController controller)
-     {
-         List<float> list = new List<float>();
-         var il2CppArrayBase = controller.identifyMatchUIPanel.GetComponentsInChildren<ItemIconController>();
-         if (il2CppArrayBase is { Length: > 0 })
-         {
-             foreach (ItemIconController itemIconController in il2CppArrayBase)
-             {
-                 if (itemIconController != null && itemIconController.itemData != null)
-                 {
-                     list.Add(itemIconController.itemData.GetTreasureRealValue());
-                 }
-             }
-             int index = list.IndexOf(list.Max());
-             controller.SetNowChooseTreasure(il2CppArrayBase[index].gameObject);
-         }
-     }
+    private static int _roundVersion;
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(IdentifyMatchController), nameof(IdentifyMatchController.StartNewRound))]
+    public static void IdentifyMatchController_StartNewRound_Postfix(
+        IdentifyMatchController __instance,
+        float waitTime)
+    {
+        if (!Plugin.Instance.AutoJianBaoFlag.Value || __instance == null)
+            return;
+
+        var myVersion = ++_roundVersion;
+
+        MelonCoroutines.Start(WaitAndSelect(__instance, myVersion));
+    }
+
+    private static IEnumerator WaitAndSelect(
+        IdentifyMatchController controller,
+        int version)
+    {
+        if (controller == null)
+            yield break;
+
+        // 等待进入可选择状态
+        while (controller != null &&
+               version == _roundVersion &&
+               controller.identifyMatchState != IdentifyMatchState.Choose)
+            yield return null;
+
+        if (controller == null || version != _roundVersion)
+            yield break;
+
+        // 等两帧，让UI和内部状态同步
+        yield return null;
+        yield return null;
+
+        if (controller == null || version != _roundVersion)
+            yield break;
+
+        AutoSelectHighestValueTreasure(controller);
+
+        if (controller == null || version != _roundVersion)
+            yield break;
+
+        // 再等一帧，确保 SetNowChooseTreasure 生效
+        yield return null;
+
+        if (controller == null ||
+            version != _roundVersion ||
+            controller.nowChooseTreasure == null)
+            yield break;
+
+        try
+        {
+            controller.SureButtonClicked();
+        }
+        catch (Exception ex)
+        {
+            Plugin.LOG.Error($"AutoJianBao Error: {ex}");
+        }
+    }
+
+    private static void AutoSelectHighestValueTreasure(IdentifyMatchController controller)
+    {
+        if (controller?.identifyMatchUIPanel == null)
+            return;
+
+        var icons = controller.identifyMatchUIPanel
+            .GetComponentsInChildren<ItemIconController>();
+
+        if (icons == null || icons.Length == 0)
+            return;
+
+        ItemIconController best = null;
+        var maxValue = float.MinValue;
+
+        foreach (var icon in icons)
+        {
+            if (icon?.itemData == null)
+                continue;
+
+            float value = icon.itemData.GetTreasureRealValue();
+
+            if (value > maxValue)
+            {
+                maxValue = value;
+                best = icon;
+            }
+        }
+
+        if (best != null) controller.SetNowChooseTreasure(best.gameObject);
+    }
 }
 
 
@@ -984,6 +1027,7 @@ public class AreaBuildingDataPatches
 // 指定突破加的什么属性
 public class BreakThroughChoiceControllerPatch
 {
+    private static KungfuSkillLvData? _kungfuSkillLvData;
     [HarmonyPostfix]
     [HarmonyPatch(typeof(KungfuSkillLvData), nameof(KungfuSkillLvData.GetBreakThroughAvailableChoice))]
     public static void KungfuSkillLvData_GetBreakThroughAvailableChoice_Postfix(KungfuSkillLvData __instance,
@@ -1003,24 +1047,52 @@ public class BreakThroughChoiceControllerPatch
             list.ForEach(__result.Add);
             Plugin.Instance.BreakChoiceFlag = false;
         }
+
+        _kungfuSkillLvData = __instance;
     }
     
     [HarmonyPrefix]
     [HarmonyPatch(typeof(BreakThroughChoiceController), nameof(BreakThroughChoiceController.OnClick))]
-    public static bool BreakThroughChoiceController_OnClick_Postfix(BreakThroughChoiceController __instance)
+    public static bool BreakThroughChoiceController_OnClick_Prefix(BreakThroughChoiceController __instance)
     {
         if (__instance != null)
         {
-            var heroSpeAddData = __instance.extraAddData.heroSpeAddData;
-            
             if (Plugin.Instance.BreakFlag)
             {
-                heroSpeAddData.Clear();
-                heroSpeAddData[int.Parse(Plugin.Instance.BreakType)] = float.Parse(Plugin.Instance.BreakValue);
+                __instance.extraAddData.Set(int.Parse(Plugin.Instance.BreakType),
+                    float.Parse(Plugin.Instance.BreakValue));
                 Plugin.Instance.BreakFlag = false;
             }
         }
         return true;
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(BreakThroughController), nameof(BreakThroughController.BreakThroughChoiceClicked))]
+    public static void BreakThroughController_BreakThroughChoiceClicked_Postfix(BreakThroughController __instance, BreakThroughChoiceController targetChoice)
+    {
+        if (Plugin.Instance.PlayerAllBreakThroughFlag.Value && HeroHelper.TryReadPlayer(out var player))
+        {
+            
+            var breakThroughAvailableChoice = _kungfuSkillLvData.GetBreakThroughAvailableChoice();
+            var dict = new Il2CppSystem.Collections.Generic.Dictionary<int, float>();
+            foreach (var id in breakThroughAvailableChoice)
+            {
+                bool hasForceBonus = player.HaveForceFunction(14);
+                // 计算倍数
+                float multiplier = Mathf.Max(0.5f, (hasForceBonus ? 1 : 0) + targetChoice.rareLv);
+                // 获取突破选项基础数据
+                var speAddBase = GameDataController.Instance.speAddDataBase[id];
+                // 设置最终数值
+                if (dict.TryGetValue(id, out var value))
+                    dict[id] = multiplier * speAddBase.speValue + value;
+                else
+                    dict[id] = multiplier * speAddBase.speValue;
+            }
+
+            _kungfuSkillLvData.extraAddData.heroSpeAddData = dict;
+            
+        }
     }
 }
 
@@ -1228,6 +1300,7 @@ public class HeroDataPatch
         AddHeroes(player.Friends);
         AddHeroes(player.Brothers);
         AddHeroes(player.PreLovers);
+        AddHeroes(player.teamMates);
 
         if (list.Count == 0) return true;
         
@@ -1247,18 +1320,18 @@ public class HeroDataPatch
         __instance.HideInteractUI();
     }
 
-    /// <summary>
-    /// 晋升要求不受武学限制数量修改后影响影响
-    /// </summary>
-    /// <param name="__instance"></param>
-    /// <param name="__result"></param>
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(HeroData), nameof(HeroData.GetUpgradeForceLvNeedSkillNum))]
-    public static void HeroData_GetUpgradeForceLvNeedSkillNum_Postfix(HeroData __instance, ref int __result)
-    {
-        if (ModConfig.HaveNpcMod) return;
-        __result /= Plugin.Instance.KungFuMaxLimitTimes.Value;
-    }
+    // /// <summary>
+    // /// 晋升要求不受武学限制数量修改后影响影响
+    // /// </summary>
+    // /// <param name="__instance"></param>
+    // /// <param name="__result"></param>
+    // [HarmonyPostfix]
+    // [HarmonyPatch(typeof(HeroData), nameof(HeroData.GetUpgradeForceLvNeedSkillNum))]
+    // public static void HeroData_GetUpgradeForceLvNeedSkillNum_Postfix(HeroData __instance, ref int __result)
+    // {
+    //     if (ModConfig.HaveNpcMod) return;
+    //     __result /= Plugin.Instance.KungFuMaxLimitTimes.Value;
+    // }
     
     /// <summary>
     /// 玩家/Npc 最大天赋数量设置
@@ -1443,23 +1516,39 @@ public class HeroDataPatch
     }
     
     // 所有门派特性生效
-    [HarmonyPostfix]
+    [HarmonyPrefix]
     [HarmonyPatch(typeof(HeroData), nameof(HeroData.HaveForceFunction))]
-    public static void HeroData_HaveForceFunction_Postfix(HeroData __instance,int forceID, ref bool __result)
+    public static bool HeroData_HaveForceFunction_Prefix(HeroData __instance,int forceID, ref bool __result)
     {
         if (UIBuilderExtensions.EnabledForceIDs.Count == 0)
         {
             UIBuilderExtensions.RefreshForceList();
         }
-        // 如果不是玩家
-        if (__instance is not { heroID: 0 })
-        {
-            var flag = HeroHelper.TryReadPlayer(out var player);
-            if (!flag || player.belongForceID == -1 || player.belongForceID != forceID) return;
-        }
 
-        if (UIBuilderExtensions.EnabledForceIDs.Contains(forceID)) __result = true;
+        if (!HeroHelper.TryReadPlayer(out var player))
+        {
+            __result = false;
+            return false;
+        }
+        
+        // 1. 玩家本人：所有启用的门派特性都可用
+        if (__instance.heroID == 0)
+        {
+            __result = UIBuilderExtensions.EnabledForceIDs.Contains(forceID);
+            return false;
+        }
+         
+        // 2. 同门派 NPC：继承玩家的所有门派特性
+        if (player.belongForceID != -1 && __instance.IsPlayerSameForce())
+        {
+            __result = UIBuilderExtensions.EnabledForceIDs.Contains(forceID);
+            return false;
+        }
+        // 3. 其他 NPC：只有自己的门派特性
+        __result = __instance.belongForceID == forceID;
+        return false;
     }
+    
     /// <summary>
     /// 战斗获得经验倍率
     /// </summary>
@@ -1939,7 +2028,7 @@ public class ItemListDataPatches
     
     [HarmonyPostfix]
     [HarmonyPatch(typeof(ItemListData), nameof(ItemListData.GetItem), typeof(ItemData), typeof(bool))]
-    public static void ItemListData_GetItem_Postfix(ItemListData? __instance, ItemData targetItem, bool showPopInfo = false)
+    public static void ItemListData_GetItem_Postfix(ItemListData? __instance, ItemData targetItem, bool showPopInfo)
     {
         if (__instance?.GetHero() != null && __instance.GetHero().heroID == 0)
         {
@@ -1977,7 +2066,7 @@ public class ItemListDataPatches
                     }
                     targetItem.equipmentData.extraAddData.heroSpeAddData = newDict;
                 }
-                else if  (targetItem.type == ItemType.Material)
+                else if (targetItem.type == ItemType.Material)
                 {
                     var oldDict = targetItem.materialData.extraAddData.heroSpeAddData;
                     foreach (var dict in oldDict)
@@ -1992,6 +2081,41 @@ public class ItemListDataPatches
                         }
                     }
                     targetItem.materialData.extraAddData.heroSpeAddData = newDict;
+                }
+                else if (targetItem.type == ItemType.Med)
+                {
+                    targetItem.rareLv = 5;
+                    var baseItem = GameDataController.Instance.medDataBase[targetItem.itemID];
+                    
+                    float multiplier = targetItem.rareLv / Mathf.Clamp(targetItem.itemLv * 5f, 5f, 20f) + 1.0f;
+                    targetItem.medFoodData.changeHeroState = baseItem.medFoodData.changeHeroState * multiplier;
+                    
+                    targetItem.CountValueAndWeight();
+                }
+                else if (targetItem.type == ItemType.Food)
+                {
+                    targetItem.rareLv = 5;
+                    var baseItem = GameDataController.Instance.foodDataBase[targetItem.itemID];
+                    float multiplier = targetItem.rareLv / Mathf.Clamp(targetItem.itemLv * 5f, 5f, 20f) + 1.0f;
+                    targetItem.medFoodData.changeHeroState = baseItem.medFoodData.changeHeroState * multiplier;
+                    // 生成额外属性加成（如果配置了随机加成值）
+                    int randomSpeAddValue = targetItem.medFoodData.randomSpeAddValue;
+                    if (randomSpeAddValue > 0)
+                    {
+                        // 计算总值：2 * (稀有度 + 5 * 随机加成基础值)
+                        int totalValue = 2 * (targetItem.rareLv + 5 * randomSpeAddValue);
+
+                        targetItem.medFoodData.extraAddData.heroSpeAddData.Clear();
+                        // 生成属性加成
+                        GameController.Instance.GenerateSpeAddByValue(
+                            totalValue,
+                            targetItem.medFoodData.extraAddData,
+                            1,      
+                            0.0f, 
+                            1      
+                        );
+                    }
+                    targetItem.CountValueAndWeight();
                 }
                 else
                 {
@@ -2010,7 +2134,6 @@ public class ItemListDataPatches
             {
                 targetItem.itemLv = 5;
                 targetItem.rareLv = 5;
-                targetItem.value = 9999;
                 
                 var inputBox = OtherHelper.ParseInputBox(Plugin.Instance.MaterialAttr);
                 if (inputBox == null)
@@ -2019,6 +2142,9 @@ public class ItemListDataPatches
                 if (il2CppDictionary == null)
                     return;
                 targetItem.materialData.extraAddData.heroSpeAddData = il2CppDictionary; 
+                var tempItem = new ItemData(ItemType.Material).SetMaterialData(targetItem.subType, 5, 5);
+                targetItem.name = tempItem.name;
+                targetItem.value = (int)targetItem.CountValueAndWeight();
             }
                
             if (targetItem.type == ItemType.Treasure)

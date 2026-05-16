@@ -87,7 +87,7 @@ public class Plugin : MelonMod
     public MelonPreferences_Entry<int> TeammateLeaveDay = null!; // 队友离队时间
     public MelonPreferences_Entry<int> PlayerMaxTagNum = null!; // 玩家天赋数量上限
     public MelonPreferences_Entry<int> NpcMaxTagNum = null!; // NPC天赋数量上限
-    public MelonPreferences_Entry<int> KungFuMaxLimitTimes = null!; // 武学修炼数量限制倍数
+    // public MelonPreferences_Entry<int> KungFuMaxLimitTimes = null!; // 武学修炼数量限制倍数
     public MelonPreferences_Entry<bool> AddSpeBuildingsFlag = null!; // 添加特殊建筑开关
     public MelonPreferences_Entry<bool> BattleMaxTime999Flag = null!; // 战斗最大回合数999开关
     public MelonPreferences_Entry<bool> AutoReadBookFlag = null!; // 一键阅读开关
@@ -108,6 +108,9 @@ public class Plugin : MelonMod
     public MelonPreferences_Entry<bool> EnablePrivateHouseNpcTag = null!; // 私宅管理npc天赋
     public MelonPreferences_Entry<bool> BzemFlag = null!; // 不增恶名
     public MelonPreferences_Entry<bool> PlayerLoverUnHappyEventFlag = null!; // 玩家是否让自己的伴侣不开心了
+    public MelonPreferences_Entry<bool> PlayerAllBreakThroughFlag = null!; // 玩家突破全词条开关
+    public MelonPreferences_Entry<bool> BookWriterSelfFlag = null!; // 私宅抄书/默写开关
+    public MelonPreferences_Entry<bool> AskHeroJoinForceFlag = null!; // 请人物加入玩家门派是否收为徒弟
     
     
     private MelonPreferences_Entry<bool> _useModifier = null!; // 使用组合键
@@ -188,7 +191,7 @@ public class Plugin : MelonMod
         FavorMax = MainCategory.CreateEntry("FavorMax", 100.0f, description:"最大好感度");
         MaxSpeBuildingNum = MainCategory.CreateEntry("MaxSpeBuildingNum", 5, description:"特殊建筑限制数");
         BattleChangeSkillFightRate = MainCategory.CreateEntry("BattleChangeSkillFightRate", 1.0f, description:"实战经验倍率");
-        ZhongyuanLv = MainCategory.CreateEntry("ZhongyuanLv", 13.5f, description:"鬼市商店等级");
+        ZhongyuanLv = MainCategory.CreateEntry("ZhongyuanLv", -1.0f, description:"鬼市商店等级");
         ChanDaoRate = MainCategory.CreateEntry("ChanDaoRate", 1.0f, description:"禅宗道法修行倍率");
         ForceSpeFunctions = MainCategory.CreateEntry("ForceSpeFunctions", "", description:"选择的门派特性");
         BuildingTimesMapStr = MainCategory.CreateEntry("BuildingTimesMapStr", "",description:"建筑倍率映射 格式:索引:倍率,索引:倍率");
@@ -199,7 +202,7 @@ public class Plugin : MelonMod
         TeammateLeaveDay = MainCategory.CreateEntry("TeammateLeaveDay", 30,description:"队友自动离队天数");
         PlayerMaxTagNum = MainCategory.CreateEntry("PlayerMaxTagNum", 9,description:"玩家天赋数量上限");
         NpcMaxTagNum = MainCategory.CreateEntry("NpcMaxTagNum", 9,description:"Npc天赋数量上限");
-        KungFuMaxLimitTimes = MainCategory.CreateEntry("KungFuMaxLimitTimes", 1,description:"武学修炼限制倍数");
+        // KungFuMaxLimitTimes = MainCategory.CreateEntry("KungFuMaxLimitTimes", 1,description:"武学修炼限制倍数");
         SpecifiedSkinId = MainCategory.CreateEntry("SpecifiedSkinId", 99999,description:"指定的服装ID（99999为默认不修改）");
         NewSaveSliderMin = MainCategory.CreateEntry("NewSaveSliderMin", -5, description:"新档自定义难度滑块最小值");
         NewSaveSliderMax = MainCategory.CreateEntry("NewSaveSliderMax", 5, description:"新档自定义难度滑块最大值");
@@ -258,6 +261,9 @@ public class Plugin : MelonMod
         EnableChangeForceJobCdZero = MainCategory.CreateEntry("EnableChangeForceJobCDZero", false,  description: "门派职位变更cd0开关");
         BzemFlag = MainCategory.CreateEntry("bzemFlag", false,  description: "不增恶名");
         PlayerLoverUnHappyEventFlag = MainCategory.CreateEntry("PlayerLoverUnHappyEventFlag", false,  description: "玩家是否让自己的伴侣不开心了");
+        PlayerAllBreakThroughFlag = MainCategory.CreateEntry("PlayerAllBreakThroughFlag", false,  description: "玩家突破全词条开关");
+        BookWriterSelfFlag = MainCategory.CreateEntry("BookWriterSelfFlag", false,  description: "私宅抄书默写开关");
+        AskHeroJoinForceFlag = MainCategory.CreateEntry("AskHeroJoinForceFlag", false,  description: "请人物加入玩家门派是否收为徒弟");
         #endregion
       
         var harmony = new HarmonyLib.Harmony("LYMod");
@@ -295,6 +301,8 @@ public class Plugin : MelonMod
         harmony.PatchAll(typeof(LoadSavePostPatches));
         harmony.PatchAll(typeof(WeatherControllerPatches));
         harmony.PatchAll(typeof(TagRemoveConfirmPatches));
+        harmony.PatchAll(typeof(BookWriterPatches));
+        harmony.PatchAll(typeof(AskHeroJoinForcePatches));
         
         LOG.Msg("===================================================");
         LOG.Msg("【LYMod】LYMod is loaded! 默认打开窗体：左alt + e !");
@@ -329,7 +337,7 @@ public class Plugin : MelonMod
                 GameCustomDifficultyPatches.GetCustomDifficultyData();
             }
 
-            OtherHelper.ChaneMaxNum();
+            // OtherHelper.ChaneMaxNum();
             if (Relation999Flag.Value)
             {
                 GlobalData.MaxLoverNum = 99;
@@ -355,12 +363,13 @@ public class Plugin : MelonMod
             RollHelper.TrySpePoisonRoll();
             RollHelper.TryFightMatchRewardRoll();
         }
+        if (Input.GetKeyDown(KeyCode.KeypadPlus))
+        {
+            
+        }
         // if (Input.GetKeyDown(KeyCode.KeypadPlus))
         // {
-        //     
-        // }
-        // if (Input.GetKeyDown(KeyCode.KeypadPlus))
-        // {
+               // GameController.Instance.MonthRefreshAllBuildings(false);
         //     // HeroHelper.TryReadPlayer(out var player);
         //     // player.itemListData.money += 100000;
         //     // var weather = WeatherController.Instance;
@@ -648,9 +657,11 @@ public class Plugin : MelonMod
             }, 60)
             .EndHorizontal()
             .Space(5)
-            .AddAutoSaveRow("无前置天赋要求", AnyTagFlag, "武学修炼限制倍数", KungFuMaxLimitTimes, labelWidth:150)
+            // .AddAutoSaveRow("无前置天赋要求", AnyTagFlag, "武学修炼限制倍数", KungFuMaxLimitTimes, labelWidth:150)
+            .AddAutoSave("无前置天赋要求", AnyTagFlag)
             .AddAutoSaveRow("在闭关/私宅快速移除天赋", FastRemoveTag, "有关系的Npc技能和装备管理", EnableNpcEquipAndSkill)
-            .AddAutoSave("私宅管理有关系的NPC天赋", EnablePrivateHouseNpcTag)
+            .AddAutoSaveRow("私宅管理有关系的NPC天赋", EnablePrivateHouseNpcTag, "私宅抄书默写", BookWriterSelfFlag)
+            .AddAutoSave("请人物加入玩家门派时需确认是否收徒", AskHeroJoinForceFlag)
             .AddAutoSaveRow("玩家天赋数量上限", PlayerMaxTagNum, "Npc天赋数量上限", NpcMaxTagNum,  labelWidth:150)
             .AddAutoSaveRow("突破潜力限制(无限制)",BreakMaxLimitFlag, "突破潜力限制不对玩家生效", BreakMaxLimitNotForPlayerFlag)
             .AddLabelRow("修改读取到人物的潜力：", 200)
@@ -745,7 +756,16 @@ public class Plugin : MelonMod
                 {
                     var kfsld = btc.targetSkill;
                     var list = kfsld.GetBreakThroughAvailableChoice();
-                    BreakChoiceListStr = string.Join(",", list.ToArray());
+                    List<int> distinctList = new List<int>();
+                    foreach (int id in list)
+                    {
+                        if (!distinctList.Contains(id))
+                        {
+                            distinctList.Add(id);
+                        }
+                    }
+                    distinctList.Sort();
+                    BreakChoiceListStr = string.Join(",", distinctList.ToArray());
                 }
             }, 275)
             .EndHorizontal()
@@ -758,6 +778,12 @@ public class Plugin : MelonMod
             .AddLinkedString("指定属性的值：", ()=>BreakValue, val => BreakValue = val, "bv",labelWidth:130, inputWidth:40)
             .EndHorizontal()
             .BeginHorizontal().AddLinkedBool("突破指定类型和值",()=>BreakFlag, val => BreakFlag = val, labelWidth:170).EndHorizontal()
+            .AddLabelRow("突破属性修改方案3：")
+            .AddAutoSave("玩家全词条突破", PlayerAllBreakThroughFlag)
+            .AddButtonRow("覆盖玩家突破词条", () =>
+            {
+                MelonCoroutines.Start(OtherHelper.OverrideExtraAddData());
+            }, width:160)
             .EndFoldout();
         
         builder.BeginFoldout("门派相关").Space(10)

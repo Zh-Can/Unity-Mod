@@ -104,9 +104,15 @@ public class RollHelper
     #region 中元鬼市/商店 Roll 与 BookOwnMark 标记
 
     private static string _shopParam;
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(PlotController), nameof(PlotController.GeneratePlotShop))]
+    public static void GeneratePlotShop(PlotController __instance,string shopParam)
+    {
+        _shopParam = shopParam;
+    }
     
-    
-    // 野外商人+鬼市 + 官府兑换 + 商店
+    // 野外商人 + 鬼市 + 官府兑换 + 商店
     public static void TryZhongyuanRoll()
     {
         var tuic = TradeUIController.Instance;
@@ -114,31 +120,68 @@ public class RollHelper
         var pc = PlotController.Instance;
         var flag = HeroHelper.TryReadPlayer(out var player);
         if (pc == null || !flag || tuic == null || !tuic.tradeUI.activeInHierarchy || gc == null) return;
+        var buildUI = BuildingUIController.Instance;
         
-        if (player.GetArea() == null)
+        if (player.GetArea() == null )
         {
-            var eventName = pc.nowEvent.eventName;
+            var eventName = pc.nowEvent?.eventName;
             var rightItemListData = tuic.rightList.targetItemList;
-            var itemNum = rightItemListData.allItem.Count == 0 ? 20 : rightItemListData.allItem.Count;
+            rightItemListData.money = 5000;
             
+            if (string.IsNullOrEmpty(_shopParam)) return;
+    
             tuic.rightList.ClearAllItem();
             tuic.rightList.targetItemList.ClearAllItem();
             rightItemListData.allItem.Clear();
-            var availableItemType = new Il2CppSystem.Collections.Generic.List<int>();
-            availableItemType.Add(0);
-            availableItemType.Add(1);
-            availableItemType.Add(2);
-            availableItemType.Add(3);
-            availableItemType.Add(4);
-            availableItemType.Add(5);
-            availableItemType.Add(6);
+            
+            // 分割参数
+            string[] parts = _shopParam.Split('-');
+            if (parts.Length < 2) return;
+    
+            // 解析基础等级和难度系数
+            float baseLevel = float.Parse(parts[0]);
+            float difficultyFactor = float.Parse(parts[1]);
+            
+            // 解析物品类型列表
+            var itemTypes = new Il2CppSystem.Collections.Generic.List<int>();
+            if (parts.Length >= 3 && !string.IsNullOrWhiteSpace(parts[2]))
+            {
+                string[] typeStrs = parts[2].Split('/');
+                foreach (var typeStr in typeStrs)
+                {
+                    itemTypes.Add(int.Parse(typeStr));
+                }
+            }
+            // 计算商店等级
+            float eventDifficulty = pc.nowEvent.difficulty;
+            float shopLevel = (1.0f - (eventDifficulty * 0.005f)) * (eventDifficulty * baseLevel);
+            
+            // 计算物品数量
+            float itemCountRandom = GlobalData.RandomRange(5f, 10f);
+            int itemCount = Mathf.Max(1, Mathf.RoundToInt((Mathf.Max(0f, shopLevel) + itemCountRandom) * difficultyFactor));
+            
+            // 解析是否不随机和子类型
+            bool noRandom = false;
+            int subType = -1;
+    
+            if (parts.Length >= 4)
+            {
+                noRandom = (parts[3] == "false");
+            }
+            if (parts.Length >= 6 && !string.IsNullOrWhiteSpace(parts[5]))
+            {
+                subType = int.Parse(parts[5]);
+            }
+            
+            // Plugin.LOG.Msg($"eventDifficulty:{eventDifficulty},shopParam:{_shopParam}, itemCount:{itemCount}, shopLevel:{shopLevel}");
             if (eventName == "中元鬼市")
             {
-                gc.GenerateRandomItem(rightItemListData, itemNum, availableItemType, Plugin.Instance.ZhongyuanLv.Value, 0f, false);
+                if (Plugin.Instance.ZhongyuanLv.Value > 0) shopLevel = Plugin.Instance.ZhongyuanLv.Value;
+                gc.GenerateRandomItem(rightItemListData, itemCount, itemTypes, shopLevel, 0f, noRandom, subType);
             }
             else
             {
-                gc.GenerateRandomItem(rightItemListData,itemNum,pc.nowEvent.GetEventRareLv()*2,0f);
+                gc.GenerateRandomItem(rightItemListData, itemCount, itemTypes, shopLevel, 0f, noRandom, subType);
             }
             tuic.rightList.RefreshItemList(false);
            
@@ -150,8 +193,48 @@ public class RollHelper
         }
         else if(tuic.tradeUIType == TradeUIType.GovernStorage)
         {
-            
             gc.RefreshGovernStorage();
+            tuic.rightList.RefreshItemList(true);
+            
+            // 如果存在 BookOwnMark Mod，为新生成的秘籍添加标记
+            if (ModConfig.HaveBookOwnMark)
+            {
+                MelonCoroutines.Start(MarkOwnedBooksCoroutine(tuic));
+            }
+        }
+        else if (buildUI != null && buildUI.targetBuildingData != null)
+        {
+            
+            if (buildUI == null || buildUI.targetBuildingData == null) return;
+            
+            var buildingData = buildUI.targetBuildingData;
+            if (buildingData == null) return;
+            var shopItemList = buildingData.shopItemList;
+            var shopData = buildingData.DataBase()?.areaBuildingShopData;
+            if (shopItemList == null || shopData == null) return;
+            
+            var rightItemListData = tuic.rightList.targetItemList;
+            
+            // 生成随机因子 (0.8 ~ 1.2)
+            float randomFactor = GlobalData.RandomRange(0.8f, 1.2f);
+                
+            // 计算安全区域影响
+            float safeFactor = (player.GetArea().GetSafe() * 0.01f) + 0.5f;
+                
+            // 最终物品数量
+            int finalItemCount = Mathf.RoundToInt(
+                (buildingData.lv * 0.1f + randomFactor) * 
+                shopData.itemNum * safeFactor
+            );
+            
+            float difficultyFactor = Mathf.Max(1.0f, 1.25f - (gc.worldData.gameDifficulty * 0.06f));
+            float shopLevel = Mathf.Min(10.0f, (gc.worldData.TimeDifficulty * 0.5f + buildingData.lv * 0.5f) * difficultyFactor);
+            
+            shopItemList.ClearAllItem();
+            tuic.rightList.ClearAllItem();
+            
+            // 重新生成商店物品
+            gc.GenerateShopItem(rightItemListData, finalItemCount, shopData.itemType, shopLevel, shopData.itemBossLv, player.GetArea());
             tuic.rightList.RefreshItemList(true);
             
             // 如果存在 BookOwnMark Mod，为新生成的秘籍添加标记
@@ -162,35 +245,10 @@ public class RollHelper
         }
         else
         {
-            Plugin.LOG.Msg($"ModConfig.HaveBookOwnMark:{ModConfig.HaveBookOwnMark}");
-            var buildUI = BuildingUIController.Instance;
-            if (buildUI == null || buildUI.targetBuildingData == null) return;
-
-            var buildingData = buildUI.targetBuildingData;
-            if (buildingData == null) return;
-            var shopItemList = buildingData.shopItemList;
-            var shopData = buildingData.DataBase()?.areaBuildingShopData;
-            if (shopItemList == null || shopData == null) return;
-            
-            var rightItemListData = tuic.rightList.targetItemList;
-            
-            var oldCount = rightItemListData.allItem?.Count ?? shopData.itemNum;
-            oldCount = oldCount == 0 ? shopData.itemNum * 2  : oldCount;
-            
-            shopItemList.ClearAllItem();
-            tuic.rightList.ClearAllItem();
-            
-            // 重新生成商店物品
-            gc.GenerateRandomItem(rightItemListData, (int)oldCount, shopData.itemType, buildingData.lv, shopData.itemBossLv, false);
-            tuic.rightList.RefreshItemList(true);
-            // 如果存在 BookOwnMark Mod，为新生成的秘籍添加标记
-            if (ModConfig.HaveBookOwnMark)
-            {
-                MelonCoroutines.Start(MarkOwnedBooksCoroutine(tuic));
-            }
+            Plugin.LOG.Msg("Roll出现未知情况");
         }
     }
-    
+
     /// <summary>
     /// 协程：延迟标记已拥有的秘籍（等待UI渲染完成）
     /// </summary>
@@ -202,7 +260,7 @@ public class RollHelper
         var merchantList = tradeUI.rightList;
         if (merchantList == null || merchantList.itemGrid == null) yield break;
 
-        Plugin.LOG.Msg($"[BookOwnMark] 开始标记协程，TradeUIType: {tradeUI.tradeUIType}");
+        // Plugin.LOG.Msg($"[BookOwnMark] 开始标记协程，TradeUIType: {tradeUI.tradeUIType}");
 
         // 等待一帧，确保UI开始渲染
         yield return null;
@@ -215,7 +273,7 @@ public class RollHelper
             var icons = merchantList.itemGrid.GetComponentsInChildren<ItemIconController>(true);
             if (icons is { Length: > 0 })
             {
-                Plugin.LOG.Msg($"[BookOwnMark] 等待 {waited} 帧后找到 {icons.Length} 个图标");
+                // Plugin.LOG.Msg($"[BookOwnMark] 等待 {waited} 帧后找到 {icons.Length} 个图标");
                 break;
             }
             waited++;
@@ -232,7 +290,7 @@ public class RollHelper
 
         var ownedBookNames = GetOwnedBookNames();
         var speBookNames = GetSpeBookNames();
-        Plugin.LOG.Msg($"[BookOwnMark] 扫描到 {ownedBookNames.Count} 本普通秘籍, {speBookNames.Count} 本特殊秘籍");
+        // Plugin.LOG.Msg($"[BookOwnMark] 扫描到 {ownedBookNames.Count} 本普通秘籍, {speBookNames.Count} 本特殊秘籍");
         
         const string OWNED_MARK = " <color=#33cc86>☑</color>";
         const string SPE_BOOK_MARK = " <color=#ff3333>☑</color>";
@@ -259,14 +317,14 @@ public class RollHelper
             {
                 newName += OWNED_MARK;
                 hasMark = true;
-                Plugin.LOG.Msg($"[BookOwnMark] 标记普通秘籍: {cleanName}");
+                // Plugin.LOG.Msg($"[BookOwnMark] 标记普通秘籍: {cleanName}");
             }
             // 检查特殊仓库（红色标记）
             if (speBookNames.Contains(cleanName) && !bookName.Contains(SPE_BOOK_MARK))
             {
                 newName += SPE_BOOK_MARK;
                 hasMark = true;
-                Plugin.LOG.Msg($"[BookOwnMark] 标记特殊秘籍: {cleanName}");
+                // Plugin.LOG.Msg($"[BookOwnMark] 标记特殊秘籍: {cleanName}");
             }
 
             if (hasMark)
@@ -282,7 +340,7 @@ public class RollHelper
             }
         }
         
-        Plugin.LOG.Msg($"[BookOwnMark] 完成标记，共找到 {bookCount} 本秘籍，标记了 {markedCount} 本");
+        // Plugin.LOG.Msg($"[BookOwnMark] 完成标记，共找到 {bookCount} 本秘籍，标记了 {markedCount} 本");
     }
     
     /// <summary>
@@ -382,7 +440,7 @@ public class RollHelper
             }
         }
 
-        Plugin.LOG.Msg($"[BookOwnMark] 个人仓库: {selfCount} 本, 门派藏书阁: {forceCount} 本, 总计: {ownedBookNames.Count} 本");
+        // Plugin.LOG.Msg($"[BookOwnMark] 个人仓库: {selfCount} 本, 门派藏书阁: {forceCount} 本, 总计: {ownedBookNames.Count} 本");
         return ownedBookNames;
     }
     
