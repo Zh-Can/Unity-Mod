@@ -121,10 +121,9 @@ public class RollHelper
         var flag = HeroHelper.TryReadPlayer(out var player);
         if (pc == null || !flag || tuic == null || !tuic.tradeUI.activeInHierarchy || gc == null) return;
         var buildUI = BuildingUIController.Instance;
-        
-        if (player.GetArea() == null )
+        var eventName = pc.nowEvent?.eventName;
+        if (player.GetArea() == null || eventName == "商号甩卖" || eventName == "家传兵器")
         {
-            var eventName = pc.nowEvent?.eventName;
             var rightItemListData = tuic.rightList.targetItemList;
             rightItemListData.money = 5000;
             
@@ -246,6 +245,7 @@ public class RollHelper
         else
         {
             Plugin.LOG.Msg("Roll出现未知情况");
+            Plugin.LOG.Msg($"eventName:{eventName}");
         }
     }
 
