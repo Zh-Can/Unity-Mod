@@ -365,7 +365,11 @@ public class Plugin : MelonMod
         }
         if (Input.GetKeyDown(KeyCode.KeypadPlus))
         {
-            
+            var list = GameController.Instance.worldData.playerBookWriter;
+            LOG.Msg($"playerBookWriter Count: {list.Count}");
+            HeroHelper.TryReadPlayer(out var player);
+            var list1 = player.GetForce().bookWriterList;
+            LOG.Msg(list1.Count);
         }
         // if (Input.GetKeyDown(KeyCode.KeypadPlus))
         // {
@@ -662,6 +666,36 @@ public class Plugin : MelonMod
             .AddAutoSaveRow("在闭关/私宅快速移除天赋", FastRemoveTag, "有关系的Npc技能和装备管理", EnableNpcEquipAndSkill)
             .AddAutoSaveRow("私宅管理有关系的NPC天赋", EnablePrivateHouseNpcTag, "私宅抄书默写", BookWriterSelfFlag)
             .AddAutoSave("请人物加入玩家门派时需确认是否收徒", AskHeroJoinForceFlag)
+            .BeginHorizontal()
+            
+            .AddButtonRow("私宅设置4个槽位", () =>
+            {
+                var list = GameController.Instance.worldData.playerBookWriter;
+                var bwd = new BookWriterData();
+                bwd.Reset();
+                list.Add(bwd);
+                list.Add(bwd);
+                list.Add(bwd);
+            }, width:150)
+            .AddButtonRow("还原私宅1个槽位", () =>
+            {
+                var list = GameController.Instance.worldData.playerBookWriter;
+                list.RemoveAt(3);
+                list.RemoveAt(2);
+                list.RemoveAt(1);
+            }, width:150)
+            .EndHorizontal()
+            .AddButtonRow("5.5 bug恢复私宅1个,打开私宅后点按钮，还原私宅1个槽位", () =>
+            {
+                var list = BookWriterUIController.Instance.targetBookWriterList;
+                if (list.Count == 4 && BuildingUIController.Instance.targetBuildingData.buildingID == 73)
+                {
+                    list.RemoveAt(3);
+                    list.RemoveAt(2);
+                    list.RemoveAt(1);
+                }
+            }, width:250)
+           
             .AddAutoSaveRow("玩家天赋数量上限", PlayerMaxTagNum, "Npc天赋数量上限", NpcMaxTagNum,  labelWidth:150)
             .AddAutoSaveRow("突破潜力限制(无限制)",BreakMaxLimitFlag, "突破潜力限制不对玩家生效", BreakMaxLimitNotForPlayerFlag)
             .AddLabelRow("修改读取到人物的潜力：", 200)

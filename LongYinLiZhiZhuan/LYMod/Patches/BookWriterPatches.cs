@@ -12,35 +12,6 @@ namespace LYMod.Patches;
 /// </summary>
 public class BookWriterPatches
 {
-    /// <summary>
-    /// 4个抄书位置
-    /// </summary>
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(PlotController), nameof(PlotController.ShowBookWriterSelf))]
-    public static void PlotController_ShowBookWriterSelf_Postfix()
-    {
-        if (!Plugin.Instance.BookWriterSelfFlag.Value) return;
-        
-        // 在 ShowBookWriterUI 被调用后，强制刷新 UI 显示 4 个槽位
-        var controller = BookWriterUIController.Instance;
-        if (controller != null && controller.targetBookWriterList != null)
-        {
-            var list = controller.targetBookWriterList;
-        
-            // 补充列表到 4 个
-            while (list.Count < 4)
-            {
-                var newData = new BookWriterData();
-                newData.Reset();
-                list.Add(newData);
-            }
-        
-            // 重新刷新 UI
-            controller.RefreshUI();
-        }
-    }
-    
-
     [HarmonyPrefix]
     [HarmonyPatch(typeof(ChooseController), nameof(ChooseController.ShowChoosePanel),
         typeof(ChooseType), typeof(Il2CppSystem.Collections.Generic.List<HeroData>), typeof(GameObject), typeof(string),
@@ -50,7 +21,9 @@ public class BookWriterPatches
         string _sendResultFuc, string _sendResultParam, ChooseFilterType _filterType, string _cancelFuc)
     {
         var gc = GameController.Instance;
-        if (_sendResultFuc == "BookWriterTargetHeroChoosen" && _chooseType == ChooseType.Hero && gc != null && HeroHelper.TryReadPlayer(out var player))
+        if (Plugin.Instance.BookWriterSelfFlag.Value && _sendResultFuc == "BookWriterTargetHeroChoosen" 
+            && _chooseType == ChooseType.Hero && gc != null && HeroHelper.TryReadPlayer(out var player) 
+            && player.belongForceID != -1 && player.GetForce().MainArea().areaID != player.GetArea().areaID)
         {
             var forceId = player.belongForceID;
             var relationHeroIds = new HashSet<int>(); // 用 HashSet 自动去重
@@ -97,7 +70,6 @@ public class BookWriterPatches
                     param.Add(hero);
                 }
             }
-            
         }
     }
 }
