@@ -9,7 +9,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
-[assembly: MelonInfo(typeof(SmartTrade.Plugin), "SmartTrade", "1.7.5", "Can")]
+[assembly: MelonInfo(typeof(SmartTrade.Plugin), "SmartTrade", "1.7.6", "Can")]
 [assembly: MelonGame("TppStudio", "LongYinLiZhiZhuan")]
 [assembly: MelonPlatformDomain(MelonPlatformDomainAttribute.CompatibleDomains.IL2CPP)]
 
@@ -20,6 +20,7 @@ namespace SmartTrade
         public static Plugin Instance;
         public static MelonLogger.Instance LOG => Instance.LoggerInstance;
         private MelonPreferences_Category _mainCategory= null!;
+        private MelonPreferences_Category _smartTradeCategory = null!;
         public bool RedQuality; // 所有物品品质为红
         public bool GoodTreasure; // 珍宝品质修改当前等级全红
         
@@ -34,7 +35,8 @@ namespace SmartTrade
         // 当前英雄口才值
         public static float KouCai;
         public static List<TableListEntity> TableDatas = new();
-        public static bool SellHighQuality = true;
+        public bool SellHighQuality;
+        public bool ShopModify;
         // 身上珍宝列表
         public static List<ItemData> PlayerTreasures = new();
 
@@ -59,6 +61,7 @@ namespace SmartTrade
         private Toggle _toggleUp;
         private Toggle _toggleDown;
         private Toggle _sellHighQualityToggle;
+        private Toggle _shopModifyToggle;
         private Button _refreshButton;
         private Text _countLabel;
         private GameObject _listContent;
@@ -80,6 +83,11 @@ namespace SmartTrade
             _mainCategory.SetFilePath(MelonEnvironment.UserDataDirectory + "\\LYModConfig.cfg");
             RedQuality = _mainCategory.GetEntry<bool>("RedQuality") != null && _mainCategory.GetEntry<bool>("RedQuality").Value;
             GoodTreasure = _mainCategory.GetEntry<bool>("GoodTreasure") != null && _mainCategory.GetEntry<bool>("GoodTreasure").Value;
+            
+            _smartTradeCategory = MelonPreferences.CreateCategory("SmartTradeConfig", "智能交易配置");
+            _smartTradeCategory.SetFilePath(MelonEnvironment.UserDataDirectory + "\\SmartTradeConfig.cfg");
+            SellHighQuality = _smartTradeCategory.CreateEntry("SellHighQuality", true, description: "售卖精良以上").Value;
+            ShopModify = _smartTradeCategory.CreateEntry("ShopModify", true, description: "商店修改").Value;
         }
 
         public override void OnUpdate()
@@ -372,12 +380,41 @@ namespace SmartTrade
     
                 _sellHighQualityToggle.onValueChanged.AddListener(new Action<bool>(isOn => 
                 { 
-                    SellHighQuality = isOn; 
-                    // 动态修改label文本
+                    SellHighQuality = isOn;
+                    var entry = _smartTradeCategory.GetEntry<bool>("SellHighQuality");
+                    if (entry != null)
+                    {
+                        entry.Value = isOn;
+                        _smartTradeCategory.SaveToFile();
+                    }
                     var label = _sellHighQualityToggle.GetComponentInChildren<Text>();
                     if (label != null)
                     {
                         label.text = isOn ? "☑售卖精良以上" : "☐售卖精良以上";
+                    }
+                }));
+            }
+            #endregion
+
+            #region 商店修改Toggle
+            _shopModifyToggle = CreateToggle(toolbar1Rect, "☑商店修改", 80, 100f);
+            if (_shopModifyToggle != null)
+            {
+                _shopModifyToggle.isOn = true;
+    
+                _shopModifyToggle.onValueChanged.AddListener(new Action<bool>(isOn => 
+                { 
+                    ShopModify = isOn;
+                    var entry = _smartTradeCategory.GetEntry<bool>("ShopModify");
+                    if (entry != null)
+                    {
+                        entry.Value = isOn;
+                        _smartTradeCategory.SaveToFile();
+                    }
+                    var label = _shopModifyToggle.GetComponentInChildren<Text>();
+                    if (label != null)
+                    {
+                        label.text = isOn ? "☑商店修改" : "☐商店修改";
                     }
                 }));
             }
@@ -397,6 +434,7 @@ namespace SmartTrade
                 _countLabel.fontStyle = FontStyle.Bold;
                 _countLabel.alignment = TextAnchor.MiddleRight;
                 _countLabel.color = new Color(1f, 0.85f, 0.2f);
+                _countLabel.raycastTarget = false;
             }
 
             var countLabelRect = countLabelObj.GetComponent<RectTransform>();

@@ -38,6 +38,7 @@ namespace SmartTrade
         [HarmonyPatch(typeof(GameController), nameof(GameController.ChangeMonth))]
         public static void GameController_ChangeMonth_Postfix()
         {
+            if (!Plugin.Instance.ShopModify) return;
             ShopMoneyHelper.OnMonthChanged();
         }
     }

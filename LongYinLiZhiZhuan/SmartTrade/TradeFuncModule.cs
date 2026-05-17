@@ -388,7 +388,7 @@ namespace SmartTrade
 
                     if (!icon.itemData.treasureData.fullIdentified) continue;
 
-                    if (icon.itemData.itemLv >= 3 && !Plugin.SellHighQuality) continue;
+                    if (icon.itemData.itemLv >= 3 && !Plugin.Instance.SellHighQuality) continue;
 
                     var sellPrice = icon.GetItemPrice(false);
 
@@ -555,6 +555,7 @@ public static class TradeUIControllerPatch
     public static void SureButtonClicked_Postfix(TradeUIController __instance)
     {
         if (__instance == null) return;
+        if (!Plugin.Instance.ShopModify) return;
         ShopMoneyHelper.OnAreaChanged(__instance.rightList.targetItemList.money);
     }
 
@@ -597,9 +598,12 @@ public static class TradeUIControllerPatch
         ItemListData leftItemList, ItemListData rightItemList)
     {
         if (__instance == null) return true;
-        var money = ShopMoneyHelper.OpenChanged();
-        if (money > 0)
-            rightItemList.money = money;
+        if (Plugin.Instance.ShopModify)
+        {
+            var money = ShopMoneyHelper.OpenChanged();
+            if (money > 0)
+                rightItemList.money = money;
+        }
         return true;
     }
 }
