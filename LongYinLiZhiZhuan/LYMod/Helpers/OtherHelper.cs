@@ -227,30 +227,61 @@ public static class OtherHelper
     public static IEnumerator OverrideExtraAddData()
     {
         yield return null;
-        if (HeroHelper.TryReadPlayer(out var player))
+
+        if (!HeroHelper.TryReadPlayer(out var player))
+            yield break;
+
+        bool hasForceBonus = player.HaveForceFunction(14);
+        var skills = player.kungfuSkills;
+
+        foreach (var skill in skills)
         {
-            var skills = player.kungfuSkills;
-            var arr = new[] {1, 1, 2, 2, 3, 3};
-            foreach (var skill in skills)
+            var ids = skill.GetBreakThroughAvailableChoice();
+            var dict = new Il2CppSystem.Collections.Generic.Dictionary<int, float>();
+
+            int skillRareLv = Mathf.Clamp(skill.DataBase().rareLv, 0, 5);
+            int skillLv = skill.lv;
+
+            foreach (var id in ids)
             {
-                var ids = skill.GetBreakThroughAvailableChoice();
-                var dict = new Il2CppSystem.Collections.Generic.Dictionary<int, float>();
-                foreach (var id in ids)
+                const int rareLv = 5;
+                float multiplier = Mathf.Max(0.5f, (hasForceBonus ? 1 : 0) + rareLv);
+
+                var speAddBase = GameDataController.Instance.speAddDataBase[id];
+                float baseValue = multiplier * speAddBase.speValue;
+                float finalValue = 0f;
+
+                switch (skillRareLv)
                 {
-                    bool hasForceBonus = player.HaveForceFunction(14);
-                    // 计算倍数
-                    var rareLv = 5;
-                    float multiplier = Mathf.Max(0.5f, (hasForceBonus ? 1 : 0) + rareLv);
-                    
-                    // 获取突破选项基础数据
-                    var speAddBase = GameDataController.Instance.speAddDataBase[id];
-                    // 设置最终数值
-                    int skillRareLv = Mathf.Clamp(skill.DataBase().rareLv, 0, arr.Length - 1);
-                    dict[id] = multiplier * speAddBase.speValue * arr[skillRareLv];
+                    case 0 or 1:
+                        if (skillLv == 10)
+                            finalValue = baseValue;
+                        break;
+
+                    case 2 or 3:
+                        if (skillLv is > 4 and < 10)
+                            finalValue = baseValue;
+                        else if (skillLv == 10)
+                            finalValue = baseValue * 2;
+                        break;
+
+                    case 4 or 5:
+                        if (skillLv is > 3 and < 7)
+                            finalValue = baseValue;
+                        else if (skillLv is > 6 and < 10)
+                            finalValue = baseValue * 2;
+                        else if (skillLv == 10)
+                            finalValue = baseValue * 3;
+                        break;
                 }
-                skill.extraAddData.heroSpeAddData = dict;
+
+                if (finalValue != 0f)
+                    dict[id] = finalValue;
             }
+
+            skill.extraAddData.heroSpeAddData = dict;
         }
+        AddInfoTab("【LYMod】<color=#00ff00>覆盖玩家突破属性完成！</color>");
     }
 
 }

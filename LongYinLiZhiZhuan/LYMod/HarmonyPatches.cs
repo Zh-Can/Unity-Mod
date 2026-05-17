@@ -939,7 +939,7 @@ public class AreaBuildingDataPatches
                 }
             }
             
-            if (child.name == "DestroyButton")
+            if (child.name == "DestroyButton" || buttonText.Contains("拆除"))
             {
                 hasDestroyButton = true;
             }
@@ -1071,27 +1071,26 @@ public class BreakThroughChoiceControllerPatch
     [HarmonyPatch(typeof(BreakThroughController), nameof(BreakThroughController.BreakThroughChoiceClicked))]
     public static void BreakThroughController_BreakThroughChoiceClicked_Postfix(BreakThroughController __instance, BreakThroughChoiceController targetChoice)
     {
-        if (Plugin.Instance.PlayerAllBreakThroughFlag.Value && HeroHelper.TryReadPlayer(out var player))
+        if (Plugin.Instance.PlayerAllBreakThroughFlag.Value && HeroHelper.TryReadPlayer(out var player) && _kungfuSkillLvData !=  null)
         {
-            
             var breakThroughAvailableChoice = _kungfuSkillLvData.GetBreakThroughAvailableChoice();
             var dict = new Il2CppSystem.Collections.Generic.Dictionary<int, float>();
+            bool hasForceBonus = player.HaveForceFunction(14);
+            var oldData = _kungfuSkillLvData.extraAddData.heroSpeAddData;
             foreach (var id in breakThroughAvailableChoice)
             {
-                bool hasForceBonus = player.HaveForceFunction(14);
                 // 计算倍数
                 float multiplier = Mathf.Max(0.5f, (hasForceBonus ? 1 : 0) + targetChoice.rareLv);
                 // 获取突破选项基础数据
                 var speAddBase = GameDataController.Instance.speAddDataBase[id];
+                float addValue = multiplier * speAddBase.speValue;
                 // 设置最终数值
-                if (dict.TryGetValue(id, out var value))
-                    dict[id] = multiplier * speAddBase.speValue + value;
+                if (oldData != null && oldData.TryGetValue(id, out var value))
+                    dict[id] = addValue + value;
                 else
-                    dict[id] = multiplier * speAddBase.speValue;
+                    dict[id] = addValue;
             }
-
             _kungfuSkillLvData.extraAddData.heroSpeAddData = dict;
-            
         }
     }
 }

@@ -666,9 +666,10 @@ public class Plugin : MelonMod
             .AddAutoSaveRow("在闭关/私宅快速移除天赋", FastRemoveTag, "有关系的Npc技能和装备管理", EnableNpcEquipAndSkill)
             .AddAutoSaveRow("私宅管理有关系的NPC天赋", EnablePrivateHouseNpcTag, "私宅抄书默写", BookWriterSelfFlag)
             .AddAutoSave("请人物加入玩家门派时需确认是否收徒", AskHeroJoinForceFlag)
+           
             .BeginHorizontal()
             
-            .AddButtonRow("私宅设置4个槽位", () =>
+            .AddButton("私宅设置4个槽位", () =>
             {
                 var list = GameController.Instance.worldData.playerBookWriter;
                 var bwd = new BookWriterData();
@@ -676,25 +677,26 @@ public class Plugin : MelonMod
                 list.Add(bwd);
                 list.Add(bwd);
                 list.Add(bwd);
-            }, width:150)
-            .AddButtonRow("还原私宅1个槽位", () =>
+            }, width:200)
+            .AddButton("还原私宅1个槽位", () =>
             {
                 var list = GameController.Instance.worldData.playerBookWriter;
                 list.RemoveAt(3);
                 list.RemoveAt(2);
                 list.RemoveAt(1);
-            }, width:150)
+            }, width:200)
             .EndHorizontal()
-            .AddButtonRow("5.5 bug恢复私宅1个,打开私宅后点按钮，还原私宅1个槽位", () =>
-            {
-                var list = BookWriterUIController.Instance.targetBookWriterList;
-                if (list.Count == 4 && BuildingUIController.Instance.targetBuildingData.buildingID == 73)
-                {
-                    list.RemoveAt(3);
-                    list.RemoveAt(2);
-                    list.RemoveAt(1);
-                }
-            }, width:250)
+            
+            // .AddButtonRow("5.5 bug恢复私宅1个,打开私宅后点按钮，还原私宅1个槽位", () =>
+            // {
+            //     var list = BookWriterUIController.Instance.targetBookWriterList;
+            //     if (list.Count == 4 && BuildingUIController.Instance.targetBuildingData.buildingID == 73)
+            //     {
+            //         list.RemoveAt(3);
+            //         list.RemoveAt(2);
+            //         list.RemoveAt(1);
+            //     }
+            // }, width:400)
            
             .AddAutoSaveRow("玩家天赋数量上限", PlayerMaxTagNum, "Npc天赋数量上限", NpcMaxTagNum,  labelWidth:150)
             .AddAutoSaveRow("突破潜力限制(无限制)",BreakMaxLimitFlag, "突破潜力限制不对玩家生效", BreakMaxLimitNotForPlayerFlag)
@@ -817,7 +819,7 @@ public class Plugin : MelonMod
             .AddButtonRow("覆盖玩家突破词条", () =>
             {
                 MelonCoroutines.Start(OtherHelper.OverrideExtraAddData());
-            }, width:160)
+            }, width:180)
             .EndFoldout();
         
         builder.BeginFoldout("门派相关").Space(10)
