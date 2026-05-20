@@ -1537,14 +1537,15 @@ public class HeroDataPatch
             return false;
         }
          
-        // 2. 同门派 NPC：继承玩家的所有门派特性
+        // 2. 同门派 NPC：会有玩家的所有门派特性
         if (player.belongForceID != -1 && __instance.IsPlayerSameForce())
         {
             __result = UIBuilderExtensions.EnabledForceIDs.Contains(forceID);
             return false;
         }
-        // 3. 其他 NPC：只有自己的门派特性
-        __result = __instance.belongForceID == forceID;
+        // // 3. 其他 NPC：只有自己的门派特性（这个竟然会让喝酒那个门派提示获得饮胜状态）
+        // __result = __instance.belongForceID == forceID;
+     
         return false;
     }
     
@@ -1846,7 +1847,7 @@ public class ForceDataPatches
     [HarmonyPatch(typeof(ForceData), nameof(ForceData.CostResource),
         typeof(Il2CppSystem.Collections.Generic.List<ResourceData>), typeof(bool))]
     public static bool ForceData_CostResource_Prefix1(Il2CppSystem.Collections.Generic.List<ResourceData> resourceList,
-        bool showInfo = false)
+        bool showInfo)
     {
         if (Plugin.Instance.Cost0.Value)
         {
@@ -1859,7 +1860,7 @@ public class ForceDataPatches
 
     [HarmonyPrefix]
     [HarmonyPatch(typeof(ForceData), nameof(ForceData.CostResource), typeof(ResourceData), typeof(bool))]
-    public static bool ForceData_CostResource_Prefix2(ref ResourceData resource, bool showInfo = false)
+    public static bool ForceData_CostResource_Prefix2(ref ResourceData resource, bool showInfo)
     {
         if (Plugin.Instance.Cost0.Value)
         {
@@ -1870,7 +1871,7 @@ public class ForceDataPatches
 
     [HarmonyPrefix]
     [HarmonyPatch(typeof(ForceData), nameof(ForceData.CostResource), typeof(int), typeof(float), typeof(bool))]
-    public static bool ForceData_CostResource_Prefix3(int id, ref float num, bool showInfo = false)
+    public static bool ForceData_CostResource_Prefix3(int id, ref float num, bool showInfo)
     {
         if (Plugin.Instance.Cost0.Value)
         {

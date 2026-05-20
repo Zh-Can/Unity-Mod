@@ -7,8 +7,7 @@ namespace LYMod.Patches;
 
 /// <summary>
 /// 私宅抄书 功能
-/// 1.私宅有4个抄书位
-/// 2.选人可以选和自己有关系的，但不是同门派的人物（原逻辑包含自己），按id排序
+/// 选人可以选和自己有关系的，但不是同门派的人物（原逻辑包含自己），按id排序
 /// </summary>
 public class BookWriterPatches
 {
@@ -54,6 +53,13 @@ public class BookWriterPatches
             AddRelations(player.teamMates); 
             var sortedHeroIds = relationHeroIds.ToList();
             sortedHeroIds.Sort();
+
+            var pbws = gc.worldData.playerBookWriter;
+            var heroList = new List<int>();
+            foreach (var pbw in pbws)
+            {
+                heroList.Add(pbw.bookWriterHeroID);
+            }
             // 添加到 param
             foreach (var heroId in sortedHeroIds)
             {
@@ -61,14 +67,16 @@ public class BookWriterPatches
                 if (forceId != -1)
                 {
                     // 有门派，同门派不添加
-                    if (hero != null && hero.belongForceID != forceId)
+                    if (hero != null && hero.belongForceID != forceId && !heroList.Contains(heroId))
                         param.Add(hero);
                 }
                 else
                 {
                     // 无门派，全部添加
-                    param.Add(hero);
+                    if (!heroList.Contains(heroId))
+                        param.Add(hero);
                 }
+                
             }
         }
     }

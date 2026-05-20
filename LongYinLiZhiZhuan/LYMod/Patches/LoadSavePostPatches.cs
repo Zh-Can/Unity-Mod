@@ -28,9 +28,7 @@ public class LoadSavePostPatches
             GlobalData.MaxBrotherNum = 4;
             GlobalData.MaxFriendNum = 16;
         }
-            
     }
-    
     
     /// <summary>
     /// 读档后触发
@@ -105,6 +103,28 @@ public class LoadSavePostPatches
                 heros[i].setSkinLv = heros[i].heroForceLv;
                 heros[i].skinID = Plugin.Instance.SpecifiedSkinId.Value;
                 heros[i].skinLv = heros[i].heroForceLv;
+            }
+        }
+        
+        // AI门派发展速度对自门派生效（建筑消耗）
+        if (Plugin.Instance.ForceDevelopSpeedFlag.Value)
+        {
+            var list = GameDataController.Instance.buildingDataBase;
+            // 建造成本
+            float aiDevelopSpeed = GameController.Instance.worldData.GetAIForceDevelopSpeed();
+            float costRate = aiDevelopSpeed * -0.05f;
+            var rate = Math.Max(0.05f, costRate + 1.0f);
+
+            // 建造速度
+            float buildSpeedRate = player.GetForce().MainArea().areaSpeAddData.Get(13) + 1.0f;
+            // 加上势力的建造速度加成(12)
+            buildSpeedRate += player.GetForce().forceSpeAddData.Get(12);
+            buildSpeedRate += aiDevelopSpeed * 0.05f;
+            
+            foreach (var building in list)
+            {
+                building.upgradeResource = GlobalData.ListMulti(building.upgradeResource, rate);
+                building.buildCostTime = buildSpeedRate;
             }
         }
     }

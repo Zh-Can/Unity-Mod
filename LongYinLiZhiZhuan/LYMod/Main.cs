@@ -111,6 +111,7 @@ public class Plugin : MelonMod
     public MelonPreferences_Entry<bool> PlayerAllBreakThroughFlag = null!; // 玩家突破全词条开关
     public MelonPreferences_Entry<bool> BookWriterSelfFlag = null!; // 私宅抄书/默写开关
     public MelonPreferences_Entry<bool> AskHeroJoinForceFlag = null!; // 请人物加入玩家门派是否收为徒弟
+    public MelonPreferences_Entry<bool> ForceDevelopSpeedFlag = null!; // 门派发展速度对自门派生效
     
     
     private MelonPreferences_Entry<bool> _useModifier = null!; // 使用组合键
@@ -142,6 +143,8 @@ public class Plugin : MelonMod
     public static int BadfameRate;
     public static int MaxSkillNum;
     public static int TeammateLimit;
+    public static int AiForceDevelopSpeed;
+    public static float TimeDifficulty;
     
     
     
@@ -264,6 +267,7 @@ public class Plugin : MelonMod
         PlayerAllBreakThroughFlag = MainCategory.CreateEntry("PlayerAllBreakThroughFlag", false,  description: "玩家突破全词条开关");
         BookWriterSelfFlag = MainCategory.CreateEntry("BookWriterSelfFlag", false,  description: "私宅抄书默写开关");
         AskHeroJoinForceFlag = MainCategory.CreateEntry("AskHeroJoinForceFlag", false,  description: "请人物加入玩家门派是否收为徒弟");
+        ForceDevelopSpeedFlag = MainCategory.CreateEntry("ForceDevelopSpeedFlag", false,  description: "门派发展速度对自门派生效");
         #endregion
       
         var harmony = new HarmonyLib.Harmony("LYMod");
@@ -365,11 +369,11 @@ public class Plugin : MelonMod
         }
         if (Input.GetKeyDown(KeyCode.KeypadPlus))
         {
-            var list = GameController.Instance.worldData.playerBookWriter;
-            LOG.Msg($"playerBookWriter Count: {list.Count}");
-            HeroHelper.TryReadPlayer(out var player);
-            var list1 = player.GetForce().bookWriterList;
-            LOG.Msg(list1.Count);
+            var a = GameController.Instance.worldData.TimeDifficulty;
+            LOG.Msg(a);
+            
+            var b = GameController.Instance.worldData.GetAIForceDevelopSpeed();
+            LOG.Msg(b);
         }
         // if (Input.GetKeyDown(KeyCode.KeypadPlus))
         // {
@@ -830,6 +834,7 @@ public class Plugin : MelonMod
             .AddAutoSaveRow("建造添加城镇特殊建筑", AddSpeBuildingsFlag, "剑池天工简单模式", SwordPoolEasyFlag)
             .AddAutoSaveRow("掌门演武", ZmywFlag, "自门派忠诚不减", LoyalLockFlag)
             .AddAutoSaveRow("门派职位变更CD0", EnableChangeForceJobCdZero,"建筑可拆除", BuildingDestroyFlag)
+            .AddAutoSave("门派发展速度对自门派生效（只有部分生效）", ForceDevelopSpeedFlag)
             .AddButtonRow("添加10块陨铁", () =>
             {
                 GameController.Instance.worldData.ChangeSpeEnhanceStoneNum(10,true);
@@ -915,55 +920,55 @@ public class Plugin : MelonMod
             .EndFoldout();
         
         builder.BeginFoldout("难度相关").Space(10)
-            .AddLabelRow("自定义难度即时修改（仅支持V1.0.1f3存档）")
+            .AddLabelRow("自定义难度即时修改")
             .BeginVertical()
             .BeginHorizontal()
             .AddLinkedInt("经验倍率", () => ExpRate, 
                 value => ExpRate = value,
                 "expRate")
-            .AddLabel($"经验倍率 {(ExpRate > 0 ? "+" : "-")}{(ExpRate > 0 ? ExpRate * 20 : ExpRate * 10)}%", width:200)
+            .AddLabel($"经验倍率 {(ExpRate >= 0 ? "+" : "-")}{(ExpRate > 0 ? ExpRate * 20 : ExpRate * 10)}%", width:200)
             .EndHorizontal()
             .BeginHorizontal()
             .AddLinkedInt("声望倍率", () => FameRate, 
                 value => FameRate = value,
                 "fameRate")
-            .AddLabel($"声望倍率 {(FameRate > 0 ? "+" : "-")}{(FameRate > 0 ? FameRate * 20 : FameRate * 10)}%", width:200)
+            .AddLabel($"声望倍率 {(FameRate >= 0 ? "+" : "-")}{(FameRate > 0 ? FameRate * 20 : FameRate * 10)}%", width:200)
             .EndHorizontal()
             .BeginHorizontal()
             .AddLinkedInt("负重倍率", () => MaxweightRate, 
                 value => MaxweightRate = value,
                 "maxweightRate")
-            .AddLabel($"负重倍率 {(MaxweightRate > 0 ? "+" : "-")}{(MaxweightRate > 0 ? MaxweightRate * 20 : MaxweightRate * 10)}%", width:200)
+            .AddLabel($"负重倍率 {(MaxweightRate >= 0 ? "+" : "-")}{(MaxweightRate > 0 ? MaxweightRate * 20 : MaxweightRate * 10)}%", width:200)
             .EndHorizontal()
             .BeginHorizontal()
             .AddLinkedInt("本门弟子经验倍率", () => SelfforceExpRate, 
                 value => SelfforceExpRate = value,
                 "selfforceExpRate", labelWidth:170)
-            .AddLabel($"本门弟子经验倍率 {(SelfforceExpRate > 0 ? "+" : "-")}{(SelfforceExpRate > 0 ? SelfforceExpRate * 20 : SelfforceExpRate * 10)}%", width:250)
+            .AddLabel($"本门弟子经验倍率 {(SelfforceExpRate >= 0 ? "+" : "-")}{(SelfforceExpRate > 0 ? SelfforceExpRate * 20 : SelfforceExpRate * 10)}%", width:250)
             .EndHorizontal()
             .BeginHorizontal()
             .AddLinkedInt("非本门弟子经验倍率", () => OtherforceExpRate, 
                 value => OtherforceExpRate = value,
                 "otherforceExpRate", labelWidth:170)
-            .AddLabel($"非本门弟子经验倍率 {(OtherforceExpRate > 0 ? "+" : "-")}{(OtherforceExpRate > 0 ? OtherforceExpRate * 40 : OtherforceExpRate * 10)}%", width:250)
+            .AddLabel($"非本门弟子经验倍率 {(OtherforceExpRate >= 0 ? "+" : "-")}{(OtherforceExpRate > 0 ? OtherforceExpRate * 40 : OtherforceExpRate * 10)}%", width:250)
             .EndHorizontal()
             .BeginHorizontal()
             .AddLinkedInt("随机敌人强度", () => RandomEnemyStrength, 
                 value => RandomEnemyStrength = value,
                 "randomEnemyStrength", labelWidth:120)
-            .AddLabel($"随机敌人强度 {(RandomEnemyStrength > 0 ? "+" : "-")}{(RandomEnemyStrength > 0 ? RandomEnemyStrength * 20 : RandomEnemyStrength * 10)}%", width:200)
+            .AddLabel($"随机敌人强度 {(RandomEnemyStrength >= 0 ? "+" : "-")}{(RandomEnemyStrength > 0 ? RandomEnemyStrength * 20 : RandomEnemyStrength * 10)}%", width:200)
             .EndHorizontal()
             .BeginHorizontal()
             .AddLinkedInt("随机敌人数量", () => RandomEnemyNum, 
                 value => RandomEnemyNum = value,
                 "randomEnemyNum", labelWidth:120)
-            .AddLabel($"随机敌人数量 {(RandomEnemyNum > 0 ? "+" : "-")}{(RandomEnemyNum > 0 ? RandomEnemyNum * 20 : RandomEnemyNum * 10)}%", width:200)
+            .AddLabel($"随机敌人数量 {(RandomEnemyNum >= 0 ? "+" : "-")}{(RandomEnemyNum > 0 ? RandomEnemyNum * 20 : RandomEnemyNum * 10)}%", width:200)
             .EndHorizontal()
             .BeginHorizontal()
             .AddLinkedInt("恶名获取", () => BadfameRate, 
                 value => BadfameRate = value,
                 "badfameRate")
-            .AddLabel($"恶名获取 {(BadfameRate > 0 ? "+" : "-")}{(BadfameRate > 0 ? BadfameRate * 20 : BadfameRate * 10)}%", width:200)
+            .AddLabel($"恶名获取 {(BadfameRate >= 0 ? "+" : "-")}{(BadfameRate > 0 ? BadfameRate * 20 : BadfameRate * 10)}%", width:200)
             .EndHorizontal()
             .BeginHorizontal()
             .AddLinkedInt("武学上限", () => MaxSkillNum, 
@@ -976,6 +981,21 @@ public class Plugin : MelonMod
                 value => TeammateLimit = Math.Clamp(value, -3, 1),
                 "teammateLimit")
             .AddLabel($"组队限制 {CustomDifficultyData.teammateLimitName[TeammateLimit+3]}", width:200)
+            .EndHorizontal()
+            .BeginHorizontal()
+            .AddLinkedInt("AI门派发展速度", () => AiForceDevelopSpeed, 
+                value => AiForceDevelopSpeed = value,
+                "aiForceDevelopSpeed", labelWidth:150)
+            .AddLabel($"AI门派发展速度 {(AiForceDevelopSpeed >= 0 ? "+" : "-")}{AiForceDevelopSpeed}", width:200)
+            .EndHorizontal()
+            .AddLabelRow("每级对Al门派产生影响:")
+            .AddLabelRow("1.加快建筑建造:每月建造数量+，建造消耗-5%，建造速度+5%")
+            .AddLabelRow("2.加快科研:科研消耗-5%，科研速度+5%")
+            .AddLabelRow("3.加快弟子晋升:晋升频率+5%，晋升消耗-5%，\n晋升武学等级+，招募消耗-5%，月俸消耗-2.5%")
+            .BeginHorizontal()
+            .AddLinkedFloat("难度提升速度", () => TimeDifficulty, 
+                value => TimeDifficulty = value,
+                "timeDifficulty", labelWidth:150)
             .EndHorizontal()
             
             .AddButtonRow("保存自定义难度配置", () =>
@@ -993,9 +1013,11 @@ public class Plugin : MelonMod
                     [6] = RandomEnemyNum,
                     [7] = BadfameRate,
                     [8] = MaxSkillNum,
-                    [9] = TeammateLimit
+                    [9] = TeammateLimit,
+                    [10] = AiForceDevelopSpeed
                 };
                 gc.worldData.customDifficultyData.customDifficultyLv = dict;
+                gc.worldData.TimeDifficulty = TimeDifficulty;
             }, width:180)
             .EndVertical()
             
