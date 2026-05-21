@@ -1,8 +1,4 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Linq;
 using System.Text;
 using UnityEngine;
 using Object = Il2CppSystem.Object;
@@ -11,7 +7,6 @@ using Il2Cpp;
 using LYMod.Helpers;
 using MelonLoader;
 using UnityEngine.UI;
-using Debug = System.Diagnostics.Debug;
 
 namespace LYMod;
 

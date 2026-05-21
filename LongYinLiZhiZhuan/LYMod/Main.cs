@@ -92,7 +92,7 @@ public class Plugin : MelonMod
     public MelonPreferences_Entry<bool> BattleMaxTime999Flag = null!; // 战斗最大回合数999开关
     public MelonPreferences_Entry<bool> AutoReadBookFlag = null!; // 一键阅读开关
     public MelonPreferences_Entry<bool> SwordPoolEasyFlag = null!; // 剑池天工 耗时1天 只用1块
-    public MelonPreferences_Entry<bool> ZmywFlag = null!; // 掌门演武
+
     public MelonPreferences_Entry<int> SpecifiedSkinId = null!; // 指定的服装ID
     public MelonPreferences_Entry<bool> Dlc0Flag = null!; // DLC0解锁开关
     public MelonPreferences_Entry<int> NewSaveSliderMin = null!; // 新档自定义难度滑块最小值
@@ -250,7 +250,7 @@ public class Plugin : MelonMod
         AutoReadBookFlag = MainCategory.CreateEntry("AutoReadBookFlag", false,  description: "一键阅读开关");
         ExpRateMultiplierSelfForceFlag = MainCategory.CreateEntry("ExpRateMultiplierSelfForceFlag", false,  description: "游戏难度经验倍率是否对自己门派生效");
         SwordPoolEasyFlag = MainCategory.CreateEntry("SwordPoolEasyFlag", false,  description: "剑池天工 耗时1天 只用1块");
-        ZmywFlag = MainCategory.CreateEntry("ZMYWFlag", true,  description: "掌门演武");
+
         Dlc0Flag = MainCategory.CreateEntry("Dlc0Flag", true,  description: "Dlc0解锁开关");
         AnyDifficultUnlockAchFlag = MainCategory.CreateEntry("AnyDifficultUnlockACHFlag", false,  description: "任意难度都可解锁成功");
         BreakMaxLimitNotForPlayerFlag = MainCategory.CreateEntry("BreakMaxLimitNotForPlayerFlag", false,  description: "突破潜力限制不对玩家生效");
@@ -295,7 +295,6 @@ public class Plugin : MelonMod
         harmony.PatchAll(typeof(GameDataControllerPatches));
         harmony.PatchAll(typeof(StudyDodgePlayerPatches));
         harmony.PatchAll(typeof(DrinkUIControllerPatches));
-        harmony.PatchAll(typeof(ForceTeachNewSkillPlotPatches));
         harmony.PatchAll(typeof(RollHelper));
         harmony.PatchAll(typeof(SpeEnhanceEquipControllerPatches));
         harmony.PatchAll(typeof(GameCustomDifficultyPatches));
@@ -830,7 +829,7 @@ public class Plugin : MelonMod
             .AddAutoSaveRow("建筑资源零消耗",Cost0, "建造升级移动拆除1天", UpgradeDay1)
             .AddAutoSaveRow("非本门功绩倍率:", ForceContributionRate,"特殊建筑上限", MaxSpeBuildingNum)
             .AddAutoSaveRow("建造添加城镇特殊建筑", AddSpeBuildingsFlag, "剑池天工简单模式", SwordPoolEasyFlag)
-            .AddAutoSaveRow("掌门演武", ZmywFlag, "自门派忠诚不减", LoyalLockFlag)
+            .AddAutoSave("自门派忠诚不减", LoyalLockFlag)
             .AddAutoSaveRow("门派职位变更CD0", EnableChangeForceJobCdZero,"建筑可拆除", BuildingDestroyFlag)
             .AddButtonRow("添加10块陨铁", () =>
             {
