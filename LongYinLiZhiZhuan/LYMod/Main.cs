@@ -674,10 +674,12 @@ public class Plugin : MelonMod
             {
                 var list = GameController.Instance.worldData.playerBookWriter;
                 var bwd = new BookWriterData();
-                bwd.Reset();
+                var bwd1 = new BookWriterData();
+                var bwd2 = new BookWriterData();
+                bwd1.Reset();
                 list.Add(bwd);
-                list.Add(bwd);
-                list.Add(bwd);
+                list.Add(bwd1);
+                list.Add(bwd2);
             }, width:200)
             .AddButton("还原私宅1个槽位", () =>
             {
