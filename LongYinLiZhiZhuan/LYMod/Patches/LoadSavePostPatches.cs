@@ -110,6 +110,13 @@ public class LoadSavePostPatches
         if (Plugin.Instance.ForceDevelopSpeedFlag.Value)
         {
             var list = GameDataController.Instance.buildingDataBase;
+            
+            // 防止每次读档都执行一次，判断是否是原版数据
+            if (list[0].buildCostTime < 30)
+            {
+                return;
+            }
+            
             // 建造成本
             float aiDevelopSpeed = GameController.Instance.worldData.GetAIForceDevelopSpeed();
             float costRate = aiDevelopSpeed * -0.05f;
