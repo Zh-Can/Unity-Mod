@@ -14,7 +14,18 @@ public class AskHeroJoinForcePatches
     {
         if (Plugin.Instance.AskHeroJoinForceFlag.Value)
         {
+            var flag = false;
             var choices = __instance.nowSinglePlot.choices;
+            
+            foreach (var c in choices)
+            {
+                if (c.choiceText == "欢迎之至")
+                {
+                    c.choiceText = "收为徒弟";
+                }
+                if (c.choiceText.Contains("唐突")) flag = true;
+            }
+            if (flag) return; 
             var choice = new SinglePlotChoiceData
             {
                 choiceText = "收入门派",
@@ -22,13 +33,6 @@ public class AskHeroJoinForcePatches
                 inited = true
             };
             choices.Insert(1, choice);
-            foreach (var c in choices)
-            {
-                if (c.choiceText == "欢迎之至")
-                {
-                    c.choiceText = "收为徒弟";
-                }
-            }
         }
     }
     

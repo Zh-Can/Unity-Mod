@@ -827,9 +827,8 @@ public class AreaBuildingDataPatches
         var list = __instance.buildingDataBase;
         foreach (var b in list)
         {
-            b.buildCostTime = 2f;
+            b.buildCostTime = 1;
         }
-        
         return true;
     }
     
@@ -868,11 +867,10 @@ public class AreaBuildingDataPatches
        if (__instance == null || Plugin.Instance.MaxSpeBuildingNum.Value == 5) return;
         __result = Plugin.Instance.MaxSpeBuildingNum.Value;
     }
+    
     /// <summary>
     /// 添加特殊建筑
     /// </summary>
-    /// <param name="__instance"></param>
-    /// <param name="show"></param>
     [HarmonyPostfix]
     [HarmonyPatch(typeof(AreaBuildController), nameof(AreaBuildController.ShowBuildNewPanel))]
     public static void AreaBuildController_ShowBuildNewPanel_Postfix(AreaBuildController __instance, bool show)
@@ -888,7 +886,7 @@ public class AreaBuildingDataPatches
     #region 建筑可拆除开关
 
     // 检查建筑ID是否在排除列表中
-    private static List<int> excludeIds = new(){0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+    private static List<int> excludeIds = new(){0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,19,20};
     
     /// <summary>
     /// 建筑可拆除开关

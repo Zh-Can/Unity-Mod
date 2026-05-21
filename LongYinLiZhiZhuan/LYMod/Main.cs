@@ -111,7 +111,6 @@ public class Plugin : MelonMod
     public MelonPreferences_Entry<bool> PlayerAllBreakThroughFlag = null!; // 玩家突破全词条开关
     public MelonPreferences_Entry<bool> BookWriterSelfFlag = null!; // 私宅抄书/默写开关
     public MelonPreferences_Entry<bool> AskHeroJoinForceFlag = null!; // 请人物加入玩家门派是否收为徒弟
-    public MelonPreferences_Entry<bool> ForceDevelopSpeedFlag = null!; // 门派发展速度对自门派生效
     
     
     private MelonPreferences_Entry<bool> _useModifier = null!; // 使用组合键
@@ -267,7 +266,6 @@ public class Plugin : MelonMod
         PlayerAllBreakThroughFlag = MainCategory.CreateEntry("PlayerAllBreakThroughFlag", false,  description: "玩家突破全词条开关");
         BookWriterSelfFlag = MainCategory.CreateEntry("BookWriterSelfFlag", false,  description: "私宅抄书默写开关");
         AskHeroJoinForceFlag = MainCategory.CreateEntry("AskHeroJoinForceFlag", false,  description: "请人物加入玩家门派是否收为徒弟");
-        ForceDevelopSpeedFlag = MainCategory.CreateEntry("ForceDevelopSpeedFlag", false,  description: "门派发展速度对自门派生效");
         #endregion
       
         var harmony = new HarmonyLib.Harmony("LYMod");
@@ -834,7 +832,6 @@ public class Plugin : MelonMod
             .AddAutoSaveRow("建造添加城镇特殊建筑", AddSpeBuildingsFlag, "剑池天工简单模式", SwordPoolEasyFlag)
             .AddAutoSaveRow("掌门演武", ZmywFlag, "自门派忠诚不减", LoyalLockFlag)
             .AddAutoSaveRow("门派职位变更CD0", EnableChangeForceJobCdZero,"建筑可拆除", BuildingDestroyFlag)
-            .AddAutoSave("门派发展速度对自门派生效（只有部分生效）", ForceDevelopSpeedFlag)
             .AddButtonRow("添加10块陨铁", () =>
             {
                 GameController.Instance.worldData.ChangeSpeEnhanceStoneNum(10,true);

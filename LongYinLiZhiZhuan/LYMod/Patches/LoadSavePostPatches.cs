@@ -97,43 +97,13 @@ public class LoadSavePostPatches
             }
             
             var heros = player.GetForce().GetOwnHeros();
-            for (var i = 0; i < heros.Count; i++)
+            foreach (var hero in heros)
             {
-                heros[i].setSkinID = Plugin.Instance.SpecifiedSkinId.Value;
-                heros[i].setSkinLv = heros[i].heroForceLv;
-                heros[i].skinID = Plugin.Instance.SpecifiedSkinId.Value;
-                heros[i].skinLv = heros[i].heroForceLv;
-            }
-        }
-        
-        // AI门派发展速度对自门派生效（建筑消耗）
-        if (Plugin.Instance.ForceDevelopSpeedFlag.Value)
-        {
-            var list = GameDataController.Instance.buildingDataBase;
-            
-            // 防止每次读档都执行一次，判断是否是原版数据
-            if (list[0].buildCostTime < 30)
-            {
-                return;
-            }
-            
-            // 建造成本
-            float aiDevelopSpeed = GameController.Instance.worldData.GetAIForceDevelopSpeed();
-            float costRate = aiDevelopSpeed * -0.05f;
-            var rate = Math.Max(0.05f, costRate + 1.0f);
-
-            // 建造速度
-            float buildSpeedRate = player.GetForce().MainArea().areaSpeAddData.Get(13) + 1.0f;
-            // 加上势力的建造速度加成(12)
-            buildSpeedRate += player.GetForce().forceSpeAddData.Get(12);
-            buildSpeedRate += aiDevelopSpeed * 0.05f;
-            
-            foreach (var building in list)
-            {
-                building.upgradeResource = GlobalData.ListMulti(building.upgradeResource, rate);
-                building.buildCostTime = buildSpeedRate;
+                hero.setSkinID = Plugin.Instance.SpecifiedSkinId.Value;
+                hero.setSkinLv = hero.heroForceLv;
+                hero.skinID = Plugin.Instance.SpecifiedSkinId.Value;
+                hero.skinLv = hero.heroForceLv;
             }
         }
     }
-    
 }
