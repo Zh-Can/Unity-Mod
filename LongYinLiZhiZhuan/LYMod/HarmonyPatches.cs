@@ -871,7 +871,7 @@ public class AreaBuildingDataPatches
     public static void AreaBuildController_ShowBuildNewPanel_Postfix(AreaBuildController __instance, bool show)
     {
         if (__instance == null || !show || !Plugin.Instance.AddSpeBuildingsFlag.Value) return;
-        var buildingIDsToAdd = new List<int> { 16,17,18,21,22,23,24,25,26,42,43,44,45,46,47,48,49,50,51,52,74,75 };
+        var buildingIDsToAdd = new List<int> { 10,11,12,13,14,16,17,18,21,22,23,24,25,26,42,43,44,45,46,47,48,49,50,51,52,74,75 };
         foreach (var buildingID in buildingIDsToAdd)
         {
             __instance.GenerateBuildNewButton(buildingID);
