@@ -23,6 +23,7 @@ public static class BattleSkip
         }
     }
 
+    /* 禁用 Update Patch - 会导致 RunBattle 错误
     /// <summary>
     /// 在 Update 中检查战斗状态，当人物就位后显示跳过按钮
     /// </summary>
@@ -31,11 +32,21 @@ public static class BattleSkip
     {
         public static void Postfix(BattleController __instance)
         {
+            // 严格的空检查
+            if (__instance == null) return;
             if (!Plugin.Instance.BattleSkipFlag.Value) return;
             
+            // 确保战斗已初始化
+            if (!__instance.inited) return;
+            
             // 只在战斗准备完成且未跳过时显示按钮
-            if (__instance.battleState != BattleState.Ready && __instance.battleState != BattleState.Fighting) 
+            var battleState = __instance.battleState;
+            if (battleState != BattleState.Ready && battleState != BattleState.Fighting) 
                 return;
+            
+            // 确保队伍数据已加载
+            var teams = __instance.teams;
+            if (teams == null || teams.Count == 0) return;
             
             var skipButton = __instance.battleSkipButton;
             if (skipButton == null) return;
@@ -43,7 +54,11 @@ public static class BattleSkip
             // 如果按钮已经显示，不需要再处理
             if (skipButton.activeSelf) return;
             
-            var rect = skipButton.GetComponent<UnityEngine.UI.Image>()?.rectTransform;
+            // 安全地获取 RectTransform
+            var image = skipButton.GetComponent<UnityEngine.UI.Image>();
+            if (image == null) return;
+            
+            var rect = image.rectTransform;
             if (rect == null) return;
             
             // 修复缩放问题
@@ -55,6 +70,7 @@ public static class BattleSkip
             skipButton.SetActive(true);
         }
     }
+    */
 
     /// <summary>
     /// 在点击跳过按钮时，直接调用 SureSkipBattle 跳过战斗
@@ -64,14 +80,15 @@ public static class BattleSkip
     {
         public static void Prefix(BattleController __instance)
         {
+            if (__instance == null) return;
             if (!Plugin.Instance.BattleSkipFlag.Value) return;
             
             // 防止重复点击
             if (_isSkipping) return;
             _isSkipping = true;
             
-            // 清除 noSkip 标志
-            __instance.noSkip = false;
+            // 不再修改 noSkip 标志，让原游戏逻辑自己处理
+            // __instance.noSkip = false;
         }
     }
 
@@ -80,6 +97,8 @@ public static class BattleSkip
     {
         public static void Prefix(BattleController __instance)
         {
+            if (__instance == null) return;
+            
             var playerTeamID = __instance.GetPlayerControlTeamID();
             GetEnemyInfo(__instance, playerTeamID, out var enemyCount, out var enemyTotalHP);
             _storedEnemyCount = enemyCount;
@@ -98,10 +117,18 @@ public static class BattleSkip
             if (Plugin.Instance.BattleSkipAddExpFlag.Value)
             {
                 var teams = __instance.teams;
+                if (teams == null) return;
+                
                 foreach (var team in teams)
                 {
-                    foreach (var unit in team.battleUnits)
+                    if (team == null) continue;
+                    
+                    var battleUnits = team.battleUnits;
+                    if (battleUnits == null) continue;
+                    
+                    foreach (var unit in battleUnits)
                     {
+                        if (unit == null || unit.heroData == null || unit.summonSourceHero != null) continue;
                         unit.heroData.AutoGetFightExp();
                     }
                 }
@@ -129,7 +156,8 @@ public static class BattleSkip
 
             foreach (var unit in units)
             {
-                if (unit == null || unit.heroData == null) continue;
+                // 跳过召唤物（summonSourceHero != null 表示是召唤物）
+                if (unit == null || unit.heroData == null || unit.summonSourceHero != null) continue;
                 enemyCount++;
                 enemyTotalHP += unit.heroData.maxhp;
             }
@@ -154,7 +182,9 @@ public static class BattleSkip
         {
             if (!Plugin.Instance.BattleSkipFlag.Value) return;
             
-            if (targetUnit == null || targetUnit.battleInfo == null) return;
+            // 跳过召唤物（summonSourceHero != null 表示是召唤物）
+            if (targetUnit == null || targetUnit.summonSourceHero != null) return;
+            if (targetUnit.battleInfo == null) return;
             if (targetUnit.heroData == null || targetUnit.heroData.heroID != 0) return;
 
             targetUnit.battleInfo.makeDamage = _storedEnemyTotalHp;
