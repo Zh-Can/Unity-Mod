@@ -799,17 +799,39 @@ public class AreaBuildingDataPatches
     public static void GetTotalChangeResource_Postfix(AreaBuildingData __instance, 
         Il2CppSystem.Collections.Generic.List<float> __result)
     {
+        if (__instance == null) return;
         var area = __instance.GetArea();
         var flag = HeroHelper.TryReadPlayer(out var player);
-        if (__instance == null || area.belongForceID != player.belongForceID) return;
-        if (!UIBuilderExtensions.BuildingTimesMap.TryGetValue(__instance.buildingID, out int times) || times == 1) return;
+        if (!flag || area.belongForceID != player.belongForceID) return;
+        if (!UIBuilderExtensions.BuildingTimesMap.TryGetValue(__instance.buildingID, out var times) || times == 1) return;
         for (var i = 0; i < __result.Count; i++)
         {
-            if (__result[i] > 0)
-            {
-                __result[i] *= times;
-            }
+            if (__result[i] > 0) __result[i] *= times;
         }
+    }
+    // 人口
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(AreaBuildingData), nameof(AreaBuildingData.GetChangeMaxPeople))]
+    public static void GetChangeMaxPeople_Postfix(AreaBuildingData __instance, ref float __result)
+    {
+        if (__instance == null) return;
+        var area = __instance.GetArea();
+        var flag = HeroHelper.TryReadPlayer(out var player);
+        if (!flag || area.belongForceID != player.belongForceID) return;
+        if (!UIBuilderExtensions.BuildingTimesMap.TryGetValue(__instance.buildingID, out var times) || times == 1) return;
+        if (__result > 0) __result *= times;
+    }
+    // 安全度，支持度，防御，人口
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(AreaBuildingData), nameof(AreaBuildingData.GetChangeAreaState))]
+    public static void GetChangeAreaState_Postfix(AreaBuildingData __instance, AreaStateType areaStateType, ref float __result)
+    {
+        if (__instance == null) return;
+        var area = __instance.GetArea();
+        var flag = HeroHelper.TryReadPlayer(out var player);
+        if (!flag || area.belongForceID != player.belongForceID) return;
+        if (!UIBuilderExtensions.BuildingTimesMap.TryGetValue(__instance.buildingID, out var times) || times == 1) return;
+        if (__result > 0) __result *= times;
     }
     
     #endregion

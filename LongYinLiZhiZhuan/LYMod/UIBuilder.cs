@@ -1039,8 +1039,9 @@ public static class UIBuilderExtensions
         var force = player.GetForce();
         force.forceDetailDirty = true;
         player.GetArea().areaDetailDirty = true;
-        GameController.Instance.ChangeHour(1);
     }
+
+ 
     /// <summary>
     /// 刷新建筑数据
     /// </summary>
