@@ -22,8 +22,7 @@ public static class BattleSkip
             // 不再在这里显示按钮，等待人物就位后在 Update 中显示
         }
     }
-
-    /* 禁用 Update Patch - 会导致 RunBattle 错误
+    
     /// <summary>
     /// 在 Update 中检查战斗状态，当人物就位后显示跳过按钮
     /// </summary>
@@ -70,7 +69,7 @@ public static class BattleSkip
             skipButton.SetActive(true);
         }
     }
-    */
+    
 
     /// <summary>
     /// 在点击跳过按钮时，直接调用 SureSkipBattle 跳过战斗
@@ -87,8 +86,8 @@ public static class BattleSkip
             if (_isSkipping) return;
             _isSkipping = true;
             
-            // 不再修改 noSkip 标志，让原游戏逻辑自己处理
-            // __instance.noSkip = false;
+            // 清除 noSkip 标志
+            __instance.noSkip = false;
         }
     }
 
