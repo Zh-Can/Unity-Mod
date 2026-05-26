@@ -1,4 +1,4 @@
-﻿using Il2Cpp;
+using Il2Cpp;
 
 namespace LYMod.Helpers;
 
@@ -63,34 +63,4 @@ public static class HeroHelper
             }
         }
     }
-    
-    /**
-     * 重置个人月限制
-     */
-    public static void ResetWorldDataLimits()
-    {
-        var gc = GameController.Instance;
-        if (gc == null) return ;
-        var worldData = gc.worldData;
-        if (worldData == null) return;
-        worldData.monthBreakEquipTime = 0;
-        worldData.monthKillTime = 0;
-        worldData.monthCatchBadFamePlayerTime = 0;
-        worldData.monthGambleTime = 0;
-        worldData.monthPartyTime = 0;
-        worldData.monthForcePartyTime = 0;
-        worldData.monthDoctorTime = 0;
-        worldData.monthPerformForMoneyTime = 0;
-        worldData.monthCoachTime = 0;
-        worldData.monthAttackMartialClubTime = 0;
-        worldData.monthSpeReduceBadFameTime = 0;
-        worldData.monthSpeAddFameTime = 0;
-        worldData.monthSpeGetTalentPointTime = 0;
-        worldData.monthChallengeTime = 0;
-        worldData.monthBuyAreaInfoTime = 0;
-        worldData.monthGiveMoneyToGovernTime = 0;
-        worldData.monthFreshBountyTime = 0;
-    }
-    
-   
 }

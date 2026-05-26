@@ -617,7 +617,11 @@ public class Plugin : MelonMod
             {
                 HeroHelper.TryReadNowHero(out _readedHeroData);
             }, width:100)
-            .AddButton("刷新玩家月限制", HeroHelper.ResetWorldDataLimits, 175)
+            .AddButton("刷新玩家月限制", () =>
+            {
+                if (HeroHelper.TryReadPlayer(out var player))
+                    player.playerInteractionTimeData.ResetTime();
+            }, 175)
             .AddButton("解锁所有服装", HeroHelper.UnlockSkins,150)
             .EndHorizontal().Space(5)
             .BeginHorizontal()
@@ -689,17 +693,6 @@ public class Plugin : MelonMod
                 list.RemoveAt(1);
             }, width:200)
             .EndHorizontal()
-            
-            // .AddButtonRow("5.5 bug恢复私宅1个,打开私宅后点按钮，还原私宅1个槽位", () =>
-            // {
-            //     var list = BookWriterUIController.Instance.targetBookWriterList;
-            //     if (list.Count == 4 && BuildingUIController.Instance.targetBuildingData.buildingID == 73)
-            //     {
-            //         list.RemoveAt(3);
-            //         list.RemoveAt(2);
-            //         list.RemoveAt(1);
-            //     }
-            // }, width:400)
            
             .AddAutoSaveRow("玩家天赋数量上限", PlayerMaxTagNum, "Npc天赋数量上限", NpcMaxTagNum,  labelWidth:150)
             .AddAutoSaveRow("突破潜力限制(无限制)",BreakMaxLimitFlag, "突破潜力限制不对玩家生效", BreakMaxLimitNotForPlayerFlag)
@@ -826,7 +819,14 @@ public class Plugin : MelonMod
             .EndFoldout();
         
         builder.BeginFoldout("门派相关").Space(10)
-            .AddButtonRow("刷新门派月限制", ForceHelper.ResetForceLimits)
+            .AddButtonRow("刷新门派月限制", () =>
+            {
+                if (HeroHelper.TryReadPlayer(out var player) && player.belongForceID != -1)
+                {
+                    var force = player.GetForce();
+                    force.forceInteractionTimeData.ResetTime();
+                }
+            }, width:175)
             .AddAutoSaveRow("研究一天",ReasearchFlag, "禅道修行倍率:", ChanDaoRate)
             .AddAutoSaveRow("建筑资源零消耗",Cost0, "建造升级移动拆除1天", UpgradeDay1)
             .AddAutoSaveRow("非本门功绩倍率:", ForceContributionRate,"特殊建筑上限", MaxSpeBuildingNum)
