@@ -14,7 +14,7 @@ public static class BattleSkip
     {
         public static void Postfix(BattleController __instance)
         {
-            if (!Plugin.Instance.BattleSkipFlag.Value) return;
+            if (__instance == null || !Plugin.Instance.BattleSkipFlag.Value) return;
             
             // 重置跳过状态，确保新战斗可以正常跳过
             _isSkipping = false;

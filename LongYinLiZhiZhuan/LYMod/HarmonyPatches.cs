@@ -116,7 +116,7 @@ public class GameControllerPatches
 
 public class PoisonPatches
 {
-    private static List<ItemData> _equipItemData = new();
+    private static readonly List<ItemData> EquipItemData = new();
     
     //给装备附毒时间
     [HarmonyPostfix]
@@ -148,18 +148,18 @@ public class PoisonPatches
     [HarmonyPatch(typeof(BattleController), nameof(BattleController.StartBattleButtonClicked))]
     public static void StartBattleButtonClicked_Prefix(BattleController __instance)
     {
-        if (!Plugin.Instance.PoisonNumReduceFlag.Value) return;
-        _equipItemData.Clear();
-        var gc = GameController.Instance;
-        if (gc == null) return;
-        var player = gc.worldData.Player();
+        if (__instance == null || !Plugin.Instance.PoisonNumReduceFlag.Value) return;
+        EquipItemData.Clear();
+        var flag = HeroHelper.TryReadPlayer(out var player);
+        if (!flag || player.itemListData?.allItem == null) return;
         var items = player.itemListData.allItem;
-        if (items == null || items.Count == 0) return;
+        if (items.Count == 0) return;
         foreach (var item in items)
         {
-            if (item.Equiped() && item.equipmentData.equipPoisonData is { poisonNum: > 0 })
+            if (item == null) continue;
+            if (item.Equiped() && item.equipmentData?.equipPoisonData is { poisonNum: > 0 })
             {
-                _equipItemData.Add(item);
+                EquipItemData.Add(item);
             }
         }
     }
@@ -169,17 +169,19 @@ public class PoisonPatches
     public static void BattleRealEnd_Postfix(BattleController __instance)
     {
         if (__instance == null || !Plugin.Instance.PoisonNumReduceFlag.Value) return;
-        var gc = GameController.Instance;
-        if (gc == null) return;
-        var player = gc.worldData.Player();
+        var flag = HeroHelper.TryReadPlayer(out var player);
+        if (!flag || player.itemListData?.allItem == null) return;
         var items = player.itemListData.allItem;
-        if (items == null || items.Count == 0) return;
+        if (items.Count == 0) return;
         foreach (var item in items)
         {
-            if (!item.Equiped()) continue;
-            foreach (var oldItem in _equipItemData.Where(oldItem => oldItem.name == item.name))
+            if (item == null || !item.Equiped() || item.equipmentData == null) continue;
+            foreach (var oldItem in EquipItemData.Where(oldItem => oldItem != null && oldItem.name == item.name))
             {
-                item.equipmentData.equipPoisonData = oldItem.equipmentData.equipPoisonData;
+                if (oldItem.equipmentData?.equipPoisonData != null)
+                {
+                    item.equipmentData.equipPoisonData = oldItem.equipmentData.equipPoisonData;
+                }
             }
         }
     }
