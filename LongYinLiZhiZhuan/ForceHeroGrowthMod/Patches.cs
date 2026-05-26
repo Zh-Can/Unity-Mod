@@ -59,35 +59,28 @@ public class Patches
                 existingItemNames.Add(existingItem.name);
             }
     
-            foreach (var item in hero.itemListData.allItem) 
-            { 
-                if (item.type == ItemType.Book)
-                {
-                    var skill = hero.FindSkill(item.bookData.skillID);
-                    if (skill != null && skill.lv >= 4) 
-                    { 
-                        // 使用名称比较，避免重复添加
-                        if (!existingItemNames.Contains(item.name)) 
-                        { 
-                            itemsToMove.Add(item); 
-                            existingItemNames.Add(item.name);  // 添加到已存在集合，防止同一英雄有多个同名物品
-                        } 
-                    }
-                }
+            foreach (var item in hero.itemListData.allItem)
+            {
+                if (item.type != ItemType.Book) continue;
+                var skill = hero.FindSkill(item.bookData.skillID);
+                if (skill == null || skill.lv < Plugin.MoveBookToStorageMinLevel.Value) continue;
+                // 使用名称比较，避免重复添加
+                if (existingItemNames.Contains(item.name)) continue;
+                itemsToMove.Add(item); 
+                existingItemNames.Add(item.name);  // 添加到已存在集合，防止同一英雄有多个同名物品
             } 
     
             foreach (var item in itemsToMove) 
             { 
                 var heroForce = hero.GetForce();
-                if (Plugin.EnableDetailedLog.Value) Plugin.LOG.Msg($"{heroForce.forceName}的{hero.heroName}向藏书阁添加了秘籍{item.name}");
+                if (Plugin.EnableDetailedLog.Value) 
+                    Plugin.LOG.Msg($"{heroForce.forceName}的{hero.heroName}向藏书阁添加了秘籍{item.name}");
                 
                 hero.AddLog($"[过月成长] {hero.Name(true)}将已学会的秘籍{item.Name(true)}放入了藏经阁");
                 hero.itemListData.LoseItem(item); 
                 heroForce.bookStorage.allItem.Add(item); 
             } 
         }
-            
-        
     }
 
     /// <summary>
@@ -135,6 +128,33 @@ public class Patches
                 foreach (var hero in allHeroes)
                 {
                     if (hero != null)
+                        heroesCopy.Add(hero);
+                }
+                
+                foreach (var hero in heroesCopy)
+                {
+                    bool isPlayer = (hero.heroID == playerId);
+                    Plugin.ProcessHero(hero, isPlayer);
+                    yield return null;
+                }
+            }
+        }
+        else if (Plugin.HeroProcessRange.Value == 2)
+        {
+            // 处理星标人物
+            if (Plugin.EnableDetailedLog.Value)
+            {
+                Plugin.LOG.Msg("[门派弟子成长Mod] 处理星标人物");
+            }
+            
+            var allHeroes = gc.worldData.Heros;
+            if (allHeroes != null)
+            {
+                // 复制列表以避免遍历时集合被修改的异常
+                var heroesCopy = new List<HeroData>();
+                foreach (var hero in allHeroes)
+                {
+                    if (hero != null && hero.interestingStar)
                         heroesCopy.Add(hero);
                 }
                 
