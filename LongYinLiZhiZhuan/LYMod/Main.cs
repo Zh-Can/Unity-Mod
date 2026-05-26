@@ -822,10 +822,8 @@ public class Plugin : MelonMod
             .AddButtonRow("刷新门派月限制", () =>
             {
                 if (HeroHelper.TryReadPlayer(out var player) && player.belongForceID != -1)
-                {
-                    var force = player.GetForce();
-                    force.forceInteractionTimeData.ResetTime();
-                }
+                    player.GetForce().forceInteractionTimeData.ResetTime();
+                
             }, width:175)
             .AddAutoSaveRow("研究一天",ReasearchFlag, "禅道修行倍率:", ChanDaoRate)
             .AddAutoSaveRow("建筑资源零消耗",Cost0, "建造升级移动拆除1天", UpgradeDay1)
