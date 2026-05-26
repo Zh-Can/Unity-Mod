@@ -10,8 +10,26 @@ namespace LYMod.Helpers;
 
 public class RollHelper
 {
-   
-    // 拍卖会Roll
+    #region 拍卖会Roll
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(PlotController), nameof(PlotController.GenerateAuctionItem))]
+    public static bool PlotController_GenerateAuctionItem_Prefix(PlotController __instance,ItemListData targetItemList, 
+        ref float shopLv, List<int> itemTypeLimit, ref int itemNum)
+    {
+        if (__instance != null)
+        {
+            if (Plugin.Instance.ShopLvRate.Value > 1)
+            {
+                if (shopLv < 1)
+                    shopLv = 1;
+                shopLv *= Plugin.Instance.ShopLvRate.Value;
+                
+            }
+            if (Plugin.Instance.ItemNum.Value > -1)
+                itemNum = Plugin.Instance.ItemNum.Value;
+        }
+        return true;
+    }
     public static void TryAuctionRoll()
     {
         if (ModConfig.HaveAucRoll) return;
@@ -35,6 +53,8 @@ public class RollHelper
                 auc.endMatchCallPlot, auc.auctionDifficulty, auc.havePlayer, auc.auctionKeeper);
         }
     }
+    
+    #endregion
 
     // 突破roll
     public static void TryBreakThoughtRoll()

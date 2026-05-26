@@ -116,7 +116,7 @@ public class GameControllerPatches
 
 public class PoisonPatches
 {
-    private static readonly Dictionary<string, float> PoisonValuesBeforeBattle = new();
+    private static List<ItemData> _equipItemData = new();
     
     //给装备附毒时间
     [HarmonyPostfix]
@@ -149,7 +149,7 @@ public class PoisonPatches
     public static void StartBattleButtonClicked_Prefix(BattleController __instance)
     {
         if (!Plugin.Instance.PoisonNumReduceFlag.Value) return;
-        PoisonValuesBeforeBattle.Clear();
+        _equipItemData.Clear();
         var gc = GameController.Instance;
         if (gc == null) return;
         var player = gc.worldData.Player();
@@ -157,10 +157,9 @@ public class PoisonPatches
         if (items == null || items.Count == 0) return;
         foreach (var item in items)
         {
-            if (item.Equiped() && item.equipmentData?.equipPoisonData is { poisonNum: > 0 })
+            if (item.Equiped() && item.equipmentData.equipPoisonData is { poisonNum: > 0 })
             {
-                PoisonValuesBeforeBattle[item.name] = item.equipmentData.equipPoisonData.poisonNum;
-                Plugin.LOG.Msg($"[Poison] Before Battle - Item: {item.name}, poisonNum: {item.equipmentData.equipPoisonData.poisonNum}");
+                _equipItemData.Add(item);
             }
         }
     }
@@ -177,16 +176,10 @@ public class PoisonPatches
         if (items == null || items.Count == 0) return;
         foreach (var item in items)
         {
-            if (item.Equiped() && item.equipmentData?.equipPoisonData != null)
+            if (!item.Equiped()) continue;
+            foreach (var oldItem in _equipItemData.Where(oldItem => oldItem.name == item.name))
             {
-                var beforeValue = PoisonValuesBeforeBattle.GetValueOrDefault(item.name, 0);
-                var afterValue = item.equipmentData.equipPoisonData.poisonNum;
-                var diff = afterValue - beforeValue;
-                //Plugin.LOG.Msg($"[Poison] After Battle - Item: {item.name}, Before: {beforeValue}, After: {afterValue}, Diff: {diff}");
-                if (beforeValue > 0 && diff < 0)
-                {
-                    item.equipmentData.equipPoisonData.poisonNum = beforeValue;
-                }
+                item.equipmentData.equipPoisonData = oldItem.equipmentData.equipPoisonData;
             }
         }
     }
@@ -1659,27 +1652,6 @@ public class CraftingPatches
 
 public class PlotControllerPatches
 {
-    [HarmonyPrefix]
-    [HarmonyPatch(typeof(PlotController), nameof(PlotController.GenerateAuctionItem))]
-    public static bool PlotController_GenerateAuctionItem_Prefix(PlotController __instance,ItemListData targetItemList, 
-        ref float shopLv, List<int> itemTypeLimit, ref int itemNum)
-    {
-        if (__instance != null)
-        {
-            if (Plugin.Instance.ShopLvRate.Value > 1)
-            {
-                if (shopLv < 1)
-                    shopLv = 1;
-                shopLv *= Plugin.Instance.ShopLvRate.Value;
-                
-            }
-            if (Plugin.Instance.ItemNum.Value > -1)
-                itemNum = Plugin.Instance.ItemNum.Value;
-        }
-        return true;
-    }
-    
-    
     [HarmonyPatch(typeof(PlotController), nameof(PlotController.GetStealNpcSkillSuccessRate))]
     [HarmonyPostfix]
     public static void PlotController_GetStealNpcSkillSuccessRate_Postfix(PlotController __instance,
