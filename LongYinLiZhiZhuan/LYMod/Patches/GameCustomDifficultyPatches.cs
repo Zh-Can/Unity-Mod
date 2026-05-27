@@ -24,21 +24,32 @@ public class GameCustomDifficultyPatches
         if (GameController.Instance == null) return;
         if (GameController.Instance.worldData.customDifficultyData == null) return;
         var dict = GameController.Instance.worldData.customDifficultyData.customDifficultyLv;
-        Plugin.ExpRate = GetValue(dict, CustomDifficultyType.expRate);
-        Plugin.FameRate = GetValue(dict, CustomDifficultyType.fameRate);
-        Plugin.MaxweightRate = GetValue(dict, CustomDifficultyType.maxweightRate);
-        Plugin.SelfforceExpRate = GetValue(dict, CustomDifficultyType.selfforceExpRate);
-        Plugin.OtherforceExpRate = GetValue(dict, CustomDifficultyType.otherforceExpRate);
-        Plugin.RandomEnemyStrength = GetValue(dict, CustomDifficultyType.randomEnemyStrength);
-        Plugin.RandomEnemyNum = GetValue(dict, CustomDifficultyType.randomEnemyNum);
-        Plugin.BadfameRate = GetValue(dict, CustomDifficultyType.badfameRate);
-        Plugin.MaxSkillNum = GetValue(dict, CustomDifficultyType.maxSkillNum);
-        Plugin.TeammateLimit = GetValue(dict, CustomDifficultyType.teammateLimit);
-        Plugin.AiForceDevelopSpeed = GetValue(dict, CustomDifficultyType.aiForceDevelopSpeed);
+        // Plugin.ExpRate = GetValue(dict, CustomDifficultyType.expRate);
+        // Plugin.FameRate = GetValue(dict, CustomDifficultyType.fameRate);
+        // Plugin.MaxweightRate = GetValue(dict, CustomDifficultyType.maxweightRate);
+        // Plugin.SelfforceExpRate = GetValue(dict, CustomDifficultyType.selfforceExpRate);
+        // Plugin.OtherforceExpRate = GetValue(dict, CustomDifficultyType.otherforceExpRate);
+        // Plugin.RandomEnemyStrength = GetValue(dict, CustomDifficultyType.randomEnemyStrength);
+        // Plugin.RandomEnemyNum = GetValue(dict, CustomDifficultyType.randomEnemyNum);
+        // Plugin.BadfameRate = GetValue(dict, CustomDifficultyType.badfameRate);
+        // Plugin.MaxSkillNum = GetValue(dict, CustomDifficultyType.maxSkillNum);
+        // Plugin.TeammateLimit = GetValue(dict, CustomDifficultyType.teammateLimit);
+        // Plugin.AiForceDevelopSpeed = GetValue(dict, CustomDifficultyType.aiForceDevelopSpeed);
+        Plugin.ExpRate = GetValue(dict, 0);
+        Plugin.FameRate = GetValue(dict, 1);
+        Plugin.MaxweightRate = GetValue(dict, 2);
+        Plugin.SelfforceExpRate = GetValue(dict, 3);
+        Plugin.OtherforceExpRate = GetValue(dict, 4);
+        Plugin.RandomEnemyStrength = GetValue(dict, 5);
+        Plugin.RandomEnemyNum = GetValue(dict, 6);
+        Plugin.BadfameRate = GetValue(dict, 7);
+        Plugin.MaxSkillNum = GetValue(dict, 8);
+        Plugin.TeammateLimit = GetValue(dict, 9);
+        Plugin.AiForceDevelopSpeed = GetValue(dict, 10);
         Plugin.TimeDifficulty = GameController.Instance.worldData.TimeDifficulty;
     }
-    private static int GetValue(Il2CppSystem.Collections.Generic.Dictionary<int, int> dict, CustomDifficultyType type)
+    private static int GetValue(Il2CppSystem.Collections.Generic.Dictionary<int, int> dict, int type)
     {
-        return dict.TryGetValue((int)type, out var v) ? v : 0;
+        return dict.TryGetValue(type, out var v) ? v : 0;
     }
 }

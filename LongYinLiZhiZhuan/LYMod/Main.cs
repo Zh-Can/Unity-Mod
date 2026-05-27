@@ -555,7 +555,7 @@ public class Plugin : MelonMod
         
         GUI.Box(titleBarRect, "", _titleBarStyle);
         
-        var titleText = $"LYMod {ModConfig.ModVersion}";
+        var titleText = $"LYMod {ModConfig.ModVersion} (支持游戏版本{ModConfig.GamveVersion})";
         var titleSize = _titleBarStyle.CalcSize(new GUIContent(titleText));
         var titlePos = new Vector2((_mainWindowRect.width - titleSize.x) / 2, (titleBarHeight - titleSize.y) / 2);
         GUI.Label(new Rect(titlePos.x, titlePos.y, titleSize.x, titleSize.y), titleText, _titleBarStyle);
