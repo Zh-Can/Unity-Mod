@@ -2042,6 +2042,7 @@ public class ItemListDataPatches
                 }
                 else if (targetItem.type == ItemType.Equip)
                 {
+                    newDict.Clear();
                     // 基础属性
                     var oldDict = targetItem.equipmentData.baseAddData.heroSpeAddData;
                     foreach (var dict in oldDict)
@@ -2073,6 +2074,7 @@ public class ItemListDataPatches
                 }
                 else if (targetItem.type == ItemType.Material)
                 {
+                    newDict.Clear();
                     var oldDict = targetItem.materialData.extraAddData.heroSpeAddData;
                     foreach (var dict in oldDict)
                     {
