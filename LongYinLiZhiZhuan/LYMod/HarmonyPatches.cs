@@ -2043,31 +2043,26 @@ public class ItemListDataPatches
                 else if (targetItem.type == ItemType.Equip)
                 {
                     newDict.Clear();
-                    // 基础属性
-                    var oldDict = targetItem.equipmentData.baseAddData.heroSpeAddData;
-                    foreach (var dict in oldDict)
-                    {
-                        if (dict.Value > 0)
-                        {
-                            newDict[dict.Key] = dict.Value;
-                        }
-                        else
-                        {
-                            newDict[dict.Key] = dict.Value * -1;
-                        }
-                        targetItem.equipmentData.baseAddData.heroSpeAddData = newDict;
-                    }
                     // 额外属性
-                    oldDict = targetItem.equipmentData.extraAddData.heroSpeAddData;
+                    var oldDict = targetItem.equipmentData.extraAddData.heroSpeAddData;
                     foreach (var dict in oldDict)
                     {
-                        if (dict.Value > 0)
+                        var v = dict.Value;
+                        if (v < 0)
                         {
-                            newDict[dict.Key] = dict.Value;
+                            v *= -1;
+                        }
+                        if (v < 1 && v < 0.05)
+                        {
+                            newDict[dict.Key] = 0.05f;
+                        }
+                        else if (v is > 1 and < 5)
+                        {
+                            newDict[dict.Key] = 5;
                         }
                         else
                         {
-                            newDict[dict.Key] = dict.Value * -1;
+                            newDict[dict.Key] = v;
                         }
                     }
                     targetItem.equipmentData.extraAddData.heroSpeAddData = newDict;
