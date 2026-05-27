@@ -2042,7 +2042,22 @@ public class ItemListDataPatches
                 }
                 else if (targetItem.type == ItemType.Equip)
                 {
-                    var oldDict = targetItem.equipmentData.extraAddData.heroSpeAddData;
+                    // 基础属性
+                    var oldDict = targetItem.equipmentData.baseAddData.heroSpeAddData;
+                    foreach (var dict in oldDict)
+                    {
+                        if (dict.Value > 0)
+                        {
+                            newDict[dict.Key] = dict.Value;
+                        }
+                        else
+                        {
+                            newDict[dict.Key] = dict.Value * -1;
+                        }
+                        targetItem.equipmentData.baseAddData.heroSpeAddData = newDict;
+                    }
+                    // 额外属性
+                    oldDict = targetItem.equipmentData.extraAddData.heroSpeAddData;
                     foreach (var dict in oldDict)
                     {
                         if (dict.Value > 0)
