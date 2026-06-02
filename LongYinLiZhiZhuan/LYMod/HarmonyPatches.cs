@@ -1503,11 +1503,9 @@ public class HeroDataPatch
     public static bool HeroData_ChangeForceContribution_Prefix(HeroData __instance, ref float num, 
         bool showInfo, int targetForce = -1)
     {
-        var flag = HeroHelper.TryReadPlayer(out var player);
-        if (!flag || __instance is not { heroID: 0 }) return true;
-        var forceId = __instance.belongForceID;
-        var playerForceId = player.belongForceID;
-        if (forceId != playerForceId && Plugin.Instance.ForceContributionRate.Value > 1 && num > 0)
+        if (__instance is not { heroID: 0 }) return true;
+        var playerForceId = __instance.belongForceID;
+        if (targetForce != playerForceId && Plugin.Instance.ForceContributionRate.Value > 1 && num > 0)
         {
             num *= Plugin.Instance.ForceContributionRate.Value;
         }
