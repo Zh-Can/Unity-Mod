@@ -1,4 +1,4 @@
-﻿using HarmonyLib;
+using HarmonyLib;
 using Il2Cpp;
 using LYMod.Helpers;
 using MelonLoader;
@@ -82,12 +82,12 @@ public class LoadSavePostPatches
             var skinDataBase = GameDataController.Instance.skinDataBase;
             var skinIdFlag = true;
             foreach (var skin in skinDataBase)
+        {
+            if (skin.skinID == Plugin.Instance.SpecifiedSkinId.Value)
             {
-                if (skin.skinID == Plugin.Instance.SpecifiedSkinId.Value)
-                {
-                    skinIdFlag = false;
-                }
+                skinIdFlag = false;
             }
+        }
 
             if (skinIdFlag)
             {

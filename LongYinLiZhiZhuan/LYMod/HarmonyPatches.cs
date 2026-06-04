@@ -711,7 +711,7 @@ public class LivingSkillPatches
 /// </summary>
 public class ManageTagControllerPatches
 {
-    public static Il2CppSystem.Collections.Generic.List<HeroTagDataBase> OriginalHeroTagDataBases = new();
+    public static Il2CppSystem.Collections.Generic.Dictionary<int, HeroTagDataBase> OriginalHeroTagDataBases = new();
     [HarmonyPrefix]
     [HarmonyPatch(typeof(ManageTagController), nameof(ManageTagController.ShowManageTagUI))]
     public static void ManageTagController_ShowManageTagUI_Prefix(ManageTagController __instance, 
@@ -726,11 +726,11 @@ public class ManageTagControllerPatches
         if (Plugin.Instance.AnyTagFlag.Value)
         {
             var list = GameDataController.Instance.heroTagDataBase;
-            for (var i = 0; i < list.Count; i++)
+            foreach (var tagData in list.Values)
             {
-                list[i].replaceTag = new Il2CppSystem.Collections.Generic.List<string>();
-                list[i].sameMeaning = "";
-                list[i].oppositeMeaning = "";
+                tagData.replaceTag = new Il2CppSystem.Collections.Generic.List<string>();
+                tagData.sameMeaning = "";
+                tagData.oppositeMeaning = "";
             }
         }
         else
@@ -837,7 +837,7 @@ public class AreaBuildingDataPatches
     {
         if (__instance == null || !Plugin.Instance.UpgradeDay1.Value) return true;
         var list = __instance.buildingDataBase;
-        foreach (var b in list)
+        foreach (var b in list.Values)
         {
             b.buildCostTime = 1;
         }

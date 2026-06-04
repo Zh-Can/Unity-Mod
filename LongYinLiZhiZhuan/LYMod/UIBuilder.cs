@@ -853,7 +853,7 @@ public static class UIBuilderExtensions
         var gdc = GameDataController.Instance;
         if (gdc?.forceDataBase == null) return;
         
-        foreach (var force in gdc.forceDataBase)
+        foreach (var force in gdc.forceDataBase.Values)
         {
             if (force != null)
             {
@@ -1053,7 +1053,7 @@ public static class UIBuilderExtensions
         // 读取所有建筑数据
         var gdc = GameDataController.Instance;
         if (gdc == null) return;
-        foreach (var bdb in gdc.buildingDataBase)
+        foreach (var bdb in gdc.buildingDataBase.Values)
         {
             AllBuildings.Add(bdb);
         }

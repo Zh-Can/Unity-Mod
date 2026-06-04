@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using Il2Cpp;
 using UnityEngine;
 
@@ -112,7 +112,7 @@ public static class OtherHelper
                 existingSkillIds.Add(item.bookData.skillID);
 
         // 遍历所有武功秘籍数据，添加没有的秘籍
-        foreach (var skillData in gameData.kungfuSkillDataBase)
+        foreach (var skillData in gameData.kungfuSkillDataBase.Values)
         {
             if (skillData == null) continue;
 
@@ -165,7 +165,7 @@ public static class OtherHelper
         {
             Plugin.LOG.Msg($"发现 {allSkills.Count} 个武功");
 
-            foreach (var skill in allSkills)
+            foreach (var skill in allSkills.Values)
                 if (skill != null)
                 {
                     var key = $"HandBookSkill_{skill.skillID}";
