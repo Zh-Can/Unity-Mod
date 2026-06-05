@@ -366,45 +366,8 @@ public class Plugin : MelonMod
         }
         if (Input.GetKeyDown(KeyCode.KeypadPlus))
         {
-            var a = GameController.Instance.worldData.TimeDifficulty;
-            LOG.Msg(a);
-            
-            var b = GameController.Instance.worldData.GetAIForceDevelopSpeed();
-            LOG.Msg(b);
+           
         }
-        // if (Input.GetKeyDown(KeyCode.KeypadPlus))
-        // {
-               // GameController.Instance.MonthRefreshAllBuildings(false);
-        //     // HeroHelper.TryReadPlayer(out var player);
-        //     // player.itemListData.money += 100000;
-        //     // var weather = WeatherController.Instance;
-        //     // weather.ChangeWeather(1, 1);
-        //
-        //     //PlotController.Instance.ChooseQingMingFestivalPlot();
-        //     // HeroHelper.TryReadPlayer(out var player);
-        //     // player.heroNickName = "天下无双";
-        //     // var list = GameController.Instance.worldData.Heros;
-        //     // foreach (var hero in list)
-        //     // {
-        //     //     Plugin.LOG.Msg($"name:{hero.heroName}, nickName:{hero.heroNickName}");
-        //     // }
-        //     // var a  = GameController.Instance.worldData.customDifficultyData.customDifficultyLv;
-        //     // foreach (var b in a)
-        //     // {
-        //     //     LOG.Msg($"key:{b.Key}, val:{b.Value}");
-        //     // }
-        //
-        //     // 在游戏运行时查看当前设置
-        //     // WorldData worldData = GameController.Instance.worldData;
-        //     //
-        //     // LOG.Msg($"=== 敌人成长速度相关设置 ===");
-        //     // LOG.Msg($"游戏难度 (gameDifficulty): {worldData.gameDifficulty}");
-        //     // LOG.Msg($"时间难度 (TimeDifficulty): {worldData.TimeDifficulty}");
-        //
-        // }
-
-        
-        
     }
  
     

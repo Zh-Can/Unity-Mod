@@ -116,8 +116,6 @@ public class GameControllerPatches
 
 public class PoisonPatches
 {
-    private static readonly List<ItemData> EquipItemData = new();
-    
     //给装备附毒时间
     [HarmonyPostfix]
     [HarmonyPatch(typeof(CraftPoisonUIController), nameof(CraftPoisonUIController.GetCostTime))]
@@ -144,47 +142,110 @@ public class PoisonPatches
         }
     }
     
+    
+    #region 淬毒不减
+    
+    // 0-武器，1-头，2-衣，3-鞋，4-饰品1，5-饰品2
+    private static List<EquipPoisonData?> _equipPoisonDatas = new();
+    
     [HarmonyPrefix]
     [HarmonyPatch(typeof(BattleController), nameof(BattleController.StartBattleButtonClicked))]
     public static void StartBattleButtonClicked_Prefix(BattleController __instance)
     {
-        if (__instance == null || !Plugin.Instance.PoisonNumReduceFlag.Value) return;
-        EquipItemData.Clear();
+        _equipPoisonDatas.Clear();
         var flag = HeroHelper.TryReadPlayer(out var player);
-        if (!flag || player.itemListData?.allItem == null) return;
-        var items = player.itemListData.allItem;
-        if (items.Count == 0) return;
-        foreach (var item in items)
+        if (!flag || __instance == null || !Plugin.Instance.PoisonNumReduceFlag.Value) return;
+        
+        var nowEquipment = player.nowEquipment;
+        if (nowEquipment == null)
         {
-            if (item == null) continue;
-            if (item.Equiped() && item.equipmentData?.equipPoisonData is { poisonNum: > 0 })
-            {
-                EquipItemData.Add(item);
-            }
+            Plugin.LOG.Msg("[PoisonPatches] 玩家装备数据为空");
+            return;
         }
+        
+        // 武器
+        var weaponPoison = nowEquipment.weapon is { Count: > 0 } ? DeepCopy(nowEquipment.weapon[0].equipmentData.equipPoisonData) : null;
+        _equipPoisonDatas.Add(weaponPoison);
+        
+        // 头盔
+        var helmetPoison = nowEquipment.helmet is {Count: > 0} ? DeepCopy(nowEquipment.helmet[0].equipmentData.equipPoisonData) : null;
+        _equipPoisonDatas.Add(helmetPoison);
+        
+        // 护甲
+        var armorPoison = nowEquipment.armor is {Count: > 0} ? DeepCopy(nowEquipment.armor[0].equipmentData.equipPoisonData) : null;
+        _equipPoisonDatas.Add(armorPoison);
+        
+        // 鞋
+        var shoesPoison = nowEquipment.shoes is {Count: > 0} ? DeepCopy(nowEquipment.shoes[0].equipmentData.equipPoisonData) : null;
+        _equipPoisonDatas.Add(shoesPoison);
+        
+        // 饰品1
+        var deco1Poison = nowEquipment.decoration is {Count: > 0} ? DeepCopy(nowEquipment.decoration[0].equipmentData.equipPoisonData) : null;
+        _equipPoisonDatas.Add(deco1Poison);
+        
+        // 饰品2
+        var deco2Poison = nowEquipment.decoration is {Count: > 1} ? DeepCopy(nowEquipment.decoration[1].equipmentData.equipPoisonData) : null;
+        _equipPoisonDatas.Add(deco2Poison);
+    }
+    
+    /// <summary>
+    /// 深复制淬毒数据
+    /// </summary>
+    private static EquipPoisonData DeepCopy(EquipPoisonData e)
+    {
+        var hsad = new HeroSpeAddData();
+        foreach (var d in e.poisonBuffData.heroSpeAddData)
+        {
+            hsad.Set(d.Key, d.Value);
+        }
+        return new EquipPoisonData
+        {
+            poisonNum = e.poisonNum,
+            poisonBuffData = hsad
+        };
     }
     
     [HarmonyPostfix]
     [HarmonyPatch(typeof(BattleController), nameof(BattleController.BattleRealEnd))]
     public static void BattleRealEnd_Postfix(BattleController __instance)
     {
-        if (__instance == null || !Plugin.Instance.PoisonNumReduceFlag.Value) return;
         var flag = HeroHelper.TryReadPlayer(out var player);
-        if (!flag || player.itemListData?.allItem == null) return;
-        var items = player.itemListData.allItem;
-        if (items.Count == 0) return;
-        foreach (var item in items)
+        if (!flag || __instance == null || !Plugin.Instance.PoisonNumReduceFlag.Value) return;
+        
+        var nowEquipment = player.nowEquipment;
+        if (nowEquipment == null)
         {
-            if (item == null || !item.Equiped() || item.equipmentData == null) continue;
-            foreach (var oldItem in EquipItemData.Where(oldItem => oldItem != null && oldItem.name == item.name))
-            {
-                if (oldItem.equipmentData?.equipPoisonData != null)
-                {
-                    item.equipmentData.equipPoisonData = oldItem.equipmentData.equipPoisonData;
-                }
-            }
+            Plugin.LOG.Msg("[PoisonPatches] 战斗结束后玩家装备数据为空");
+            return;
         }
+        
+        if (_equipPoisonDatas.Count < 6)
+        {
+            Plugin.LOG.Msg($"[PoisonPatches] 保存的毒数据数量不足: {_equipPoisonDatas.Count}");
+            return;
+        }
+        
+        // 武器
+        if (nowEquipment.weapon is { Count: > 0 })
+            nowEquipment.weapon[0].equipmentData.equipPoisonData = _equipPoisonDatas[0];
+        // 头盔
+        if (nowEquipment.helmet is {Count: > 0})
+            nowEquipment.helmet[0].equipmentData.equipPoisonData = _equipPoisonDatas[1];
+        // 护甲
+        if (nowEquipment.armor is {Count: > 0})
+            nowEquipment.armor[0].equipmentData.equipPoisonData = _equipPoisonDatas[2];
+        // 鞋
+        if (nowEquipment.shoes is {Count: > 0}) 
+            nowEquipment.shoes[0].equipmentData.equipPoisonData = _equipPoisonDatas[3];
+        // 饰品1
+        if (nowEquipment.decoration is { Count: > 0 })
+            nowEquipment.decoration[0].equipmentData.equipPoisonData = _equipPoisonDatas[4];
+        // 饰品2
+        if (nowEquipment.decoration is {Count: > 1})
+            nowEquipment.decoration[1].equipmentData.equipPoisonData = _equipPoisonDatas[5];
     }
+    
+    #endregion
 }
 
 public class MeditationDataPatches
