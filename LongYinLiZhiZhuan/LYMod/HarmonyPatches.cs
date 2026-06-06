@@ -164,39 +164,44 @@ public class PoisonPatches
         }
         
         // 武器
-        var weaponPoison = nowEquipment.weapon is { Count: > 0 } ? DeepCopy(nowEquipment.weapon[0].equipmentData.equipPoisonData) : null;
+        var weaponPoison = nowEquipment.weapon[0] != null ? DeepCopy(nowEquipment.weapon[0].equipmentData.equipPoisonData) : null;
         _equipPoisonDatas.Add(weaponPoison);
         
         // 头盔
-        var helmetPoison = nowEquipment.helmet is {Count: > 0} ? DeepCopy(nowEquipment.helmet[0].equipmentData.equipPoisonData) : null;
+        var helmetPoison = nowEquipment.helmet[0] != null ? DeepCopy(nowEquipment.helmet[0].equipmentData.equipPoisonData) : null;
         _equipPoisonDatas.Add(helmetPoison);
         
         // 护甲
-        var armorPoison = nowEquipment.armor is {Count: > 0} ? DeepCopy(nowEquipment.armor[0].equipmentData.equipPoisonData) : null;
+        var armorPoison = nowEquipment.armor[0] != null ? DeepCopy(nowEquipment.armor[0].equipmentData.equipPoisonData) : null;
         _equipPoisonDatas.Add(armorPoison);
         
         // 鞋
-        var shoesPoison = nowEquipment.shoes is {Count: > 0} ? DeepCopy(nowEquipment.shoes[0].equipmentData.equipPoisonData) : null;
+        var shoesPoison = nowEquipment.shoes[0] != null ? DeepCopy(nowEquipment.shoes[0].equipmentData.equipPoisonData) : null;
         _equipPoisonDatas.Add(shoesPoison);
         
         // 饰品1
-        var deco1Poison = nowEquipment.decoration is {Count: > 0} ? DeepCopy(nowEquipment.decoration[0].equipmentData.equipPoisonData) : null;
+        var deco1Poison = nowEquipment.decoration[0] != null ? DeepCopy(nowEquipment.decoration[0].equipmentData.equipPoisonData) : null;
         _equipPoisonDatas.Add(deco1Poison);
         
         // 饰品2
-        var deco2Poison = nowEquipment.decoration is {Count: > 1} ? DeepCopy(nowEquipment.decoration[1].equipmentData.equipPoisonData) : null;
+        var deco2Poison = nowEquipment.decoration[1] != null ? DeepCopy(nowEquipment.decoration[1].equipmentData.equipPoisonData) : null;
         _equipPoisonDatas.Add(deco2Poison);
     }
     
     /// <summary>
     /// 深复制淬毒数据
     /// </summary>
-    private static EquipPoisonData DeepCopy(EquipPoisonData e)
+    private static EquipPoisonData? DeepCopy(EquipPoisonData? e)
     {
+        if (e == null) return null;
+        
         var hsad = new HeroSpeAddData();
-        foreach (var d in e.poisonBuffData.heroSpeAddData)
+        if (e.poisonBuffData?.heroSpeAddData != null)
         {
-            hsad.Set(d.Key, d.Value);
+            foreach (var d in e.poisonBuffData.heroSpeAddData)
+            {
+                hsad.Set(d.Key, d.Value);
+            }
         }
         return new EquipPoisonData
         {
