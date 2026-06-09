@@ -154,7 +154,7 @@ public class Patches
                 var heroesCopy = new List<HeroData>();
                 foreach (var hero in allHeroes)
                 {
-                    if (hero != null && hero.interestingStar)
+                    if (hero is { interestingStar: true })
                         heroesCopy.Add(hero);
                 }
                 
