@@ -1,5 +1,8 @@
+using System;
 using System.Collections;
+using System.Linq;
 using Il2Cpp;
+using Il2CppSystem.Collections.Generic;
 using UnityEngine;
 
 namespace LYMod.Helpers;
@@ -16,7 +19,7 @@ public static class OtherHelper
     }
 
     // 输入框文本转字典
-    public static Dictionary<int, float>? ParseInputBox(string inputText)
+    public static System.Collections.Generic.Dictionary<int, float>? ParseInputBox(string inputText)
     {
         if (string.IsNullOrWhiteSpace(inputText))
             return null;
@@ -39,8 +42,7 @@ public static class OtherHelper
             );
     }
 
-    public static Il2CppSystem.Collections.Generic.Dictionary<int, float>? ToIl2CppDictionary(
-        Dictionary<int, float>? systemDict)
+    public static Il2CppSystem.Collections.Generic.Dictionary<int, float>? ToIl2CppDictionary(System.Collections.Generic.Dictionary<int, float>? systemDict)
     {
         // 初始化 IL2CPP 字典
         var il2CPPDict = new Il2CppSystem.Collections.Generic.Dictionary<int, float>();
@@ -106,7 +108,7 @@ public static class OtherHelper
         if (gameData?.kungfuSkillDataBase == null) return;
 
         // 获取星辰阁中已有的秘籍skillID集合
-        var existingSkillIds = new HashSet<int>();
+        var existingSkillIds = new System.Collections.Generic.HashSet<int>();
         foreach (var item in speBookStorage.allItem)
             if (item is { type: ItemType.Book, bookData: not null })
                 existingSkillIds.Add(item.bookData.skillID);

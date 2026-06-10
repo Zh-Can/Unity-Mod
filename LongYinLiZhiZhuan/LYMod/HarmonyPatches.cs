@@ -1,9 +1,12 @@
+using System;
 using System.Collections;
+using System.Linq;
 using System.Text;
 using UnityEngine;
 using Object = Il2CppSystem.Object;
 using HarmonyLib;
 using Il2Cpp;
+using Il2CppSystem.Collections.Generic;
 using LYMod.Helpers;
 using MelonLoader;
 using UnityEngine.UI;
@@ -146,7 +149,7 @@ public class PoisonPatches
     #region 淬毒不减
     
     // 0-武器，1-头，2-衣，3-鞋，4-饰品1，5-饰品2
-    private static List<EquipPoisonData?> _equipPoisonDatas = new();
+    private static Il2CppSystem.Collections.Generic.List<EquipPoisonData?> _equipPoisonDatas = new();
     
     [HarmonyPrefix]
     [HarmonyPatch(typeof(BattleController), nameof(BattleController.StartBattleButtonClicked))]
@@ -397,7 +400,7 @@ public class ChooseControllerPatches
             }
             if (newObj == null) return;
 
-            var existingSkillIds = new HashSet<int>();
+            var existingSkillIds = new System.Collections.Generic.HashSet<int>();
             for (var i = 0; i < content.childCount; i++)
             {
                 var child = content.GetChild(i);
@@ -535,8 +538,8 @@ public class ChooseControllerPatches
                     }
                 }
             }
-            
-            HashSet<ItemData> allBookSet = new HashSet<ItemData>();
+
+            System.Collections.Generic.HashSet<ItemData> allBookSet = new System.Collections.Generic.HashSet<ItemData>();
             // 背包
             var bookList = player.itemListData.itemTypeList[(int)ItemType.Book];
             // 个人仓库
@@ -954,7 +957,7 @@ public class AreaBuildingDataPatches
     public static void AreaBuildController_ShowBuildNewPanel_Postfix(AreaBuildController __instance, bool show)
     {
         if (__instance == null || !show || !Plugin.Instance.AddSpeBuildingsFlag.Value) return;
-        var buildingIDsToAdd = new List<int> { 10,11,12,13,14,16,17,18,21,22,23,24,25,26,42,43,44,45,46,47,48,49,50,51,52,74,75 };
+        var buildingIDsToAdd = new System.Collections.Generic.List<int> { 10,11,12,13,14,16,17,18,21,22,23,24,25,26,42,43,44,45,46,47,48,49,50,51,52,74,75 };
         foreach (var buildingID in buildingIDsToAdd)
         {
             __instance.GenerateBuildNewButton(buildingID);
@@ -964,7 +967,7 @@ public class AreaBuildingDataPatches
     #region 建筑可拆除开关
 
     // 检查建筑ID是否在排除列表中
-    private static List<int> excludeIds = new(){0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,19,20};
+    private static System.Collections.Generic.List<int> excludeIds = new(){0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,19,20};
     
     /// <summary>
     /// 建筑可拆除开关
@@ -1112,7 +1115,7 @@ public class BreakThroughChoiceControllerPatch
         if (__instance != null && __result != null && Plugin.Instance.BreakChoiceFlag && 
             !string.IsNullOrEmpty(Plugin.Instance.BreakChoiceListStr))
         {
-            var list = new List<int>(
+            System.Collections.Generic.List<int> list = new System.Collections.Generic.List<int>(
                 Plugin.Instance.BreakChoiceListStr
                     .Split(new[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries) // 过滤空字符串
                     .Select(s => int.TryParse(s.Trim(), out int val) ? val : (int?)null) // 去空格 + 安全解析
@@ -1938,10 +1941,12 @@ public class ForceDataPatches
     [HarmonyPatch(typeof(ForceDetailController), nameof(ForceDetailController.ShowForceDetail))]
     public static void ShowForceDetail_Postfix(ForceDetailController __instance, int targetForceID)
     {
+        Plugin.LOG.Msg($"targetForceID:{targetForceID}");
+        Plugin.LOG.Msg($"baseDetailText:{__instance.baseDetailText.text}");
         var worldData = GameController.Instance?.worldData;
         if (worldData == null || __instance.baseDetailText == null) return;
         
-        var playerForceID = GlobalData.PlayerForceID;
+        var playerForceID = worldData.Player().belongForceID;
         var originalText = __instance.baseDetailText.text;
         
         if (worldData.gameMode == GameMode.Plot)
@@ -1951,7 +1956,7 @@ public class ForceDataPatches
                 var sb = new StringBuilder();
                 foreach (var forceId in UIBuilderExtensions.EnabledForceIDs)
                 {
-                    var forceData = GetForceDataById(forceId);
+                    var forceData = worldData.GetForce(forceId);
                     if (forceData != null)
                     {
                         var speFunc = forceData.speFunctionDescribe;
@@ -1969,7 +1974,7 @@ public class ForceDataPatches
             }
             else
             {
-                var forceData = GetForceDataById(targetForceID);
+                var forceData = worldData.GetForce(targetForceID);
                 if (forceData != null)
                 {
                     var speFunc = forceData.speFunctionDescribe;
@@ -1990,7 +1995,7 @@ public class ForceDataPatches
             var sb = new StringBuilder();
             foreach (var forceId in UIBuilderExtensions.EnabledForceIDs)
             {
-                var forceData = GetForceDataById(forceId);
+                var forceData = worldData.GetForce(forceId);
                 if (forceData != null)
                 {
                     var speFunc = forceData.speFunctionDescribe;
@@ -2007,18 +2012,6 @@ public class ForceDataPatches
                 __instance.baseDetailText.text = newText;
             }
         }
-    }
-    private static ForceData GetForceDataById(int forceId)
-    {
-        var worldData = GameController.Instance?.worldData;
-        if (worldData == null || worldData.Forces == null) return null;
-            
-        foreach (var force in worldData.Forces)
-        {
-            if (force.forceID == forceId)
-                return force;
-        }
-        return null;
     }
 }
 
@@ -2200,8 +2193,8 @@ public class ItemListDataPatches
             {
                 targetItem.itemLv = 5;
                 targetItem.rareLv = 5;
-                
-                var inputBox = OtherHelper.ParseInputBox(Plugin.Instance.MaterialAttr);
+
+                System.Collections.Generic.Dictionary<int, float> inputBox = OtherHelper.ParseInputBox(Plugin.Instance.MaterialAttr);
                 if (inputBox == null)
                     return;
                 var il2CppDictionary = OtherHelper.ToIl2CppDictionary(inputBox);
