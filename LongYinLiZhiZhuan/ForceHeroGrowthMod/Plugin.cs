@@ -3,7 +3,7 @@ using MelonLoader.Utils;
 using Il2Cpp;
 using UnityEngine;
 
-[assembly: MelonInfo(typeof(ForceHeroGrowthMod.Plugin), "ForceHeroGrowthMod", "5.0.1", "Can")]
+[assembly: MelonInfo(typeof(ForceHeroGrowthMod.Plugin), "ForceHeroGrowthMod", "5.0.2", "Can")]
 [assembly: MelonGame("TppStudio", "LongYinLiZhiZhuan")]
 [assembly: MelonPlatformDomain(MelonPlatformDomainAttribute.CompatibleDomains.IL2CPP)]
 
@@ -335,13 +335,13 @@ public class Plugin : MelonMod
         foreach (var skill in skills)
         {
             var oldLv = skill.lv;
-            
+
             // 如果已满级(10级)，跳过
             if (oldLv >= 10) continue;
-            
+
             // 获取武功稀有度
             var skillRareLv = GetSkillRareLv(skill.skillID);
-            
+
             // 根据天赋等级和武功稀有度获取升级等级数
             int upgradeCount;
             if (isPlayer)
@@ -355,41 +355,33 @@ public class Plugin : MelonMod
                 var config = TalentUpgradeCache[talentLv];
                 upgradeCount = config.GetValueOrDefault(skillRareLv, 0);
             }
-            
+
             // 限制升级数在0-10之间
             upgradeCount = Mathf.Clamp(upgradeCount, 0, 10);
-            
+
             if (upgradeCount <= 0) continue;
-            
+
             // 玩家角色需要检查突破障碍
             if (isPlayer && skill.SkillMeetObstacleLv())
             {
                 if (EnableDetailedLog.Value)
-                {
                     LOG.Msg($"[门派弟子成长Mod] 玩家 {hero.heroName} 技能 {skill.Name(true)} 遇到突破障碍，跳过升级");
-                }
                 continue;
             }
-            
+
             // 计算实际可升级的等级数（不超过10级）
             var actualUpgrade = Mathf.Min(upgradeCount, 10 - oldLv);
-            
+
             // 使用HeroData.UpgradeSkill升级技能（每次升1级，循环调用）
-            for (var i = 0; i < actualUpgrade; i++)
-            {
-                hero.UpgradeSkill(skill);
-            }
-            
+            for (var i = 0; i < actualUpgrade; i++) hero.UpgradeSkill(skill);
+
             var upgradeMsg = $"[过月成长] {hero.Name(true)} 奋发图强，将技能 {skill.Name(true)} 从 {oldLv} 级提升到 {skill.lv} 级";
-            if (EnableDetailedLog.Value)
-            {
-                LOG.Msg($"[门派弟子成长Mod] 人物 {hero.heroName} (天赋{talentLv}){upgradeMsg}");
-            }
+            if (EnableDetailedLog.Value) LOG.Msg($"[门派弟子成长Mod] 人物 {hero.heroName} (天赋{talentLv}){upgradeMsg}");
             // 只有NPC才记录日志（玩家没有经历日志显示）
-            if (!isPlayer)
-            {
-                hero.AddLog(upgradeMsg);
-            }
+            if (!isPlayer) hero.AddLog(upgradeMsg);
+
+            // 单次成长仅随机升级1个技能，终止剩余技能遍历
+            break;
         }
     }
     
