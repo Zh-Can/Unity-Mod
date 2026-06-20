@@ -1,4 +1,4 @@
-﻿using BepInEx;
+using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
 using UnityEngine;
@@ -33,6 +33,16 @@ public class TMMod : BaseUnityPlugin
     
     
 
+    // 辅助方法（替代 .NET Framework 不支持的 GetValueOrDefault）
+    private static TVal GetVal<TKey, TVal>(Dictionary<TKey, TVal> dict, TKey key)
+    {
+        return dict.TryGetValue(key, out var val) ? val : default;
+    }
+    private static TVal GetVal<TKey, TVal>(Dictionary<TKey, TVal> dict, TKey key, TVal defaultVal)
+    {
+        return dict.TryGetValue(key, out var val) ? val : defaultVal;
+    }
+
     // GUI状态
     private Vector2 mainScrollPos;
     private Rect mainWindowRect = new(50, 50, 450, 600);
@@ -48,6 +58,8 @@ public class TMMod : BaseUnityPlugin
         Logger.LogInfo("TMMod loaded!");
 
         Harmony.CreateAndPatchAll(typeof(TMMod));
+        Harmony.CreateAndPatchAll(typeof(LockerRoomChatPatch));
+        Harmony.CreateAndPatchAll(typeof(I18nLabelPatch));
         _hotkey = Config.Bind("Config", "hotkey", KeyCode.Tab, "开启/关闭窗体快捷键");
         testNumChangeToggle = Config.Bind("Data", "testNumChangeToggle", false, "是否开启修改组合模拟次数");
         actNumChangeToggle = Config.Bind("Data", "actNumChangeToggle", false, "是否开启修改周活动次数");
@@ -385,7 +397,7 @@ public class TMMod : BaseUnityPlugin
                         break;
                     case 1:
                         _property1 = _athleteProperties[0].Name;
-                        _pIndex1 = _keyProperty.FirstOrDefault(k => k.Value == _property1).Key;
+                        _pIndex1 = KeyProperty.FirstOrDefault(k => k.Value == _property1).Key;
                         _pIndex2 = -1;
                         _property2 = "";
                         _property3 = "";
@@ -393,19 +405,19 @@ public class TMMod : BaseUnityPlugin
                         break;
                     case 2:
                         _property1 = _athleteProperties[0].Name;
-                        _pIndex1 = _keyProperty.FirstOrDefault(k => k.Value == _property1).Key;
+                        _pIndex1 = KeyProperty.FirstOrDefault(k => k.Value == _property1).Key;
                         _property2 = _athleteProperties[1].Name;
-                        _pIndex2 = _keyProperty.FirstOrDefault(k => k.Value == _property2).Key;
+                        _pIndex2 = KeyProperty.FirstOrDefault(k => k.Value == _property2).Key;
                         _property3 = "";
                         _pIndex3 = -1;
                         break;
                     case 3:
                         _property1 = _athleteProperties[0].Name;
-                        _pIndex1 = _keyProperty.FirstOrDefault(k => k.Value == _property1).Key;
+                        _pIndex1 = KeyProperty.FirstOrDefault(k => k.Value == _property1).Key;
                         _property2 = _athleteProperties[1].Name;
-                        _pIndex2 = _keyProperty.FirstOrDefault(k => k.Value == _property2).Key;
+                        _pIndex2 = KeyProperty.FirstOrDefault(k => k.Value == _property2).Key;
                         _property3 = _athleteProperties[2].Name;
-                        _pIndex3 = _keyProperty.FirstOrDefault(k => k.Value == _property3).Key;
+                        _pIndex3 = KeyProperty.FirstOrDefault(k => k.Value == _property3).Key;
                         break;
                 }
 
@@ -430,7 +442,7 @@ public class TMMod : BaseUnityPlugin
                     case 1:
                         _champ1 = _championExps[0].Value.Champ;
                         _champion1 = _championExps[0].Name;
-                        _cIndex1 = _championDict.FirstOrDefault(k => k.Value == _champion1).Key;
+                        _cIndex1 = ChampionDict.FirstOrDefault(k => k.Value == _champion1).Key;
                         _champ2 = 0;
                         _champion2 = "";
                         _cIndex2 = -1;
@@ -444,10 +456,10 @@ public class TMMod : BaseUnityPlugin
                     case 2:
                         _champ1 = _championExps[0].Value.Champ;
                         _champion1 = _championExps[0].Name;
-                        _cIndex1 = _championDict.FirstOrDefault(k => k.Value == _champion1).Key;
+                        _cIndex1 = ChampionDict.FirstOrDefault(k => k.Value == _champion1).Key;
                         _champ2 = _championExps[1].Value.Champ;
                         _champion2 = _championExps[1].Name;
-                        _cIndex2 = _championDict.FirstOrDefault(k => k.Value == _champion2).Key;
+                        _cIndex2 = ChampionDict.FirstOrDefault(k => k.Value == _champion2).Key;
                         _champ3 = 0;
                         _champion3 = "";
                         _cIndex3 = -1;
@@ -458,13 +470,13 @@ public class TMMod : BaseUnityPlugin
                     case 3:
                         _champ1 = _championExps[0].Value.Champ;
                         _champion1 = _championExps[0].Name;
-                        _cIndex1 = _championDict.FirstOrDefault(k => k.Value == _champion1).Key;
+                        _cIndex1 = ChampionDict.FirstOrDefault(k => k.Value == _champion1).Key;
                         _champ2 = _championExps[1].Value.Champ;
                         _champion2 = _championExps[1].Name;
-                        _cIndex2 = _championDict.FirstOrDefault(k => k.Value == _champion2).Key;
+                        _cIndex2 = ChampionDict.FirstOrDefault(k => k.Value == _champion2).Key;
                         _champ3 = _championExps[2].Value.Champ;
                         _champion3 = _championExps[2].Name;
-                        _cIndex3 = _championDict.FirstOrDefault(k => k.Value == _champion3).Key;
+                        _cIndex3 = ChampionDict.FirstOrDefault(k => k.Value == _champion3).Key;
                         _champ4 = 0;
                         _champion4 = "";
                         _cIndex4 = 0;
@@ -472,16 +484,16 @@ public class TMMod : BaseUnityPlugin
                     case 4:
                         _champ1 = _championExps[0].Value.Champ;
                         _champion1 = _championExps[0].Name;
-                        _cIndex1 = _championDict.FirstOrDefault(k => k.Value == _champion1).Key;
+                        _cIndex1 = ChampionDict.FirstOrDefault(k => k.Value == _champion1).Key;
                         _champ2 = _championExps[1].Value.Champ;
                         _champion2 = _championExps[1].Name;
-                        _cIndex2 = _championDict.FirstOrDefault(k => k.Value == _champion2).Key;
+                        _cIndex2 = ChampionDict.FirstOrDefault(k => k.Value == _champion2).Key;
                         _champ3 = _championExps[2].Value.Champ;
                         _champion3 = _championExps[2].Name;
-                        _cIndex3 = _championDict.FirstOrDefault(k => k.Value == _champion3).Key;
+                        _cIndex3 = ChampionDict.FirstOrDefault(k => k.Value == _champion3).Key;
                         _champ4 = _championExps[3].Value.Champ;
                         _champion4 = _championExps[3].Name;
-                        _cIndex4 = _championDict.FirstOrDefault(k => k.Value == _champion4).Key;
+                        _cIndex4 = ChampionDict.FirstOrDefault(k => k.Value == _champion4).Key;
                         break;
                 }
             }
@@ -498,23 +510,23 @@ public class TMMod : BaseUnityPlugin
         if (GUILayout.Button("修改信息"))
         {
             List<AthleteProperty> list = new();
-            if (_pIndex1 >= 0) list.Add(AthleteProperty.Create(_keyProperty[_pIndex1]));
-            if (_pIndex2 >= 0) list.Add(AthleteProperty.Create(_keyProperty[_pIndex2]));
-            if (_pIndex3 >= 0) list.Add(AthleteProperty.Create(_keyProperty[_pIndex3]));
+            if (_pIndex1 >= 0) list.Add(AthleteProperty.Create(KeyProperty[_pIndex1]));
+            if (_pIndex2 >= 0) list.Add(AthleteProperty.Create(KeyProperty[_pIndex2]));
+            if (_pIndex3 >= 0) list.Add(AthleteProperty.Create(KeyProperty[_pIndex3]));
             
             _athlete.Age = _age;
             _athlete.Salary = _salary;
             _athlete.Potential = _potential;
             _athlete.Properties = list;
 
-            if (_champion1 != _championDict.GetValueOrDefault(_cIndex1, ""))
-                _athlete.ChangeChampionExp(_champion1,_championDict.GetValueOrDefault(_cIndex1),10000);
-            if (_champion2 != _championDict.GetValueOrDefault(_cIndex2, ""))
-                _athlete.ChangeChampionExp(_champion2,_championDict.GetValueOrDefault(_cIndex2),10000);
-            if (_champion3 != _championDict.GetValueOrDefault(_cIndex3, ""))
-                _athlete.ChangeChampionExp(_champion3,_championDict.GetValueOrDefault(_cIndex3),10000);
-            if (_champion4 != _championDict.GetValueOrDefault(_cIndex4, ""))
-                _athlete.ChangeChampionExp(_champion4,_championDict.GetValueOrDefault(_cIndex4),10000);
+            if (_champion1 != GetVal(ChampionDict, _cIndex1, ""))
+                _athlete.ChangeChampionExp(_champion1,GetVal(ChampionDict, _cIndex1),10000);
+            if (_champion2 != GetVal(ChampionDict, _cIndex2, ""))
+                _athlete.ChangeChampionExp(_champion2,GetVal(ChampionDict, _cIndex2),10000);
+            if (_champion3 != GetVal(ChampionDict, _cIndex3, ""))
+                _athlete.ChangeChampionExp(_champion3,GetVal(ChampionDict, _cIndex3),10000);
+            if (_champion4 != GetVal(ChampionDict, _cIndex4, ""))
+                _athlete.ChangeChampionExp(_champion4,GetVal(ChampionDict, _cIndex4),10000);
             
             Store.Global.Set<Athlete>(_athlete.ID, _athlete);
         }
@@ -557,7 +569,7 @@ public class TMMod : BaseUnityPlugin
         
         GUILayout.BeginHorizontal();
         int p1 = _pIndex1;
-        string pn1 = _cnProperty.GetValueOrDefault(_keyProperty.GetValueOrDefault(p1, ""), "");
+        string pn1 = GetVal(CnProperty, GetVal(KeyProperty, p1, ""), "");
         GUILayout.Label($"天赋1: {pn1}");
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
@@ -566,14 +578,14 @@ public class TMMod : BaseUnityPlugin
         GUILayout.EndHorizontal();
         GUILayout.Space(10);
         GUILayout.BeginHorizontal();
-        string pnd1 = _desProperty.GetValueOrDefault(_keyProperty.GetValueOrDefault(p1, ""), "");
+        string pnd1 = GetVal(DesProperty, GetVal(KeyProperty, p1, ""), "");
         GUILayout.Label($"天赋描述: {pnd1}");
         GUILayout.EndHorizontal();
         GUILayout.Space(10);
         
         GUILayout.BeginHorizontal();
         int p2 = _pIndex2;
-        string pn2 = _cnProperty.GetValueOrDefault(_keyProperty.GetValueOrDefault(p2, ""), "");
+        string pn2 = GetVal(CnProperty, GetVal(KeyProperty, p2, ""), "");
         GUILayout.Label($"天赋2: {pn2}");
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
@@ -582,14 +594,14 @@ public class TMMod : BaseUnityPlugin
         GUILayout.EndHorizontal();
         GUILayout.Space(10);
         GUILayout.BeginHorizontal();
-        string pnd2 = _desProperty.GetValueOrDefault(_keyProperty.GetValueOrDefault(p2, ""), "");
+        string pnd2 = GetVal(DesProperty, GetVal(KeyProperty, p2, ""), "");
         GUILayout.Label($"天赋描述: {pnd2}");
         GUILayout.EndHorizontal();
         GUILayout.Space(10);
         
         GUILayout.BeginHorizontal();
         int p3 = _pIndex3;
-        string pn3 = _cnProperty.GetValueOrDefault(_keyProperty.GetValueOrDefault(p3, ""), "");
+        string pn3 = GetVal(CnProperty, GetVal(KeyProperty, p3, ""), "");
         GUILayout.Label($"天赋3: {pn3}");
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
@@ -598,7 +610,7 @@ public class TMMod : BaseUnityPlugin
         GUILayout.EndHorizontal();
         GUILayout.Space(10);
         GUILayout.BeginHorizontal();
-        string pnd3 = _desProperty.GetValueOrDefault(_keyProperty.GetValueOrDefault(p3, ""), "");
+        string pnd3 = GetVal(DesProperty, GetVal(KeyProperty, p3, ""), "");
         GUILayout.Label($"天赋描述: {pnd3}");
         GUILayout.EndHorizontal();
         GUILayout.Space(10);
@@ -606,13 +618,13 @@ public class TMMod : BaseUnityPlugin
         
         GUILayout.BeginHorizontal();
         int c1 = _cIndex1;
-        string cn1 = _championCnDict.GetValueOrDefault(_championDict.GetValueOrDefault(c1, ""), "");
+        string cn1 = GetVal(_championCnDict, GetVal(ChampionDict, c1, ""), "");
         GUILayout.Label($"擅长英雄1: {cn1}");
         GUILayout.Space(10);
         GUILayout.Label($"熟练度: {_champ1}");
         if (GUILayout.Button("+"))
         {
-            _athlete?.AddExp(_championDict.GetValueOrDefault(c1, ""));
+            _athlete?.AddExp(GetVal(ChampionDict, c1, ""));
             _champ1 = Store.Global.Get<Athlete>(_athlete.ID).GetExps()[0].Value.Champ;
         } 
         GUILayout.EndHorizontal();
@@ -623,13 +635,13 @@ public class TMMod : BaseUnityPlugin
         
         GUILayout.BeginHorizontal();
         int c2 = _cIndex2;
-        string cn2 = _championCnDict.GetValueOrDefault(_championDict.GetValueOrDefault(c2, ""), "");
+        string cn2 = GetVal(_championCnDict, GetVal(ChampionDict, c2, ""), "");
         GUILayout.Label($"擅长英雄2: {cn2}");
         GUILayout.Space(10);
         GUILayout.Label($"熟练度: {_champ2}");
         if (GUILayout.Button("+"))
         {
-            _athlete?.AddExp(_championDict.GetValueOrDefault(c2, ""));
+            _athlete?.AddExp(GetVal(ChampionDict, c2, ""));
             _champ2 = Store.Global.Get<Athlete>(_athlete.ID).GetExps()[1].Value.Champ;
         } 
         GUILayout.EndHorizontal();
@@ -640,13 +652,13 @@ public class TMMod : BaseUnityPlugin
         
         GUILayout.BeginHorizontal();
         int c3 = _cIndex3;
-        string cn3 = _championCnDict.GetValueOrDefault(_championDict.GetValueOrDefault(c3, ""), "");
+        string cn3 = GetVal(_championCnDict, GetVal(ChampionDict, c3, ""), "");
         GUILayout.Label($"擅长英雄3: {cn3}");
         GUILayout.Space(10);
         GUILayout.Label($"熟练度: {_champ3}");
         if (GUILayout.Button("+"))
         {
-            _athlete?.AddExp(_championDict.GetValueOrDefault(c3, ""));
+            _athlete?.AddExp(GetVal(ChampionDict, c3, ""));
             _champ3 = Store.Global.Get<Athlete>(_athlete.ID).GetExps()[2].Value.Champ;
         } 
         GUILayout.EndHorizontal();
@@ -657,13 +669,13 @@ public class TMMod : BaseUnityPlugin
         
         GUILayout.BeginHorizontal();
         int c4 = _cIndex4;
-        string cn4 = _championCnDict.GetValueOrDefault(_championDict.GetValueOrDefault(c4, ""), "");
+        string cn4 = GetVal(_championCnDict, GetVal(ChampionDict, c4, ""), "");
         GUILayout.Label($"擅长英雄4: {cn4}");
         GUILayout.Space(10);
         GUILayout.Label($"熟练度: {_champ4}");
         if (GUILayout.Button("+"))
         {
-            _athlete?.AddExp(_championDict.GetValueOrDefault(c4, ""));
+            _athlete?.AddExp(GetVal(ChampionDict, c4, ""));
             _champ4 = Store.Global.Get<Athlete>(_athlete.ID).GetExps()[3].Value.Champ;
         } 
         GUILayout.EndHorizontal();
@@ -753,10 +765,8 @@ public class TMMod : BaseUnityPlugin
         });
     }
 
-    
-    
 
-    Dictionary<string, string> _championCnDict = new Dictionary<string, string>()
+    private readonly Dictionary<string, string> _championCnDict = new Dictionary<string, string>()
     {
         { "Archer", "弓箭手" },
         { "Fighter", "格斗家" },
@@ -799,7 +809,8 @@ public class TMMod : BaseUnityPlugin
         { "DarkMage", "黑法师" }, // 修正原“黑法师师”的笔误
         { "Jiangshi", "僵尸" }
     };
-    Dictionary<int, string> _championDict = new Dictionary<int, string>()
+
+    private static readonly Dictionary<int, string> ChampionDict = new Dictionary<int, string>()
     {
         { 0, "Archer" },
         { 1, "Fighter" },
@@ -846,7 +857,7 @@ public class TMMod : BaseUnityPlugin
     private bool _loaded = false;
     
 
-    private static Dictionary<int, string> _keyProperty = new Dictionary<int, string>()
+    private static readonly Dictionary<int, string> KeyProperty = new Dictionary<int, string>()
     {
         { 0, "target_min_hp" },
         { 1, "chicken" },
@@ -885,7 +896,7 @@ public class TMMod : BaseUnityPlugin
         { 34, "blue" },
         { 35, "red" }
     };
-    private static Dictionary<string, string> _cnProperty = new Dictionary<string, string>()
+    private static readonly Dictionary<string, string> CnProperty = new Dictionary<string, string>()
     {
         {"target_min_hp", "蔑视弱者"},
         {"chicken", "胆小鬼"},
@@ -924,7 +935,7 @@ public class TMMod : BaseUnityPlugin
         {"blue", "蓝色情报"},
         {"red", "红色情深"}
     };
-    private static Dictionary<string, string> _desProperty = new Dictionary<string, string>()
+    private static readonly Dictionary<string, string> DesProperty = new Dictionary<string, string>()
     {
         {"target_min_hp", "优先攻击生命值低的英雄 （只适合刺客的技能 战士直接冲后排也容易倒）"},
         {"chicken", "友军存在时才走近敌军"},
