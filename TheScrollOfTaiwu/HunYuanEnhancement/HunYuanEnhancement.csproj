@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <Nullable>enable</Nullable>
+        <!-- 绑定重定向对类库(DLL)无效，关闭即可 -->
+        <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+        <GenerateBindingRedirectsOutputType>false</GenerateBindingRedirectsOutputType>
+        <!-- 抑制程序集版本冲突警告 + 处理器架构不匹配警告 -->
+        <NoWarn>MSB3277;MSB3270</NoWarn>
+        <!-- 与游戏保持一致，消除MSB3270 -->
+        <PlatformTarget>x64</PlatformTarget>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <DebugSymbols>false</DebugSymbols>
+    </PropertyGroup>
+    
+
+    <ItemGroup>
+      <Reference Include="0Harmony">
+        <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\The Scroll Of Taiwu\The Scroll of Taiwu_Data\Managed\0Harmony.dll</HintPath>
+        <Private>False</Private>
+      </Reference>
+      <Reference Include="GameData">
+        <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\The Scroll Of Taiwu\Backend\GameData.dll</HintPath>
+        <Private>False</Private>
+      </Reference>
+      <Reference Include="GameData.ArchiveData">
+        <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\The Scroll Of Taiwu\Backend\GameData.ArchiveData.dll</HintPath>
+        <Private>False</Private>
+      </Reference>
+      <Reference Include="GameData.Shared">
+        <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\The Scroll Of Taiwu\Backend\GameData.Shared.dll</HintPath>
+        <Private>False</Private>
+      </Reference>
+      <Reference Include="GameData.Utilities">
+        <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\The Scroll Of Taiwu\Backend\GameData.Utilities.dll</HintPath>
+        <Private>False</Private>
+      </Reference>
+      <Reference Include="TaiwuModdingLib">
+        <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\The Scroll Of Taiwu\The Scroll of Taiwu_Data\Managed\TaiwuModdingLib.dll</HintPath>
+        <Private>False</Private>
+      </Reference>
+    </ItemGroup>
+
+</Project>
