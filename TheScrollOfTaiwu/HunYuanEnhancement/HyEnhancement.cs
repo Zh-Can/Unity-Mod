@@ -9,51 +9,51 @@ using TaiwuModdingLib.Core.Plugin;
 
 namespace HunYuanEnhancement
 {
-    [PluginConfig("混元增强Mod", "Can", "1.1.0")]
+    [PluginConfig("混元增强Mod", "Can", "1.2.0")]
     public class HyEnhancement : TaiwuRemakePlugin
     {
         private static int _requirementChange = -20;
         private static int _maxPowerChange = 20;
         
         // 攻击属性
-        private static int _penetrateOuter = 10;
-        private static int _penetrateInner = 10;
+        private static int _penetrateOuter = 5;
+        private static int _penetrateInner = 5;
         
         // 防御属性
-        private static int _penResistOuter = 10;
-        private static int _penResistInner = 10;
+        private static int _penResistOuter = 5;
+        private static int _penResistInner = 5;
         
         // 命中属性
-        private static int _hitLiDao = 7;
-        private static int _hitJingMiao = 7;
-        private static int _hitXunJi = 7;
-        private static int _hitDongXin = 7;
+        private static int _hitLiDao = 3;
+        private static int _hitJingMiao = 3;
+        private static int _hitXunJi = 3;
+        private static int _hitDongXin = 3;
         
         // 化解属性
-        private static int _avoidXieLi = 7;
-        private static int _avoidChaiZhao = 7;
-        private static int _avoidShanBi = 7;
-        private static int _avoidShouXin = 7;
+        private static int _avoidXieLi = 3;
+        private static int _avoidChaiZhao = 3;
+        private static int _avoidShanBi = 3;
+        private static int _avoidShouXin = 3;
         
         // 次要属性
-        private static int _stanceRecovery = 10;
-        private static int _breathRecovery = 10;
-        private static int _moveSpeed = 10;
-        private static int _flawRecovery = 10;
-        private static int _castSpeed = 10;
-        private static int _blockedAcupointRecovery = 10;
-        private static int _weaponSwitchSpeed = 10;
-        private static int _attackSpeed = 10;
-        private static int _innerRatio = 10;
-        private static int _qiDisorderRecovery = 10;
+        private static int _stanceRecovery = 5;
+        private static int _breathRecovery = 5;
+        private static int _moveSpeed = 5;
+        private static int _flawRecovery = 5;
+        private static int _castSpeed = 5;
+        private static int _blockedAcupointRecovery = 5;
+        private static int _weaponSwitchSpeed = 5;
+        private static int _attackSpeed = 5;
+        private static int _innerRatio = 5;
+        private static int _qiDisorderRecovery = 5;
         
         // 毒素抵抗
-        private static int _hotPoisonResist = 4;
-        private static int _gloomyPoisonResist = 4;
-        private static int _coldPoisonResist = 4;
-        private static int _redPoisonResist = 4;
-        private static int _rottenPoisonResist = 4;
-        private static int _illusoryPoisonResist = 4;
+        private static int _hotPoisonResist = 2;
+        private static int _gloomyPoisonResist = 2;
+        private static int _coldPoisonResist = 2;
+        private static int _redPoisonResist = 2;
+        private static int _rottenPoisonResist = 2;
+        private static int _illusoryPoisonResist = 2;
         
         public override void Initialize()
         {
@@ -140,6 +140,20 @@ namespace HunYuanEnhancement
             
             // 原始混元属性
             var o = NeiliType.Instance[5];
+            
+            // AdaptableLog.Info($"[HyEnhancement] ===== 混元原始值 =====");
+            // AdaptableLog.Info($"功法威力上限(金/木/水/火/土/混元): [{string.Join(", ", o.MaxPowerChange)}]");
+            // AdaptableLog.Info($"功法发挥需求(金/木/水/火/土/混元): [{string.Join(", ", o.RequirementChange)}]");
+            // AdaptableLog.Info($"命中(力道/精妙/迅疾/动心): [{o.HitValues[0]}, {o.HitValues[1]}, {o.HitValues[2]}, {o.HitValues[3]}]");
+            // AdaptableLog.Info($"破体/破气: [{o.Penetrations.Outer}, {o.Penetrations.Inner}]");
+            // AdaptableLog.Info($"化解(卸力/拆招/闪避/守心): [{o.AvoidValues[0]}, {o.AvoidValues[1]}, {o.AvoidValues[2]}, {o.AvoidValues[3]}]");
+            // AdaptableLog.Info($"御体/御气: [{o.PenetrationResists.Outer}, {o.PenetrationResists.Inner}]");
+            // AdaptableLog.Info($"架势恢复/提气恢复: [{o.RecoveryOfStanceAndBreath.Outer}, {o.RecoveryOfStanceAndBreath.Inner}]");
+            // AdaptableLog.Info($"移动速度={o.MoveSpeed}, 步伐稳健={o.RecoveryOfFlaw}, 施展速度={o.CastSpeed}");
+            // AdaptableLog.Info($"引气冲关={o.RecoveryOfBlockedAcupoint}, 武具运用={o.WeaponSwitchSpeed}");
+            // AdaptableLog.Info($"攻击速度={o.AttackSpeed}, 内功发挥={o.InnerRatio}, 调息吐纳={o.RecoveryOfQiDisorder}");
+            // AdaptableLog.Info($"毒素抵抗(烈/郁/寒/赤/腐/幻): [{o.PoisonResists[0]}, {o.PoisonResists[1]}, {o.PoisonResists[2]}, {o.PoisonResists[3]}, {o.PoisonResists[4]}, {o.PoisonResists[5]}]");
+            // AdaptableLog.Info($"五行比例(金/木/水/火/土): {o.NeiliProportionOfFiveElements}");
             
             // 构建新的混元属性项
             var newNeiliTypeItem = new NeiliTypeItem(5, o.Name, o.Desc, o.FiveElements, o.IdeaAllocationProportion,
