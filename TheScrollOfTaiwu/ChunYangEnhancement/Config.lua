@@ -1,0 +1,329 @@
+return {
+    Title = "纯阳增强Mod",
+    Source = 0,
+    Version = "1.0.0.0",
+    GameVersion = "1.0.44",
+    Author = "Can",
+    Description = "纯阳增强Mod说明：\n\n1.修改数据后即时生效，但是面板数据只有太吾刷新了，别人不会刷新\n2.数据可调\n3.对全局所有人物的纯阳属性都会增强，所以不要改的过强\n4.字段描述的括号内是游戏原值“功法发挥需求(0)”",
+    TagList = {
+		[1] = "Modifications",
+		[2] = "Compatible Mods",
+	},
+    BackendPlugins = {
+        [1] = "ChunYangEnhancement.dll",
+    },
+    Cover = "Cover.png",
+    WorkshopCover = "Cover.png",
+    NeedRestartWhenSettingChanged = false,
+    DefaultSettings = {
+        [1] = {
+            SettingType = "Slider",
+            Key = "requirementChange",
+            DisplayName = "纯阳功法发挥需求(0)",
+            GroupName = "纯阳效果",
+            MinValue = -100,
+            MaxValue = 0,
+            StepSize = 5,
+            DefaultValue = 0
+        },
+        [2] = {
+            SettingType = "Slider",
+            Key = "maxPowerChange",
+            DisplayName = "纯阳类功法威力(30)",
+            GroupName = "纯阳效果",
+            MinValue = 0,
+            MaxValue = 100,
+            StepSize = 5,
+            DefaultValue = 30
+        },
+        [3] = {
+            SettingType = "Slider",
+            Key = "penetrateOuter",
+            DisplayName = "破体(5)",
+            GroupName = "攻击属性",
+            MinValue = 0,
+            MaxValue = 20,
+            StepSize = 1,
+            DefaultValue = 5
+        },
+        [4] = {
+            SettingType = "Slider",
+            Key = "penetrateInner",
+            DisplayName = "破气(5)",
+            GroupName = "攻击属性",
+            MinValue = 0,
+            MaxValue = 20,
+            StepSize = 1,
+            DefaultValue = 5
+        },
+        [5] = {
+            SettingType = "Slider",
+            Key = "penResistOuter",
+            DisplayName = "御体(5)",
+            GroupName = "防御属性",
+            MinValue = 0,
+            MaxValue = 20,
+            StepSize = 1,
+            DefaultValue = 5
+        },
+        [6] = {
+            SettingType = "Slider",
+            Key = "penResistInner",
+            DisplayName = "御气(5)",
+            GroupName = "防御属性",
+            MinValue = 0,
+            MaxValue = 20,
+            StepSize = 1,
+            DefaultValue = 5
+        },
+        [7] = {
+            SettingType = "Slider",
+            Key = "hitLiDao",
+            DisplayName = "力道(3)",
+            GroupName = "命中属性",
+            MinValue = 0,
+            MaxValue = 20,
+            StepSize = 1,
+            DefaultValue = 3
+        },
+        [8] = {
+            SettingType = "Slider",
+            Key = "hitJingMiao",
+            DisplayName = "精妙(3)",
+            GroupName = "命中属性",
+            MinValue = 0,
+            MaxValue = 20,
+            StepSize = 1,
+            DefaultValue = 3
+        },
+        [9] = {
+            SettingType = "Slider",
+            Key = "hitXunJi",
+            DisplayName = "迅疾(3)",
+            GroupName = "命中属性",
+            MinValue = 0,
+            MaxValue = 20,
+            StepSize = 1,
+            DefaultValue = 3
+        },
+        [10] = {
+            SettingType = "Slider",
+            Key = "hitDongXin",
+            DisplayName = "动心(3)",
+            GroupName = "命中属性",
+            MinValue = 0,
+            MaxValue = 20,
+            StepSize = 1,
+            DefaultValue = 3
+        },
+        [11] = {
+            SettingType = "Slider",
+            Key = "avoidXieLi",
+            DisplayName = "卸力(3)",
+            GroupName = "化解属性",
+            MinValue = 0,
+            MaxValue = 20,
+            StepSize = 1,
+            DefaultValue = 3
+        },
+        [12] = {
+            SettingType = "Slider",
+            Key = "avoidChaiZhao",
+            DisplayName = "拆招(3)",
+            GroupName = "化解属性",
+            MinValue = 0,
+            MaxValue = 20,
+            StepSize = 1,
+            DefaultValue = 3
+        },
+        [13] = {
+            SettingType = "Slider",
+            Key = "avoidShanBi",
+            DisplayName = "闪避(3)",
+            GroupName = "化解属性",
+            MinValue = 0,
+            MaxValue = 20,
+            StepSize = 1,
+            DefaultValue = 3
+        },
+        [14] = {
+            SettingType = "Slider",
+            Key = "avoidShouXin",
+            DisplayName = "守心(3)",
+            GroupName = "化解属性",
+            MinValue = 0,
+            MaxValue = 20,
+            StepSize = 1,
+            DefaultValue = 3
+        },
+        [15] = {
+            SettingType = "Slider",
+            Key = "stanceRecovery",
+            DisplayName = "架势恢复(5)",
+            GroupName = "次要属性",
+            MinValue = 0,
+            MaxValue = 20,
+            StepSize = 1,
+            DefaultValue = 5
+        },
+        [16] = {
+            SettingType = "Slider",
+            Key = "breathRecovery",
+            DisplayName = "提气恢复(5)",
+            GroupName = "次要属性",
+            MinValue = 0,
+            MaxValue = 20,
+            StepSize = 1,
+            DefaultValue = 5
+        },
+        [17] = {
+            SettingType = "Slider",
+            Key = "moveSpeed",
+            DisplayName = "移动速度(5)",
+            GroupName = "次要属性",
+            MinValue = 0,
+            MaxValue = 20,
+            StepSize = 1,
+            DefaultValue = 5
+        },
+        [18] = {
+            SettingType = "Slider",
+            Key = "flawRecovery",
+            DisplayName = "步伐稳健(5)",
+            GroupName = "次要属性",
+            MinValue = 0,
+            MaxValue = 20,
+            StepSize = 1,
+            DefaultValue = 5
+        },
+        [19] = {
+            SettingType = "Slider",
+            Key = "castSpeed",
+            DisplayName = "施展速度(5)",
+            GroupName = "次要属性",
+            MinValue = 0,
+            MaxValue = 20,
+            StepSize = 1,
+            DefaultValue = 5
+        },
+        [20] = {
+            SettingType = "Slider",
+            Key = "blockedAcupointRecovery",
+            DisplayName = "引气冲关(5)",
+            GroupName = "次要属性",
+            MinValue = 0,
+            MaxValue = 20,
+            StepSize = 1,
+            DefaultValue = 5
+        },
+        [21] = {
+            SettingType = "Slider",
+            Key = "weaponSwitchSpeed",
+            DisplayName = "武具运用(5)",
+            GroupName = "次要属性",
+            MinValue = 0,
+            MaxValue = 20,
+            StepSize = 1,
+            DefaultValue = 5
+        },
+        [22] = {
+            SettingType = "Slider",
+            Key = "attackSpeed",
+            DisplayName = "攻击速度(5)",
+            GroupName = "次要属性",
+            MinValue = 0,
+            MaxValue = 20,
+            StepSize = 1,
+            DefaultValue = 5
+        },
+        [23] = {
+            SettingType = "Slider",
+            Key = "innerRatio",
+            DisplayName = "内功发挥(5)",
+            GroupName = "次要属性",
+            MinValue = 0,
+            MaxValue = 20,
+            StepSize = 1,
+            DefaultValue = 5
+        },
+        [24] = {
+            SettingType = "Slider",
+            Key = "qiDisorderRecovery",
+            DisplayName = "调息吐纳(5)",
+            GroupName = "次要属性",
+            MinValue = 0,
+            MaxValue = 20,
+            StepSize = 1,
+            DefaultValue = 5
+        },
+        [25] = {
+            SettingType = "Slider",
+            Key = "hotPoisonResist",
+            DisplayName = "烈毒抵抗(2)",
+            GroupName = "毒素抵抗",
+            MinValue = 0,
+            MaxValue = 10,
+            StepSize = 1,
+            DefaultValue = 2
+        },
+        [26] = {
+            SettingType = "Slider",
+            Key = "gloomyPoisonResist",
+            DisplayName = "郁毒抵抗(1)",
+            GroupName = "毒素抵抗",
+            MinValue = 0,
+            MaxValue = 10,
+            StepSize = 1,
+            DefaultValue = 1
+        },
+        [27] = {
+            SettingType = "Slider",
+            Key = "coldPoisonResist",
+            DisplayName = "寒毒抵抗(0)",
+            GroupName = "毒素抵抗",
+            MinValue = 0,
+            MaxValue = 10,
+            StepSize = 1,
+            DefaultValue = 0
+        },
+        [28] = {
+            SettingType = "Slider",
+            Key = "redPoisonResist",
+            DisplayName = "赤毒抵抗(3)",
+            GroupName = "毒素抵抗",
+            MinValue = 0,
+            MaxValue = 10,
+            StepSize = 1,
+            DefaultValue = 3
+        },
+        [29] = {
+            SettingType = "Slider",
+            Key = "rottenPoisonResist",
+            DisplayName = "腐毒抵抗(0)",
+            GroupName = "毒素抵抗",
+            MinValue = 0,
+            MaxValue = 10,
+            StepSize = 1,
+            DefaultValue = 0
+        },
+        [30] = {
+            SettingType = "Slider",
+            Key = "illusoryPoisonResist",
+            DisplayName = "幻毒抵抗(2)",
+            GroupName = "毒素抵抗",
+            MinValue = 0,
+            MaxValue = 10,
+            StepSize = 1,
+            DefaultValue = 2
+        },
+    },
+    SettingGroups = {
+        [1] = "纯阳效果",
+        [2] = "攻击属性",
+        [3] = "防御属性",
+        [4] = "命中属性",
+        [5] = "化解属性",
+        [6] = "次要属性",
+        [7] = "毒素抵抗",
+    }
+}
