@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props"
+            Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')"/>
+    <PropertyGroup>
+        <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+        <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+        <ProjectGuid>{B32863E8-074C-4CAD-93B9-CD8786210FC5}</ProjectGuid>
+        <OutputType>Library</OutputType>
+        <AppDesignerFolder>Properties</AppDesignerFolder>
+        <RootNamespace>ZaoHuaBMod</RootNamespace>
+        <AssemblyName>ZaoHuaBMod</AssemblyName>
+        <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+        <FileAlignment>512</FileAlignment>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+        <PlatformTarget>AnyCPU</PlatformTarget>
+        <DebugSymbols>true</DebugSymbols>
+        <DebugType>full</DebugType>
+        <Optimize>false</Optimize>
+        <OutputPath>C:\Program Files (x86)\Steam\steamapps\common\GodWorld\BepInEx\plugins</OutputPath>
+        <DefineConstants>DEBUG;TRACE</DefineConstants>
+        <ErrorReport>prompt</ErrorReport>
+        <WarningLevel>4</WarningLevel>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+        <PlatformTarget>AnyCPU</PlatformTarget>
+        <DebugType>pdbonly</DebugType>
+        <Optimize>true</Optimize>
+        <OutputPath>bin\Release\</OutputPath>
+        <DefineConstants>TRACE</DefineConstants>
+        <ErrorReport>prompt</ErrorReport>
+        <WarningLevel>4</WarningLevel>
+    </PropertyGroup>
+    <ItemGroup>
+        <Reference Include="0Harmony">
+          <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\GodWorld\BepInEx\core\0Harmony.dll</HintPath>
+        </Reference>
+        <Reference Include="Assembly-CSharp">
+          <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\GodWorld\Zaohua_Data\Managed\Assembly-CSharp.dll</HintPath>
+          <Private>False</Private>
+        </Reference>
+        <Reference Include="BepInEx.Core">
+          <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\GodWorld\BepInEx\core\BepInEx.Core.dll</HintPath>
+        </Reference>
+        <Reference Include="BepInEx.Unity.Mono">
+          <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\GodWorld\BepInEx\core\BepInEx.Unity.Mono.dll</HintPath>
+        </Reference>
+        <Reference Include="System"/>
+        <Reference Include="System.Core"/>
+        <Reference Include="System.Data"/>
+        <Reference Include="System.Xml"/>
+        <Reference Include="UnityEngine">
+          <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\GodWorld\Zaohua_Data\Managed\UnityEngine.dll</HintPath>
+          <Private>False</Private>
+        </Reference>
+        <Reference Include="UnityEngine.CoreModule">
+          <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\GodWorld\Zaohua_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+          <Private>False</Private>
+        </Reference>
+        <Reference Include="UnityEngine.IMGUIModule">
+          <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\GodWorld\Zaohua_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+          <Private>False</Private>
+        </Reference>
+        <Reference Include="UnityEngine.InputLegacyModule">
+          <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\GodWorld\Zaohua_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
+          <Private>False</Private>
+        </Reference>
+        <Reference Include="UnityEngine.TextRenderingModule">
+          <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\GodWorld\Zaohua_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+          <Private>False</Private>
+        </Reference>
+        <Reference Include="UnityEngine.UI">
+          <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\GodWorld\Zaohua_Data\Managed\UnityEngine.UI.dll</HintPath>
+          <Private>False</Private>
+        </Reference>
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Include="Core\Log.cs" />
+        <Compile Include="Core\ModInfo.cs" />
+        <Compile Include="Main.cs" />
+        <Compile Include="Properties\AssemblyInfo.cs"/>
+        <Compile Include="UI\Framework\GUIManager.cs" />
+        <Compile Include="UI\Framework\GuiSkin.cs" />
+        <Compile Include="UI\Framework\WindowData.cs" />
+        <Compile Include="UI\Views\MainView.cs" />
+    </ItemGroup>
+    <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
+    <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+         Other similar extension points exist, see Microsoft.Common.targets.
+    <Target Name="BeforeBuild">
+    </Target>
+    <Target Name="AfterBuild">
+    </Target>
+    -->
+
+</Project>
