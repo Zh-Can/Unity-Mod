@@ -39,10 +39,12 @@
         <Compile Include="Properties\AssemblyInfo.cs"/>
         <Compile Include="UI\Framework\GUIManager.cs" />
         <Compile Include="UI\Framework\GuiSkin.cs" />
+        <Compile Include="UI\Framework\Localization.cs" />
         <Compile Include="UI\Framework\WindowData.cs" />
         <Compile Include="UI\Views\MainView.cs" />
     </ItemGroup>
     <ItemGroup>
+      <Reference Include="System" />
       <Reference Include="0Harmony">
         <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\GodWorld\BepInEx\core\0Harmony.dll</HintPath>
         <Private>False</Private>
