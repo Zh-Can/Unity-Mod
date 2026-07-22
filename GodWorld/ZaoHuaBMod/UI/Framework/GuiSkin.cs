@@ -61,37 +61,60 @@ namespace ZaoHuaBMod.UI.Framework
         public static GUIStyle Separator => Skin.GetStyle("Separator");
         public static GUIStyle HelpBox => Skin.GetStyle("HelpBox");
 
-        // ==================== 色板 ====================
+        // ==================== 色板（适配 FeatureEditor 暗色风格） ====================
         public static class C
         {
-            public static readonly Color BgDarkest = new Color(0.08f, 0.08f, 0.09f);
-            public static readonly Color BgDark = new Color(0.12f, 0.12f, 0.13f);
-            public static readonly Color BgPanel = new Color(0.16f, 0.16f, 0.18f);
-            public static readonly Color BgMid = new Color(0.22f, 0.22f, 0.24f);
-            public static readonly Color BgHighlight = new Color(0.28f, 0.28f, 0.30f);
-            public static readonly Color BgLightest = new Color(0.35f, 0.35f, 0.38f);
-            public static readonly Color TextDim = new Color(0.50f, 0.50f, 0.52f);
-            public static readonly Color TextNormal = new Color(0.85f, 0.85f, 0.87f);
-            public static readonly Color TextBright = new Color(0.95f, 0.95f, 0.97f);
+            // 背景色
+            public static readonly Color BgDarkest = new Color(0.06f, 0.063f, 0.078f);    // 输入框背景
+            public static readonly Color BgDark = new Color(0.09f, 0.094f, 0.11f);         // 窗体背景
+            public static readonly Color BgPanel = new Color(0.135f, 0.14f, 0.165f);       // 面板/Box 背景
+            public static readonly Color BgMid = new Color(0.165f, 0.172f, 0.205f);       // 标签按钮
+            public static readonly Color BgHighlight = new Color(0.225f, 0.235f, 0.275f); // 悬停标签按钮
+
+            // 行背景
+            public static readonly Color RowBg = new Color(0.118f, 0.122f, 0.145f);
+            public static readonly Color RowBgAlt = new Color(0.15f, 0.155f, 0.182f);
+
+            // 按钮
+            public static readonly Color BtnNormal = new Color(0.205f, 0.215f, 0.255f);
+            public static readonly Color BtnHover = new Color(0.27f, 0.29f, 0.34f);
+            public static readonly Color BtnActive = new Color(0.15f, 0.16f, 0.19f);
+
+            // 文本色
+            public static readonly Color TextBright = new Color(0.88f, 0.89f, 0.92f);     // 主标题/高亮
+            public static readonly Color TextNormal = new Color(0.74f, 0.76f, 0.82f);     // 普通文本
+            public static readonly Color TextDim = new Color(0.52f, 0.54f, 0.6f);         // 辅助文本
+
+            // 功能色
             public static readonly Color Accent = new Color(0.26f, 0.59f, 0.98f);
             public static readonly Color AccentDim = new Color(0.18f, 0.40f, 0.70f);
             public static readonly Color AccentBright = new Color(0.45f, 0.70f, 1.00f);
-            public static readonly Color BtnNormal = new Color(0.24f, 0.24f, 0.26f);
-            public static readonly Color BtnHover = new Color(0.32f, 0.32f, 0.35f);
-            public static readonly Color BtnActive = new Color(0.18f, 0.18f, 0.20f);
-            public static readonly Color ScrollBg = new Color(0.10f, 0.10f, 0.11f);
-            public static readonly Color ThumbNormal = new Color(0.30f, 0.30f, 0.32f);
-            public static readonly Color ThumbHover = new Color(0.45f, 0.45f, 0.48f);
-            public static readonly Color SliderTrack = new Color(0.15f, 0.15f, 0.16f);
-            public static readonly Color SliderFill = new Color(0.26f, 0.59f, 0.98f);
+            public static readonly Color Success = new Color(0.18f, 0.36f, 0.27f);       // 添加按钮绿
+            public static readonly Color Error = new Color(0.42f, 0.2f, 0.225f);         // 删除按钮红
+            public static readonly Color ErrorHover = new Color(0.52f, 0.25f, 0.28f);
+
+            // 边框
+            public static readonly Color BorderDim = new Color(0.4f, 0.43f, 0.5f, 0.35f); // 通用边框
             public static readonly Color Border = new Color(0.25f, 0.25f, 0.27f);
             public static readonly Color BorderLight = new Color(0.35f, 0.35f, 0.37f);
-            public static readonly Color Error = new Color(0.85f, 0.25f, 0.25f);
-            public static readonly Color ErrorHover = new Color(0.95f, 0.35f, 0.35f);
-            public static readonly Color Success = new Color(0.30f, 0.75f, 0.45f);
-            public static readonly Color Warning = new Color(0.90f, 0.70f, 0.20f);
+            public static readonly Color WindowBorder = new Color(0.32f, 0.35f, 0.42f, 0.55f);
+
+            // 滚动条/滑块
+            public static readonly Color ScrollBg = new Color(0f, 0f, 0f, 0f);
+            public static readonly Color ThumbNormal = new Color(0.42f, 0.45f, 0.53f, 0.85f); // 圆角 4
+            public static readonly Color ThumbHover = new Color(0.55f, 0.58f, 0.66f, 0.95f);
+            public static readonly Color SliderTrack = new Color(0.135f, 0.14f, 0.165f);
+            public static readonly Color SliderFill = new Color(0.26f, 0.59f, 0.98f);
+
+            // 其他
             public static readonly Color Selection = new Color(0.26f, 0.59f, 0.98f, 0.35f);
-            public static readonly Color Cursor = new Color(0.85f, 0.85f, 0.87f);
+            public static readonly Color Cursor = new Color(0.88f, 0.89f, 0.92f);
+
+            // 特殊文本色
+            public static readonly Color CountColor = new Color(0.62f, 0.78f, 0.92f);
+            public static readonly Color TagColor = new Color(0.55f, 0.72f, 0.92f);
+            public static readonly Color StatusOk = new Color(0.5f, 0.84f, 0.62f);
+            public static readonly Color StatusErr = new Color(0.92f, 0.48f, 0.5f);
         }
 
         // ==================== 辅助方法 ====================
@@ -323,7 +346,7 @@ namespace ZaoHuaBMod.UI.Framework
             const int border = 3;
 
             var uncheckedTex = TexGen.BorderedBox(texSize, C.BgDark, C.Border);
-            var checkedTex = TexGen.BorderedBox(texSize, C.Accent, Color.white);
+            var checkedTex = TexGen.BorderedBox(texSize, C.Accent, C.AccentBright);
 
             skin.toggle = new GUIStyle("toggle")
             {
@@ -558,6 +581,24 @@ namespace ZaoHuaBMod.UI.Framework
 
             return tex;
         }
+
+        public Texture2D GetRounded(Color fill, int radius, Color? border = null)
+        {
+            var key = $"round_{fill.r:F3}_{fill.g:F3}_{fill.b:F3}_{fill.a:F3}_{radius}";
+            if (border != null)
+            {
+                var b = border.Value;
+                key += $"_{b.r:F3}_{b.g:F3}_{b.b:F3}_{b.a:F3}";
+            }
+
+            if (!_cache.TryGetValue(key, out var tex))
+            {
+                tex = TexGen.RoundTex(fill, radius, border);
+                _cache[key] = tex;
+            }
+
+            return tex;
+        }
     }
 
     // ==================== 纹理生成 ====================
@@ -610,9 +651,48 @@ namespace ZaoHuaBMod.UI.Framework
             return tex;
         }
 
-        private static void SetSafe(Color[] p, int s, int x, int y, Color c)
+        /// <summary>
+        ///     生成圆角矩形纹理（方形），适合 GUIStyle 9-slice 缩放。
+        ///     纹理尺寸 = radius * 2 + 2，border 设为 radius 即可保持圆角。
+        /// </summary>
+        public static Texture2D RoundTex(Color fill, int radius, Color? border = null, float borderW = 1f)
         {
-            if (x >= 0 && x < s && y >= 0 && y < s) p[y * s + x] = c;
+            var size = radius * 2 + 2;
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            tex.hideFlags = HideFlags.HideAndDontSave;
+            var pixels = new Color[size * size];
+            var borderColor = border.GetValueOrDefault(fill);
+
+            for (var y = 0; y < size; y++)
+            {
+                for (var x = 0; x < size; x++)
+                {
+                    float px = x + 0.5f;
+                    float py = y + 0.5f;
+
+                    // 到最近边角的距离
+                    float cx = Mathf.Clamp(px, radius, size - radius);
+                    float cy = Mathf.Clamp(py, radius, size - radius);
+                    float dist = Mathf.Sqrt((px - cx) * (px - cx) + (py - cy) * (py - cy));
+
+                    // 圆角抗锯齿
+                    float alpha = Mathf.Clamp01(radius - dist + 0.5f);
+                    var color = fill;
+
+                    if (border != null)
+                    {
+                        float borderAlpha = Mathf.Clamp01(dist - (radius - borderW) + 0.5f);
+                        color = Color.Lerp(fill, borderColor, Mathf.Clamp01(borderAlpha));
+                    }
+
+                    pixels[y * size + x] = new Color(color.r, color.g, color.b, color.a * alpha);
+                }
+            }
+
+            tex.SetPixels(pixels);
+            tex.Apply(false, false);
+            tex.wrapMode = TextureWrapMode.Clamp;
+            return tex;
         }
     }
 }

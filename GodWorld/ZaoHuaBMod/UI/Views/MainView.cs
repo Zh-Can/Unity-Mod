@@ -4,35 +4,70 @@ using ZaoHuaBMod.UI.Framework;
 
 namespace ZaoHuaBMod.UI.Views
 {
-    public static class MainView
+    public class MainView : MonoBehaviour
     {
-        private static bool _toggleValue;
-        private static float _sliderValue = 0.5f;
-        private static string _textFieldValue = "输入文字";
-        private static string _textAreaValue = "多行输入区域\n第二行";
-        private static int _selectedToolbar = 0;
-        private static int _selectedGrid = 0;
-        private static int _popupIndex = 0;
-        private static bool _showPopup;
-        private static Vector2 _scrollPos;
-        private static string _password = "";
+        private WindowData _mainWindow;
 
-        private static readonly string[] _toolbarItems = { "标签1", "标签2", "标签3" };
-        private static readonly string[] _gridItems = { "选项A", "选项B", "选项C", "选项D" };
-        private static readonly string[] _popupItems = { "项目1", "项目2", "项目3", "项目4" };
+        private bool _toggleValue;
+        private float _sliderValue = 0.5f;
+        private string _textFieldValue = "输入文字";
+        private string _textAreaValue = "多行输入区域\n第二行";
+        private int _selectedToolbar;
+        private int _selectedGrid;
+        private int _popupIndex;
+        private bool _showPopup;
+        private Vector2 _scrollPos;
+        private string _password = "";
 
-        public static WindowData CreateWindow()
+        private readonly string[] _toolbarItems = { "标签1", "标签2", "标签3" };
+        private readonly string[] _gridItems = { "选项A", "选项B", "选项C", "选项D" };
+        private readonly string[] _popupItems = { "项目1", "项目2", "项目3", "项目4" };
+
+        private void Start()
         {
-            var window = GUIManager.Instance.CreateWindow(
+            Log.Info("MainView Start called");
+            _mainWindow = GUIManager.Instance.CreateWindow(
                 new Rect(100, 100, 500, 500),
                 "主窗口",
                 Draw);
-
-            window.Show();
-            return window;
+            Log.Info($"MainView window created, Visible={_mainWindow.Visible}");
+            _mainWindow.Show();
+            Log.Info($"MainView window shown, Visible={_mainWindow.Visible}");
         }
 
-        private static void Draw(WindowData window)
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.BackQuote))
+            {
+                Log.Info("BackQuote pressed!");
+                if (_mainWindow != null)
+                {
+                    if (_mainWindow.Visible)
+                    {
+                        Log.Info("Hiding window");
+                        _mainWindow.Hide();
+                    }
+                    else
+                    {
+                        Log.Info("Showing window");
+                        _mainWindow.Show();
+                    }
+                }
+            }
+        }
+
+        private int _onGuiCount;
+
+        private void OnGUI()
+        {
+            _onGuiCount++;
+            if (_onGuiCount == 1)
+                Log.Info("MainView OnGUI first call");
+            
+            GUIManager.Instance.OnGUI();
+        }
+
+        private void Draw(WindowData window)
         {
             _scrollPos = GUILayout.BeginScrollView(_scrollPos);
 
@@ -66,7 +101,6 @@ namespace ZaoHuaBMod.UI.Views
             GUILayout.BeginHorizontal();
             _toggleValue = GUILayout.Toggle(_toggleValue, GUIContent.none);
             GUILayout.Label("开关 Toggle");
-            
             GUILayout.EndHorizontal();
 
             GUILayout.Label($"滑块值: {_sliderValue:F2}");

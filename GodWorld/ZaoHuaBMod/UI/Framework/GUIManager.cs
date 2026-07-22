@@ -167,7 +167,7 @@ namespace ZaoHuaBMod.UI.Framework
 
             // 窗体背景
             GUI.BeginGroup(scaledRect);
-            GUI.color = DarkSkin.C.BgPanel;
+            GUI.color = DarkSkin.C.BgDark;
             GUI.DrawTexture(new Rect(0f, 0f, scaledRect.width, scaledRect.height), Texture2D.whiteTexture);
             GUI.color = Color.white;
 
