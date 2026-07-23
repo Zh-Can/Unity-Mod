@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using ZaoHuaBMod.Core;
 
@@ -12,8 +13,6 @@ namespace ZaoHuaBMod.UI.Framework
     public static class Localization
     {
         public const string Chinese = "zh-CN";
-        public const string TraditionalChinese = "zh-Hant";
-        public const string English = "en-US";
 
         private static readonly Dictionary<string, Dictionary<string, string>> _languages
             = new Dictionary<string, Dictionary<string, string>>();
@@ -21,6 +20,14 @@ namespace ZaoHuaBMod.UI.Framework
         private static string _currentLanguage = Chinese;
 
         private static readonly HashSet<string> _missing = new HashSet<string>();
+
+
+        /// <summary>Mod 根目录，由外部初始化。</summary>
+        public static string ModDirectory { get; set; }
+
+
+        /// <summary>已扫描到的可用语言列表（按文件名排序）。</summary>
+        public static List<LanguageInfo> AvailableLanguages { get; } = new List<LanguageInfo>();
 
 
         public static string CurrentLanguage
@@ -146,6 +153,95 @@ namespace ZaoHuaBMod.UI.Framework
         }
 
 
+        /// <summary>
+        /// 扫描 ModDirectory/languages 目录下的 .cfg 语言文件。
+        /// 返回是否扫描到除简中外的新语言。
+        /// </summary>
+        public static bool ScanLanguages()
+        {
+            AvailableLanguages.Clear();
+            AvailableLanguages.Add(new LanguageInfo(Chinese, "简中", null));
+
+            if (string.IsNullOrEmpty(ModDirectory))
+                return false;
+
+            var langDir = Path.Combine(ModDirectory, "languages");
+            if (!Directory.Exists(langDir))
+                return false;
+
+            var cfgFiles = Directory.GetFiles(langDir, "*.cfg")
+                .OrderBy(f => f)
+                .ToArray();
+
+            foreach (var file in cfgFiles)
+            {
+                var fileName = Path.GetFileNameWithoutExtension(file);
+                if (fileName == Chinese)
+                    continue;
+
+                AvailableLanguages.Add(new LanguageInfo(fileName, fileName, file));
+            }
+
+            return AvailableLanguages.Count > 1;
+        }
+
+
+        /// <summary>
+        /// 按顺序切换下一个可用语言，并加载对应 .cfg 文件。
+        /// 切换后保存配置到注册表。
+        /// </summary>
+        public static void CycleLanguage()
+        {
+            if (AvailableLanguages.Count <= 1)
+                return;
+
+            var index = AvailableLanguages.FindIndex(l => l.Code == CurrentLanguage);
+            if (index < 0)
+                index = 0;
+
+            var nextIndex = (index + 1) % AvailableLanguages.Count;
+            var next = AvailableLanguages[nextIndex];
+
+            ApplyLanguage(next);
+        }
+
+
+        /// <summary>应用指定语言，并加载对应 cfg 文件（如存在）。</summary>
+        public static void ApplyLanguage(LanguageInfo info)
+        {
+            if (!string.IsNullOrEmpty(info.FilePath) && File.Exists(info.FilePath))
+                LoadLanguage(info.Code, info.FilePath);
+
+            CurrentLanguage = info.Code;
+
+            ModConfig.Language = info.Code;
+            ModConfig.Save();
+        }
+
+
+        /// <summary>尝试应用指定语言代码，若对应 cfg 不存在则回退到简中。</summary>
+        public static void TryApplyLanguage(string code)
+        {
+            if (string.IsNullOrEmpty(code) || code == Chinese)
+            {
+                CurrentLanguage = Chinese;
+                return;
+            }
+
+            var info = AvailableLanguages.FirstOrDefault(l => l.Code == code);
+            if (info == null || string.IsNullOrEmpty(info.FilePath) || !File.Exists(info.FilePath))
+            {
+                Log.Warning($"[Localization] 语言文件 {code}.cfg 不存在，回退到简中");
+                CurrentLanguage = Chinese;
+                ModConfig.Language = Chinese;
+                ModConfig.Save();
+                return;
+            }
+
+            ApplyLanguage(info);
+        }
+
+
         /// <summary>保存缺失的翻译条目到文件，每行格式为 language:key。</summary>
         public static void SaveMissing(string file)
         {
@@ -166,5 +262,20 @@ namespace ZaoHuaBMod.UI.Framework
 
 
         public static IEnumerable<string> MissingKeys => _missing;
+
+
+        public class LanguageInfo
+        {
+            public readonly string Code;
+            public readonly string DisplayName;
+            public readonly string FilePath;
+
+            public LanguageInfo(string code, string displayName, string filePath)
+            {
+                Code = code;
+                DisplayName = displayName;
+                FilePath = filePath;
+            }
+        }
     }
 }

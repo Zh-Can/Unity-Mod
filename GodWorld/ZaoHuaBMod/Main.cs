@@ -1,8 +1,11 @@
+using System.IO;
+using System.Reflection;
 using BepInEx;
 using BepInEx.Unity.Mono;
 using HarmonyLib;
 using UnityEngine;
 using ZaoHuaBMod.Core;
+using ZaoHuaBMod.UI.Framework;
 using ZaoHuaBMod.UI.Views;
 
 namespace ZaoHuaBMod
@@ -15,17 +18,28 @@ namespace ZaoHuaBMod
         private void Start()
         {
             Instance = this;
-            Log.Logger = Logger;
             Harmony.CreateAndPatchAll(typeof(Main));
-
-            Log.Info("ZaoHuaBMod Loaded!");
             
+            // 初始化日志：
+            // BepInEx 入口用 new Adapters.BepInExLogger(Logger)
+            // MelonLoader 入口用 new Adapters.MelonLoggerAdapter()
+            // 不初始化则默认走 UnityDebugLogger（Unity Console）
+            Log.Initialize(new Adapters.BepInExLogger(Logger));
+            Log.Info("ZaoHuaBMod Loaded!");
+
+            // 初始化 Mod 目录与配置
+            var modDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            Localization.ModDirectory = modDir;
+            Localization.ScanLanguages();
+
+            ModConfig.Load();
+            ModConfig.ApplyToManager();
+            Localization.TryApplyLanguage(ModConfig.Language);
 
             GameObject uiObj = new GameObject("ModUI");
             UnityEngine.Object.DontDestroyOnLoad(uiObj);
             uiObj.AddComponent<MainView>();
-            
-            Debug.Log($"创建物体成功：{uiObj != null} 组件实例：{uiObj != null}");
+
         }
     }
 }

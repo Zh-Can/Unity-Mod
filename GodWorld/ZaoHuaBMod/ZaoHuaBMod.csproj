@@ -33,7 +33,12 @@
         <WarningLevel>4</WarningLevel>
     </PropertyGroup>
     <ItemGroup>
+        <Compile Include="Adapters\BepInExLogger.cs" />
+        <Compile Include="Adapters\MelonLoggerAdapter.cs" />
+        <Compile Include="Core\ILogger.cs" />
         <Compile Include="Core\Log.cs" />
+        <Compile Include="Core\UnityDebugLogger.cs" />
+        <Compile Include="Core\ModConfig.cs" />
         <Compile Include="Core\ModInfo.cs" />
         <Compile Include="Main.cs" />
         <Compile Include="Properties\AssemblyInfo.cs"/>

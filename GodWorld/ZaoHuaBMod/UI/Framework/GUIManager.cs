@@ -40,6 +40,8 @@ namespace ZaoHuaBMod.UI.Framework
         public void SetScale(float scale)
         {
             Scale = Mathf.Clamp(scale, 0.8f, 2.5f);
+            ModConfig.Scale = Scale;
+            ModConfig.Save();
         }
 
         public WindowData CreateWindow(
@@ -150,6 +152,19 @@ namespace ZaoHuaBMod.UI.Framework
                     SetScale(Scale + 0.1f);
 
                 GUILayout.Space(10f);
+
+                // 语言切换按钮：始终显示当前语言
+                {
+                    var currentName = Localization.CurrentLanguage;
+                    var current = Localization.AvailableLanguages
+                        .FirstOrDefault(l => l.Code == currentName);
+                    var btnLabel = current?.DisplayName ?? currentName;
+
+                    if (GUILayout.Button(btnLabel, DarkSkin.SBtn) && Localization.AvailableLanguages.Count > 1)
+                        Localization.CycleLanguage();
+
+                    GUILayout.Space(10f);
+                }
 
                 if (titleBar.ShowCloseButton)
                     if (GUILayout.Button(titleBar.CloseText, DarkSkin.SBtnDel))
