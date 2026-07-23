@@ -14,12 +14,10 @@ namespace ZaoHuaBMod.UI.Core
     {
         public const string Chinese = "zh-CN";
 
-        private static readonly Dictionary<string, Dictionary<string, string>> _languages
+        private static readonly Dictionary<string, Dictionary<string, string>> Languages
             = new Dictionary<string, Dictionary<string, string>>();
 
         private static string _currentLanguage = Chinese;
-
-        private static readonly HashSet<string> _missing = new HashSet<string>();
 
 
         /// <summary>Mod 根目录，由外部初始化。</summary>
@@ -48,22 +46,20 @@ namespace ZaoHuaBMod.UI.Core
 
 
         /// <summary>
-        ///     获取文本。
-        ///     当前语言是中文时直接返回 key 作为原文。
+        /// 获取文本。
+        /// 如果当前语言没有对应翻译，则返回 key 作为默认文本。
         /// </summary>
         public static string Get(string key)
         {
             if (string.IsNullOrEmpty(key))
                 return "";
-
-            if (CurrentLanguage == Chinese)
-                return key;
-
-            if (_languages.TryGetValue(CurrentLanguage, out var lang) &&
-                lang.TryGetValue(key, out var value))
+            
+            if (Languages.TryGetValue(CurrentLanguage,out var lang)
+                && lang.TryGetValue(key,out var value))
+            {
                 return value;
+            }
 
-            _missing.Add($"{CurrentLanguage}:{key}");
             return key;
         }
 
@@ -86,10 +82,10 @@ namespace ZaoHuaBMod.UI.Core
         /// <summary>在代码中直接注册一条翻译。</summary>
         public static void Register(string language, string key, string text)
         {
-            if (!_languages.TryGetValue(language, out var lang))
+            if (!Languages.TryGetValue(language, out var lang))
             {
                 lang = new Dictionary<string, string>();
-                _languages[language] = lang;
+                Languages[language] = lang;
             }
 
             lang[key] = text;
@@ -102,10 +98,10 @@ namespace ZaoHuaBMod.UI.Core
             if (entries == null)
                 return;
 
-            if (!_languages.TryGetValue(language, out var lang))
+            if (!Languages.TryGetValue(language, out var lang))
             {
                 lang = new Dictionary<string, string>();
-                _languages[language] = lang;
+                Languages[language] = lang;
             }
 
             foreach (var kv in entries)
@@ -114,42 +110,61 @@ namespace ZaoHuaBMod.UI.Core
 
 
         /// <summary>从 key=value 格式文件加载语言包。</summary>
-        public static void LoadLanguage(string language, string file)
+        public static void LoadLanguage(string language,string file)
         {
-            if (!File.Exists(file))
+            if(!File.Exists(file))
             {
-                Log.Warning($"[Localization] 语言文件不存在: {file}");
+                Log.Warning($"[Localization] 文件不存在: {file}");
                 return;
             }
 
-            var data = new Dictionary<string, string>();
-            var lines = File.ReadAllLines(file, Encoding.UTF8);
 
-            foreach (var raw in lines)
+            var data = new Dictionary<string,string>();
+
+            var text = DecodeText(
+                File.ReadAllBytes(file)
+            );
+
+
+            var lines = text.Split(
+                new[]{"\r\n","\n"},
+                StringSplitOptions.None
+            );
+
+
+            foreach(var raw in lines)
             {
                 var line = raw.Trim();
-                if (string.IsNullOrEmpty(line))
-                    continue;
-                if (line.StartsWith("#") || line.StartsWith("//"))
-                    continue;
 
-                var sepIndex = line.IndexOf('=');
-                if (sepIndex < 0)
-                    sepIndex = line.IndexOf(':');
-
-                if (sepIndex < 0)
+                if(string.IsNullOrEmpty(line))
                     continue;
 
-                var key = line.Substring(0, sepIndex).Trim();
-                var value = line.Substring(sepIndex + 1).Trim();
-
-                if (string.IsNullOrEmpty(key))
+                if(line.StartsWith("#") ||
+                   line.StartsWith("//"))
                     continue;
 
-                data[key] = value;
+
+                var index=line.IndexOf('=');
+
+                if(index<0)
+                    index=line.IndexOf(':');
+
+
+                if(index<0)
+                    continue;
+
+
+                var key=line.Substring(0,index).Trim();
+
+                var value=line.Substring(index+1).Trim();
+
+
+                if(!string.IsNullOrEmpty(key))
+                    data[key]=value;
             }
 
-            _languages[language] = data;
+
+            Languages[language]=data;
         }
 
 
@@ -176,10 +191,17 @@ namespace ZaoHuaBMod.UI.Core
             foreach (var file in cfgFiles)
             {
                 var fileName = Path.GetFileNameWithoutExtension(file);
+
                 if (fileName == Chinese)
                     continue;
 
-                AvailableLanguages.Add(new LanguageInfo(fileName, fileName, file));
+                AvailableLanguages.Add(
+                    new LanguageInfo(
+                        fileName,
+                        fileName,
+                        file
+                    )
+                );
             }
 
             return AvailableLanguages.Count > 1;
@@ -242,28 +264,6 @@ namespace ZaoHuaBMod.UI.Core
         }
 
 
-        /// <summary>保存缺失的翻译条目到文件，每行格式为 language:key。</summary>
-        public static void SaveMissing(string file)
-        {
-            var sb = new StringBuilder();
-            sb.AppendLine("# Missing translations");
-            foreach (var item in _missing)
-                sb.AppendLine(item);
-
-            File.WriteAllText(file, sb.ToString(), Encoding.UTF8);
-        }
-
-
-        /// <summary>清空缺失记录。</summary>
-        public static void ClearMissing()
-        {
-            _missing.Clear();
-        }
-
-
-        public static IEnumerable<string> MissingKeys => _missing;
-
-
         public class LanguageInfo
         {
             public readonly string Code;
@@ -277,5 +277,46 @@ namespace ZaoHuaBMod.UI.Core
                 FilePath = filePath;
             }
         }
+
+
+        /// <summary>
+        /// 自动检测文本编码
+        /// UTF8 -> GBK
+        /// </summary>
+        private static string DecodeText(byte[] bytes)
+        {
+            if (HasUtf8Bom(bytes))
+            {
+                return Encoding.UTF8.GetString(
+                    bytes,
+                    3,
+                    bytes.Length - 3
+                );
+            }
+            
+            try
+            {
+                var utf8 = new UTF8Encoding(false, true);
+                return utf8.GetString(bytes);
+            }
+            catch
+            {
+
+            }
+            
+            return Encoding.GetEncoding(936).GetString(bytes);
+        }
+
+
+
+        private static bool HasUtf8Bom(byte[] bytes)
+        {
+            return bytes.Length >= 3 &&
+                   bytes[0] == 0xEF &&
+                   bytes[1] == 0xBB &&
+                   bytes[2] == 0xBF;
+        }
     }
+    
+   
 }
