@@ -24,6 +24,9 @@ namespace ZaoHuaBMod.UI.Framework
         private Vector2 _resizeStartSize;
         private WindowData _resizingWindow;
 
+        /// <summary>
+        ///     单例实例。
+        /// </summary>
         public static GUIManager Instance
         {
             get
@@ -34,9 +37,15 @@ namespace ZaoHuaBMod.UI.Framework
             }
         }
 
-        // 全局缩放（与 FeatureEditor.Frontend 一致范围）
+        /// <summary>
+        ///     全局缩放比例，范围 0.8 ~ 2.5。修改后会自动保存到 PlayerPrefs。
+        /// </summary>
         public float Scale { get; private set; } = 1f;
 
+        /// <summary>
+        ///     设置全局缩放比例。
+        /// </summary>
+        /// <param name="scale">缩放值，会被限制在 0.8 ~ 2.5 之间。</param>
         public void SetScale(float scale)
         {
             Scale = Mathf.Clamp(scale, 0.8f, 2.5f);
@@ -44,6 +53,13 @@ namespace ZaoHuaBMod.UI.Framework
             ModConfig.Save();
         }
 
+        /// <summary>
+        ///     创建一个新窗口。
+        /// </summary>
+        /// <param name="rect">窗口位置与大小。</param>
+        /// <param name="titleBar">标题栏配置。</param>
+        /// <param name="content">窗口内容绘制回调。</param>
+        /// <returns>窗口数据对象。</returns>
         public WindowData CreateWindow(
             Rect rect,
             WindowData.TitleBarConfig titleBar,
@@ -55,6 +71,13 @@ namespace ZaoHuaBMod.UI.Framework
             return window;
         }
 
+        /// <summary>
+        ///     创建一个新窗口（使用默认标题栏配置）。
+        /// </summary>
+        /// <param name="rect">窗口位置与大小。</param>
+        /// <param name="title">窗口标题。</param>
+        /// <param name="content">窗口内容绘制回调。</param>
+        /// <returns>窗口数据对象。</returns>
         public WindowData CreateWindow(
             Rect rect,
             string title,
@@ -63,6 +86,11 @@ namespace ZaoHuaBMod.UI.Framework
             return CreateWindow(rect, new WindowData.TitleBarConfig(title), content);
         }
 
+        /// <summary>
+        ///     销毁指定窗口。
+        /// </summary>
+        /// <param name="id">窗口 ID。</param>
+        /// <returns>是否成功销毁。</returns>
         public bool DestroyWindow(int id)
         {
             if (!_windows.TryGetValue(id, out var window))
@@ -79,12 +107,20 @@ namespace ZaoHuaBMod.UI.Framework
             return true;
         }
 
+        /// <summary>
+        ///     获取指定窗口。
+        /// </summary>
+        /// <param name="id">窗口 ID。</param>
+        /// <returns>窗口数据对象，不存在则返回 null。</returns>
         public WindowData GetWindow(int id)
         {
             _windows.TryGetValue(id, out var window);
             return window;
         }
 
+        /// <summary>
+        ///     销毁所有窗口。
+        /// </summary>
         public void DestroyAllWindows()
         {
             foreach (var window in _windows.Values) window.OnClose?.Invoke();
@@ -94,7 +130,7 @@ namespace ZaoHuaBMod.UI.Framework
         }
 
         /// <summary>
-        ///     主绘制入口，需要在 MonoBehaviour.OnGUI 中调用。
+        ///  主绘制入口，需要在 MonoBehaviour.OnGUI 中调用。
         /// </summary>
         public void OnGUI()
         {
