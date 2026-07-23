@@ -192,10 +192,7 @@ namespace ZaoHuaBMod.UI.Core
 
                 // 语言切换按钮：始终显示当前语言
                 {
-                    var currentName = Localization.CurrentLanguage;
-                    var current = Localization.AvailableLanguages
-                        .FirstOrDefault(l => l.Code == currentName);
-                    var btnLabel = current?.DisplayName ?? currentName;
+                    var btnLabel = Localization.CurrentLanguage;
 
                     if (GUILayout.Button(btnLabel, DarkSkin.SBtn) && Localization.AvailableLanguages.Count > 1)
                         Localization.CycleLanguage();

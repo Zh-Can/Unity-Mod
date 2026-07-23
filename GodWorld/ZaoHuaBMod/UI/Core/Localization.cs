@@ -9,10 +9,11 @@ namespace ZaoHuaBMod.UI.Core
 {
     /// <summary>
     /// 简易多语言支持类，语言包使用 key=value 纯文本格式。
+    /// 语言直接用显示名（如"简中"、"en-US"）作为唯一标识。
     /// </summary>
     public static class Localization
     {
-        public const string Chinese = "zh-CN";
+        public const string Chinese = "简中";
 
         private static readonly Dictionary<string, Dictionary<string, string>> Languages
             = new Dictionary<string, Dictionary<string, string>>();
@@ -28,6 +29,7 @@ namespace ZaoHuaBMod.UI.Core
         public static List<LanguageInfo> AvailableLanguages { get; } = new List<LanguageInfo>();
 
 
+        /// <summary>当前语言名称。</summary>
         public static string CurrentLanguage
         {
             get => _currentLanguage;
@@ -53,9 +55,9 @@ namespace ZaoHuaBMod.UI.Core
         {
             if (string.IsNullOrEmpty(key))
                 return "";
-            
-            if (Languages.TryGetValue(CurrentLanguage,out var lang)
-                && lang.TryGetValue(key,out var value))
+
+            if (Languages.TryGetValue(CurrentLanguage, out var lang)
+                && lang.TryGetValue(key, out var value))
             {
                 return value;
             }
@@ -110,16 +112,16 @@ namespace ZaoHuaBMod.UI.Core
 
 
         /// <summary>从 key=value 格式文件加载语言包。</summary>
-        public static void LoadLanguage(string language,string file)
+        public static void LoadLanguage(string language, string file)
         {
-            if(!File.Exists(file))
+            if (!File.Exists(file))
             {
                 Log.Warning($"[Localization] 文件不存在: {file}");
                 return;
             }
 
 
-            var data = new Dictionary<string,string>();
+            var data = new Dictionary<string, string>();
 
             var text = DecodeText(
                 File.ReadAllBytes(file)
@@ -127,44 +129,44 @@ namespace ZaoHuaBMod.UI.Core
 
 
             var lines = text.Split(
-                new[]{"\r\n","\n"},
+                new[] { "\r\n", "\n" },
                 StringSplitOptions.None
             );
 
 
-            foreach(var raw in lines)
+            foreach (var raw in lines)
             {
                 var line = raw.Trim();
 
-                if(string.IsNullOrEmpty(line))
+                if (string.IsNullOrEmpty(line))
                     continue;
 
-                if(line.StartsWith("#") ||
-                   line.StartsWith("//"))
-                    continue;
-
-
-                var index=line.IndexOf('=');
-
-                if(index<0)
-                    index=line.IndexOf(':');
-
-
-                if(index<0)
+                if (line.StartsWith("#") ||
+                    line.StartsWith("//"))
                     continue;
 
 
-                var key=line.Substring(0,index).Trim();
+                var index = line.IndexOf('=');
 
-                var value=line.Substring(index+1).Trim();
+                if (index < 0)
+                    index = line.IndexOf(':');
 
 
-                if(!string.IsNullOrEmpty(key))
-                    data[key]=value;
+                if (index < 0)
+                    continue;
+
+
+                var key = line.Substring(0, index).Trim();
+
+                var value = line.Substring(index + 1).Trim();
+
+
+                if (!string.IsNullOrEmpty(key))
+                    data[key] = value;
             }
 
 
-            Languages[language]=data;
+            Languages[language] = data;
         }
 
 
@@ -175,7 +177,7 @@ namespace ZaoHuaBMod.UI.Core
         public static bool ScanLanguages()
         {
             AvailableLanguages.Clear();
-            AvailableLanguages.Add(new LanguageInfo(Chinese, "简中", null));
+            AvailableLanguages.Add(new LanguageInfo(Chinese, null));
 
             if (string.IsNullOrEmpty(ModDirectory))
                 return false;
@@ -195,13 +197,7 @@ namespace ZaoHuaBMod.UI.Core
                 if (fileName == Chinese)
                     continue;
 
-                AvailableLanguages.Add(
-                    new LanguageInfo(
-                        fileName,
-                        fileName,
-                        file
-                    )
-                );
+                AvailableLanguages.Add(new LanguageInfo(fileName, file));
             }
 
             return AvailableLanguages.Count > 1;
@@ -210,14 +206,14 @@ namespace ZaoHuaBMod.UI.Core
 
         /// <summary>
         /// 按顺序切换下一个可用语言，并加载对应 .cfg 文件。
-        /// 切换后保存配置到注册表。
+        /// 切换后保存配置到 PlayerPrefs。
         /// </summary>
         public static void CycleLanguage()
         {
             if (AvailableLanguages.Count <= 1)
                 return;
 
-            var index = AvailableLanguages.FindIndex(l => l.Code == CurrentLanguage);
+            var index = AvailableLanguages.FindIndex(l => l.DisplayName == CurrentLanguage);
             if (index < 0)
                 index = 0;
 
@@ -232,28 +228,28 @@ namespace ZaoHuaBMod.UI.Core
         public static void ApplyLanguage(LanguageInfo info)
         {
             if (!string.IsNullOrEmpty(info.FilePath) && File.Exists(info.FilePath))
-                LoadLanguage(info.Code, info.FilePath);
+                LoadLanguage(info.DisplayName, info.FilePath);
 
-            CurrentLanguage = info.Code;
+            CurrentLanguage = info.DisplayName;
 
-            ModConfig.Language = info.Code;
+            ModConfig.Language = info.DisplayName;
             ModConfig.Save();
         }
 
 
-        /// <summary>尝试应用指定语言代码，若对应 cfg 不存在则回退到简中。</summary>
-        public static void TryApplyLanguage(string code)
+        /// <summary>尝试应用指定语言，若对应 cfg 不存在则回退到简中。</summary>
+        public static void TryApplyLanguage(string language)
         {
-            if (string.IsNullOrEmpty(code) || code == Chinese)
+            if (string.IsNullOrEmpty(language) || language == Chinese)
             {
                 CurrentLanguage = Chinese;
                 return;
             }
 
-            var info = AvailableLanguages.FirstOrDefault(l => l.Code == code);
+            var info = AvailableLanguages.FirstOrDefault(l => l.DisplayName == language);
             if (info == null || string.IsNullOrEmpty(info.FilePath) || !File.Exists(info.FilePath))
             {
-                Log.Warning($"[Localization] 语言文件 {code}.cfg 不存在，回退到简中");
+                Log.Warning($"[Localization] 语言文件 {language}.cfg 不存在，回退到简中");
                 CurrentLanguage = Chinese;
                 ModConfig.Language = Chinese;
                 ModConfig.Save();
@@ -266,13 +262,11 @@ namespace ZaoHuaBMod.UI.Core
 
         public class LanguageInfo
         {
-            public readonly string Code;
             public readonly string DisplayName;
             public readonly string FilePath;
 
-            public LanguageInfo(string code, string displayName, string filePath)
+            public LanguageInfo(string displayName, string filePath)
             {
-                Code = code;
                 DisplayName = displayName;
                 FilePath = filePath;
             }
@@ -293,7 +287,7 @@ namespace ZaoHuaBMod.UI.Core
                     bytes.Length - 3
                 );
             }
-            
+
             try
             {
                 var utf8 = new UTF8Encoding(false, true);
@@ -303,7 +297,7 @@ namespace ZaoHuaBMod.UI.Core
             {
 
             }
-            
+
             return Encoding.GetEncoding(936).GetString(bytes);
         }
 
@@ -317,6 +311,4 @@ namespace ZaoHuaBMod.UI.Core
                    bytes[2] == 0xBF;
         }
     }
-    
-   
 }

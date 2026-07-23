@@ -99,12 +99,10 @@
       <Content Include="UI\Readme.md" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
-    <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-         Other similar extension points exist, see Microsoft.Common.targets.
-    <Target Name="BeforeBuild">
+
+    <!-- 编译后自动生成繁体中文语言包 -->
+    <Target Name="GenerateTraditionalChinese" AfterTargets="Build">
+        <Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\UI\Core\GenerateTraditionalChinese.ps1&quot; -SourceDir &quot;$(MSBuildProjectDirectory)&quot; -OutputFile &quot;$(TargetDir)languages\繁中.cfg&quot;" />
     </Target>
-    <Target Name="AfterBuild">
-    </Target>
-    -->
 
 </Project>
