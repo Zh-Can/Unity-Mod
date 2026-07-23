@@ -96,6 +96,7 @@
     </ItemGroup>
     <ItemGroup>
       <Content Include="Core\Readme.md" />
+      <Content Include="UI\Core\GenerateTraditionalChinese.ps1" />
       <Content Include="UI\Readme.md" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
