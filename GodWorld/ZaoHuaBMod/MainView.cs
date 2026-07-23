@@ -18,6 +18,7 @@ namespace ZaoHuaBMod
         private int _radioIndex;
         private int _selectedTableRow = -1;
         private int _clickCount;
+       
 
         private void Start()
         {
@@ -150,21 +151,21 @@ namespace ZaoHuaBMod
             GUILayout.EndVertical();
         }
 
+        private string _status = Localization.Get(Localization.Get("就绪"));
         private void DrawStatusTab()
         {
             GUILayout.Label(Localization.Get("状态示例"), DarkSkin.STitle);
 
             GUILayout.BeginHorizontal();
             GUILayout.Label(Localization.Get("当前状态:"), DarkSkin.SLabel);
-            string status = Localization.Get(Localization.Get("就绪"));
-            GUILayout.Label(status, status.Contains("失败") ? DarkSkin.SStatusErr : DarkSkin.SStatusOk);
+            GUILayout.Label(_status, _status.Contains("失败") ? DarkSkin.SStatusErr : DarkSkin.SStatusOk);
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
             if (GUILayout.Button(Localization.Get("成功"), DarkSkin.SBtnAdd))
-                status = "操作成功";
+                _status = "操作成功";
             if (GUILayout.Button(Localization.Get("失败"), DarkSkin.SBtnDel))
-                status = "操作失败";
+                _status = "操作失败";
             GUILayout.EndHorizontal();
 
             DarkSkin.Divider(4f);
