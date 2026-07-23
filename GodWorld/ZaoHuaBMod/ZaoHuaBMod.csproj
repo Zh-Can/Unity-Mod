@@ -33,20 +33,20 @@
         <WarningLevel>4</WarningLevel>
     </PropertyGroup>
     <ItemGroup>
-        <Compile Include="Adapters\BepInExLogger.cs" />
-        <Compile Include="Adapters\MelonLoggerAdapter.cs" />
+        <Compile Include="Core\Adapters\BepInExLogger.cs" />
+        <Compile Include="Core\Adapters\MelonLoggerAdapter.cs" />
         <Compile Include="Core\ILogger.cs" />
         <Compile Include="Core\Log.cs" />
         <Compile Include="Core\UnityDebugLogger.cs" />
         <Compile Include="Core\ModConfig.cs" />
-        <Compile Include="Core\ModInfo.cs" />
         <Compile Include="Main.cs" />
+        <Compile Include="MainView.cs" />
+        <Compile Include="ModInfo.cs" />
         <Compile Include="Properties\AssemblyInfo.cs"/>
-        <Compile Include="UI\Framework\GUIManager.cs" />
-        <Compile Include="UI\Framework\GuiSkin.cs" />
-        <Compile Include="UI\Framework\Localization.cs" />
-        <Compile Include="UI\Framework\WindowData.cs" />
-        <Compile Include="UI\Views\MainView.cs" />
+        <Compile Include="UI\Core\GUIManager.cs" />
+        <Compile Include="UI\Core\Localization.cs" />
+        <Compile Include="UI\Core\WindowData.cs" />
+        <Compile Include="UI\Style\GuiSkin.cs" />
     </ItemGroup>
     <ItemGroup>
       <Reference Include="System" />
@@ -90,6 +90,13 @@
         <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\GodWorld\Zaohua_Data\Managed\UnityEngine.UI.dll</HintPath>
         <Private>False</Private>
       </Reference>
+    </ItemGroup>
+    <ItemGroup>
+      <Folder Include="UI\Widgets\" />
+    </ItemGroup>
+    <ItemGroup>
+      <Content Include="Core\Readme.md" />
+      <Content Include="UI\Readme.md" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

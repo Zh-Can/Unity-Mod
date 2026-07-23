@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using ZaoHuaBMod.Core;
 
-namespace ZaoHuaBMod.UI.Framework
+namespace ZaoHuaBMod.UI.Core
 {
     /// <summary>
     /// 简易多语言支持类，语言包使用 key=value 纯文本格式。

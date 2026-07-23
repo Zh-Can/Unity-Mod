@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using ZaoHuaBMod.Core;
+using ZaoHuaBMod.UI.Style;
 
-namespace ZaoHuaBMod.UI.Framework
+namespace ZaoHuaBMod.UI.Core
 {
     /// <summary>
     ///     GUI 窗口管理器。

@@ -1,7 +1,6 @@
 using System;
-using ZaoHuaBMod.Core;
 
-namespace ZaoHuaBMod.Adapters
+namespace ZaoHuaBMod.Core.Adapters
 {
     /// <summary>
     /// 通过反射调用 MelonLoader.MelonLogger，无需直接引用 MelonLoader.dll。

@@ -1,8 +1,6 @@
 using System;
-using System.Reflection;
-using ZaoHuaBMod.Core;
 
-namespace ZaoHuaBMod.Adapters
+namespace ZaoHuaBMod.Core.Adapters
 {
     /// <summary>
     /// 通过反射调用 BepInEx.Logging.ManualLogSource，不直接引用 BepInEx 程序集。

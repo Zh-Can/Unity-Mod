@@ -1,4 +1,4 @@
-﻿namespace ZaoHuaBMod.Core
+﻿namespace ZaoHuaBMod
 {
     public static class ModInfo
     {

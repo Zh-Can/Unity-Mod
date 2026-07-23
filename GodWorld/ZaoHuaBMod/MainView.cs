@@ -1,8 +1,9 @@
 ﻿using UnityEngine;
 using ZaoHuaBMod.Core;
-using ZaoHuaBMod.UI.Framework;
+using ZaoHuaBMod.UI.Core;
+using ZaoHuaBMod.UI.Style;
 
-namespace ZaoHuaBMod.UI.Views
+namespace ZaoHuaBMod
 {
     public class MainView : MonoBehaviour
     {

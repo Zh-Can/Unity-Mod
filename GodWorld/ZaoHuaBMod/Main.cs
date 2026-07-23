@@ -5,8 +5,8 @@ using BepInEx.Unity.Mono;
 using HarmonyLib;
 using UnityEngine;
 using ZaoHuaBMod.Core;
-using ZaoHuaBMod.UI.Framework;
-using ZaoHuaBMod.UI.Views;
+using ZaoHuaBMod.Core.Adapters;
+using ZaoHuaBMod.UI.Core;
 
 namespace ZaoHuaBMod
 {
@@ -24,7 +24,7 @@ namespace ZaoHuaBMod
             // BepInEx 入口用 new Adapters.BepInExLogger(Logger)
             // MelonLoader 入口用 new Adapters.MelonLoggerAdapter()
             // 不初始化则默认走 UnityDebugLogger（Unity Console）
-            Log.Initialize(new Adapters.BepInExLogger(Logger));
+            Log.Initialize(new BepInExLogger(Logger));
             Log.Info("ZaoHuaBMod Loaded!");
 
             // 初始化 Mod 目录与配置

@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace ZaoHuaBMod.UI.Framework
+namespace ZaoHuaBMod.UI.Core
 {
     /// <summary>
     ///     窗体数据

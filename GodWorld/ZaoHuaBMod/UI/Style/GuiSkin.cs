@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace ZaoHuaBMod.UI.Framework
+namespace ZaoHuaBMod.UI.Style
 {
     /// <summary>
     ///     复刻 FeatureEditor.Frontend 的暗色 IMGUI 皮肤。

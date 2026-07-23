@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
+using ZaoHuaBMod;
 using ZaoHuaBMod.Core;
 
 [assembly: AssemblyTitle(ModInfo.Name)]

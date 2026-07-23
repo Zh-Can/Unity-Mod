@@ -1,5 +1,5 @@
 using UnityEngine;
-using ZaoHuaBMod.UI.Framework;
+using ZaoHuaBMod.UI.Core;
 
 namespace ZaoHuaBMod.Core
 {
