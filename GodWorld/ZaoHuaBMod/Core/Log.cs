@@ -5,30 +5,27 @@
     /// </summary>
     public static class Log
     {
+        
         private static ILogger _logger = new UnityDebugLogger();
-
-
+        
         public static void Initialize(ILogger logger)
         {
-            _logger = logger ?? new UnityDebugLogger();
+            if (logger != null) _logger = logger;
         }
 
-
-        public static void Info(object msg)
+        public static void Info(string msg)
         {
-            _logger?.Info(msg);
+            _logger.Info(msg);
         }
-
-
-        public static void Warning(object msg)
+        
+        public static void Warning(string msg)
         {
-            _logger?.Warning(msg);
+            _logger.Warning(msg);
         }
-
-
-        public static void Error(object msg)
+        
+        public static void Error(string msg)
         {
-            _logger?.Error(msg);
+            _logger.Error(msg);
         }
     }
 }
