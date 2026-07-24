@@ -1291,9 +1291,9 @@ public class HeroDataPatch
     
     [HarmonyPrefix]
     [HarmonyPatch(typeof(InfoController), nameof(InfoController.AddMail))]
-    public static bool InfoController_AddMail_Prefix(MailData mail)
+    public static bool InfoController_AddMail_Prefix(MailData newMail)
     {
-        if (Plugin.Instance.PlayerLoverUnHappyEventFlag.Value && mail is { mailText: not null } && (mail.mailText.Contains("新欢") || mail.mailText.Contains("爱搭不理")))
+        if (Plugin.Instance.PlayerLoverUnHappyEventFlag.Value && newMail is { mailText: not null } && (newMail.mailText.Contains("新欢") || newMail.mailText.Contains("爱搭不理")))
         {
             if (HeroHelper.TryReadPlayer(out var player))
             {
