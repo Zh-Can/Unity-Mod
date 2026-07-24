@@ -234,22 +234,46 @@ public class PoisonPatches
         
         // 武器
         if (nowEquipment.weapon is { Count: > 0 })
-            nowEquipment.weapon[0].equipmentData.equipPoisonData = _equipPoisonDatas[0];
+        {
+            var equipItem = nowEquipment.weapon[0];
+            if (equipItem?.equipmentData != null)
+                equipItem.equipmentData.equipPoisonData = _equipPoisonDatas[0];
+        }
         // 头盔
-        if (nowEquipment.helmet is {Count: > 0})
-            nowEquipment.helmet[0].equipmentData.equipPoisonData = _equipPoisonDatas[1];
+        if (nowEquipment.helmet is { Count: > 0 })
+        {
+            var equipItem = nowEquipment.helmet[0];
+            if (equipItem?.equipmentData != null)
+                equipItem.equipmentData.equipPoisonData = _equipPoisonDatas[1];
+        }
         // 护甲
-        if (nowEquipment.armor is {Count: > 0})
-            nowEquipment.armor[0].equipmentData.equipPoisonData = _equipPoisonDatas[2];
-        // 鞋
-        if (nowEquipment.shoes is {Count: > 0}) 
-            nowEquipment.shoes[0].equipmentData.equipPoisonData = _equipPoisonDatas[3];
+        if (nowEquipment.armor is { Count: > 0 })
+        {
+            var equipItem = nowEquipment.armor[0];
+            if (equipItem?.equipmentData != null)
+                equipItem.equipmentData.equipPoisonData = _equipPoisonDatas[2];
+        }
+        // 鞋子
+        if (nowEquipment.shoes is { Count: > 0 })
+        {
+            var equipItem = nowEquipment.shoes[0];
+            if (equipItem?.equipmentData != null)
+                equipItem.equipmentData.equipPoisonData = _equipPoisonDatas[3];
+        }
         // 饰品1
         if (nowEquipment.decoration is { Count: > 0 })
-            nowEquipment.decoration[0].equipmentData.equipPoisonData = _equipPoisonDatas[4];
+        {
+            var equipItem = nowEquipment.decoration[0];
+            if (equipItem?.equipmentData != null)
+                equipItem.equipmentData.equipPoisonData = _equipPoisonDatas[4];
+        }
         // 饰品2
-        if (nowEquipment.decoration is {Count: > 1})
-            nowEquipment.decoration[1].equipmentData.equipPoisonData = _equipPoisonDatas[5];
+        if (nowEquipment.decoration is { Count: > 1 })
+        {
+            var equipItem = nowEquipment.decoration[1];
+            if (equipItem?.equipmentData != null)
+                equipItem.equipmentData.equipPoisonData = _equipPoisonDatas[5];
+        }
     }
     
     #endregion
@@ -1264,6 +1288,34 @@ public class HeroDataPatch
     {
         return !Plugin.Instance.PlayerLoverUnHappyEventFlag.Value;
     }
+    
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(InfoController), nameof(InfoController.AddMail))]
+    public static bool InfoController_AddMail_Prefix(MailData mail)
+    {
+        if (Plugin.Instance.PlayerLoverUnHappyEventFlag.Value && mail is { mailText: not null } && (mail.mailText.Contains("新欢") || mail.mailText.Contains("爱搭不理")))
+        {
+            if (HeroHelper.TryReadPlayer(out var player))
+            {
+                if (HeroHelper.TryGetHeroByID(player.Lover, out var hero))
+                {
+                    hero.playerInteractionTimeData.loverUnhappy = false;
+                }
+
+                for (var i = 0; i < player.PreLovers.Count; i++)
+                {
+                    if (HeroHelper.TryGetHeroByID(player.PreLovers[i], out var hero1))
+                    {
+                        hero1.playerInteractionTimeData.loverUnhappy = false;
+                    }
+                }
+            }
+            
+            return false; 
+        }
+        return true;
+    }
+    
     /// <summary>
     /// 不增恶名
     /// </summary>
