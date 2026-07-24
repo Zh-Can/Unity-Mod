@@ -917,6 +917,7 @@ public class AreaBuildingDataPatches
     [HarmonyPatch(typeof(AreaRoadData), nameof(AreaRoadData.GetUpgradeTime))]
     public static void AreaRoadData_GetUpgradeTime_Postfix(AreaRoadData? __instance, ref int __result)
     {
+        if (__result < 1) __result = 1;
         if (__instance == null || !Plugin.Instance.UpgradeDay1.Value) return;
         __result = 1;
     }
@@ -941,6 +942,9 @@ public class AreaBuildingDataPatches
         if (__instance == null || !Plugin.Instance.UpgradeDay1.Value) return;
         __result = 1;
     }
+    /// <summary>
+    /// 特殊建筑数目
+    /// </summary>
     [HarmonyPostfix]
     [HarmonyPatch(typeof(AreaBuildController), nameof(AreaBuildController.GetMaxSpeBuildingNum))]
     public static void AreaBuildController_GetMaxSpeBuildingNum_Postfix(AreaBuildController __instance, ref int __result)
@@ -2271,5 +2275,8 @@ public class SpeEnhanceEquipControllerPatches
         __result = 1;
     }
 }
+
+
+
 
     
