@@ -3,7 +3,7 @@
 public static class ModConfig
 {
     public const string ModName = "LYMod";     // 插件名
-    public const string ModVersion = "5.7.5";    // 版本号
+    public const string ModVersion = "5.8";    // 版本号
     public const string ModAuthor = "Can";     // 作者
     public const string GamveVersion = "V1.1.0f4";     // 作者
     

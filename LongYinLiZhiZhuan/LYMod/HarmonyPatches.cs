@@ -16,7 +16,15 @@ namespace LYMod;
 
 public class GameDataControllerPatches
 {
-   
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(AuctionController), nameof(AuctionController.Update))]
+    public static void AuctionController_Update_Postfix(AuctionController __instance)
+    {
+        if (__instance != null && Plugin.Instance.AuctionAutoOfferFlag.Value && __instance.nowOfferHero != null && __instance.nowOfferHero.heroID != 0)
+        {
+            __instance.SureOfferMoneyButtonClicked();
+        }
+    }
     /// <summary>
     /// 藏宝阁容量
     /// </summary>
@@ -134,15 +142,6 @@ public class PoisonPatches
     {
         if (__instance == null || !Plugin.Instance.PoisonTime1Flag.Value) return;
         __result = 1;
-    }
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(CraftPoisonUIController), nameof(CraftPoisonUIController.GetChangePoisonNum))]
-    public static void GetChangePoisonNum_Postfix(ref float __result)
-    {
-        if (Plugin.Instance.PoisonRate.Value > 1)
-        {
-            __result *= Plugin.Instance.PoisonRate.Value;
-        }
     }
     
     

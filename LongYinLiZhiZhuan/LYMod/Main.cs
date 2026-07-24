@@ -64,7 +64,6 @@ public class Plugin : MelonMod
     public MelonPreferences_Entry<float> ChanDaoRate= null!; //禅宗道法修行倍率
     public MelonPreferences_Entry<string> ForceSpeFunctions= null!; // 门派特性
     public MelonPreferences_Entry<string> BuildingTimesMapStr= null!; // 建筑倍率映射 "索引:倍率,索引:倍率"
-    public MelonPreferences_Entry<float> PoisonRate= null!; // 淬毒倍率
     public MelonPreferences_Entry<bool> PoisonNumReduceFlag= null!; // 淬毒值消耗开关
     public MelonPreferences_Entry<bool> TimeFreezeFlag= null!; // 时间停止
     public MelonPreferences_Entry<bool> DrinkOneWinFlag= null!; // 斗酒一轮必胜
@@ -113,6 +112,7 @@ public class Plugin : MelonMod
     public MelonPreferences_Entry<bool> PlayerAllBreakThroughFlag = null!; // 玩家突破全词条开关
     public MelonPreferences_Entry<bool> BookWriterSelfFlag = null!; // 私宅抄书/默写开关
     public MelonPreferences_Entry<bool> AskHeroJoinForceFlag = null!; // 请人物加入玩家门派是否收为徒弟
+    public MelonPreferences_Entry<bool> AuctionAutoOfferFlag = null!; // 拍卖会自动出价
     
     
     private MelonPreferences_Entry<bool> _useModifier = null!; // 使用组合键
@@ -199,7 +199,6 @@ public class Plugin : MelonMod
         ChanDaoRate = MainCategory.CreateEntry("ChanDaoRate", 1.0f, description:"禅宗道法修行倍率");
         ForceSpeFunctions = MainCategory.CreateEntry("ForceSpeFunctions", "", description:"选择的门派特性");
         BuildingTimesMapStr = MainCategory.CreateEntry("BuildingTimesMapStr", "",description:"建筑倍率映射 格式:索引:倍率,索引:倍率");
-        PoisonRate = MainCategory.CreateEntry("PoisonRate", 1.0f, description:"淬毒值倍率");
         ExpRateMultiplier = MainCategory.CreateEntry("ExpRateMultiplier", 1.0f, description:"游戏难度经验倍率,最高难度非本门经验倍率1.6（+60%）,这里默认2（+100%）");
         ForceContributionRate = MainCategory.CreateEntry("ForceContributionRate", 1.0f,description:"非本门功绩倍率");
         GovernContributionRate = MainCategory.CreateEntry("GovernContributionRate", 1.0f,description:"官府功绩倍率");
@@ -252,7 +251,6 @@ public class Plugin : MelonMod
         AutoReadBookFlag = MainCategory.CreateEntry("AutoReadBookFlag", false,  description: "一键阅读开关");
         ExpRateMultiplierSelfForceFlag = MainCategory.CreateEntry("ExpRateMultiplierSelfForceFlag", false,  description: "游戏难度经验倍率是否对自己门派生效");
         SwordPoolEasyFlag = MainCategory.CreateEntry("SwordPoolEasyFlag", false,  description: "剑池天工 耗时1天 只用1块");
-
         Dlc0Flag = MainCategory.CreateEntry("Dlc0Flag", true,  description: "Dlc0解锁开关");
         AnyDifficultUnlockAchFlag = MainCategory.CreateEntry("AnyDifficultUnlockACHFlag", false,  description: "任意难度都可解锁成功");
         BreakMaxLimitNotForPlayerFlag = MainCategory.CreateEntry("BreakMaxLimitNotForPlayerFlag", false,  description: "突破潜力限制不对玩家生效");
@@ -268,6 +266,7 @@ public class Plugin : MelonMod
         PlayerAllBreakThroughFlag = MainCategory.CreateEntry("PlayerAllBreakThroughFlag", false,  description: "玩家突破全词条开关");
         BookWriterSelfFlag = MainCategory.CreateEntry("BookWriterSelfFlag", false,  description: "私宅抄书默写开关");
         AskHeroJoinForceFlag = MainCategory.CreateEntry("AskHeroJoinForceFlag", false,  description: "请人物加入玩家门派是否收为徒弟");
+        AuctionAutoOfferFlag = MainCategory.CreateEntry("AuctionAutoOfferFlag", false,  description: "拍卖会自动出价");
         #endregion
       
         var harmony = new HarmonyLib.Harmony("LYMod");
@@ -787,7 +786,12 @@ public class Plugin : MelonMod
             .AddButtonRow("刷新门派月限制", () =>
             {
                 if (HeroHelper.TryReadPlayer(out var player) && player.belongForceID != -1)
-                    player.GetForce().forceInteractionTimeData.ResetTime();
+                {
+                    var force = player.GetForce();
+                    force.forceInteractionTimeData.ResetTime();
+                    force.thisMonthAttack = false;
+                    force.thisMonthAttackArea = 0;
+                }
                 
             }, width:175)
             .AddAutoSaveRow("研究一天",ReasearchFlag, "禅道修行倍率:", ChanDaoRate)
@@ -827,7 +831,7 @@ public class Plugin : MelonMod
             .AddAutoSaveRow("珍宝品质变红",GoodTreasure,"必定红色珍宝:", RedTreasure)
             .AddAutoSaveRow("马和马鞍负重倍数",HorseMaxWeightTimes,"马和马鞍视野范围加成倍数", HorseMaxSeeRangeTimes)
             .AddAutoSaveRow("马和马鞍探险耐力加成倍数", HorseStepAddRateTimes,"装备负重倍率(0-1):", EquipmentWeight)
-            .AddAutoSaveRow("淬毒值倍率",PoisonRate,"淬毒不减:", PoisonNumReduceFlag)
+            .AddAutoSave("淬毒不减:", PoisonNumReduceFlag)
             .AddAutoSaveRow("拍卖品质倍率",ShopLvRate,"拍卖物品数量:", ItemNum)
             .AddAutoSaveRow("烹饪铸造炼药倍率",Pzqh,"鬼市商店等级:", ZhongyuanLv)
             .AddAutoSave("获得物品时品质是红色", RedQuality, labelWidth:200)
@@ -847,7 +851,7 @@ public class Plugin : MelonMod
             .AddAutoSaveRow("按R键重新Roll", _breakRollFlag, "时间暂停", TimeFreezeFlag)
             .AddAutoSaveRow("自动鉴宝",AutoJianBaoFlag, "斗酒一回胜利", DrinkOneWinFlag)
             .AddAutoSaveRow("喝酒自动倒满", DrinkUiAutoFillFlag, "藏宝阁价值容量1亿", ExternalStorageFlag)
-            .AddAutoSave("天气锁定晴天", WeatherLockSunnyFlag)
+            .AddAutoSaveRow("天气锁定晴天", WeatherLockSunnyFlag, "拍卖会自动出价", AuctionAutoOfferFlag)
             .BeginHorizontal()
            
             .AddButton("解锁成就", () =>
