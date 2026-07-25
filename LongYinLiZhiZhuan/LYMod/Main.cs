@@ -659,7 +659,7 @@ public class Plugin : MelonMod
             .EndHorizontal()
            
             .AddAutoSaveRow("玩家天赋数量上限", PlayerMaxTagNum, "Npc天赋数量上限", NpcMaxTagNum,  labelWidth:150)
-            .AddAutoSaveRow("突破潜力限制(无限制)",BreakMaxLimitFlag, "突破潜力限制不对玩家生效", BreakMaxLimitNotForPlayerFlag)
+            .AddAutoSaveRow("属性未达限制时不受潜力限制",BreakMaxLimitFlag, "该项不对玩家生效", BreakMaxLimitNotForPlayerFlag)
             .AddLabelRow("修改读取到人物的潜力：", 200)
             .Space(5)
             .BeginHorizontal()
