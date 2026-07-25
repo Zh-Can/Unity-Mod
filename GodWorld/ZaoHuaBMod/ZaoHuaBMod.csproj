@@ -33,19 +33,20 @@
         <WarningLevel>4</WarningLevel>
     </PropertyGroup>
     <ItemGroup>
-        <Compile Include="Core\Adapters\BepInExLogger.cs" />
-        <Compile Include="Core\Adapters\MelonLoggerAdapter.cs" />
-        <Compile Include="Core\ILogger.cs" />
-        <Compile Include="Core\Log.cs" />
-        <Compile Include="Core\UnityDebugLogger.cs" />
-        <Compile Include="Core\ModConfig.cs" />
         <Compile Include="Main.cs" />
         <Compile Include="MainView.cs" />
         <Compile Include="ModInfo.cs" />
-        <Compile Include="Properties\AssemblyInfo.cs"/>
+        <Compile Include="Properties\AssemblyInfo.cs" />
+        <Compile Include="UI\Config\ModConfig.cs" />
+        <Compile Include="UI\Controls\UI.cs" />
         <Compile Include="UI\Core\GUIManager.cs" />
-        <Compile Include="UI\Core\Localization.cs" />
         <Compile Include="UI\Core\WindowData.cs" />
+        <Compile Include="UI\Localization\Loc.cs" />
+        <Compile Include="UI\Logger\Adapters\BepInExLogger.cs" />
+        <Compile Include="UI\Logger\Adapters\MelonLoggerAdapter.cs" />
+        <Compile Include="UI\Logger\ILogger.cs" />
+        <Compile Include="UI\Logger\Log.cs" />
+        <Compile Include="UI\Logger\UnityDebugLogger.cs" />
         <Compile Include="UI\Style\GuiSkin.cs" />
     </ItemGroup>
     <ItemGroup>
@@ -92,12 +93,10 @@
       </Reference>
     </ItemGroup>
     <ItemGroup>
-      <Folder Include="UI\Widgets\" />
-    </ItemGroup>
-    <ItemGroup>
-      <Content Include="Core\Readme.md" />
-      <Content Include="UI\Core\GenerateTraditionalChinese.ps1" />
+      <Content Include="UI\Localization\GenerateTraditionalChinese.ps1" />
+      <Content Include="UI\Logger\Readme.md" />
       <Content Include="UI\Readme.md" />
+      <Content Include="ZaoHuaBMod.sln" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
 

@@ -37,11 +37,11 @@ Get-ChildItem -Path $SourceDir -Recurse -Filter *.cs |
     Where-Object { $_.FullName -notmatch '\\(obj|bin|Properties)\\' } |
     ForEach-Object {
         $content = Get-Content $_.FullName -Raw
-        foreach ($key in (Extract-Keys $content 'Localization.Get('))
+        foreach ($key in (Extract-Keys $content 'Loc.Get('))
         {
             [void]$keys.Add($key)
         }
-        foreach ($key in (Extract-Keys $content 'Localization.Format('))
+        foreach ($key in (Extract-Keys $content 'Loc.Format('))
         {
             [void]$keys.Add($key)
         }

@@ -2,7 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using ZaoHuaBMod.Core;
+using ZaoHuaBMod.UI.Config;
+using ZaoHuaBMod.UI.Logger;
 using ZaoHuaBMod.UI.Style;
 
 namespace ZaoHuaBMod.UI.Core
@@ -192,10 +193,10 @@ namespace ZaoHuaBMod.UI.Core
 
                 // 语言切换按钮：始终显示当前语言
                 {
-                    var btnLabel = Localization.CurrentLanguage;
+                    var btnLabel = Localization.Loc.CurrentLanguage;
 
-                    if (GUILayout.Button(btnLabel, DarkSkin.SBtn) && Localization.AvailableLanguages.Count > 1)
-                        Localization.CycleLanguage();
+                    if (GUILayout.Button(btnLabel, DarkSkin.SBtn) && Localization.Loc.AvailableLanguages.Count > 1)
+                        Localization.Loc.CycleLanguage();
 
                     GUILayout.Space(10f);
                 }

@@ -3,15 +3,16 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using ZaoHuaBMod.Core;
+using ZaoHuaBMod.UI.Config;
+using ZaoHuaBMod.UI.Logger;
 
-namespace ZaoHuaBMod.UI.Core
+namespace ZaoHuaBMod.UI.Localization
 {
     /// <summary>
     /// 简易多语言支持类，语言包使用 key=value 纯文本格式。
     /// 语言直接用显示名（如"简中"、"en-US"）作为唯一标识。
     /// </summary>
-    public static class Localization
+    public static class Loc
     {
         public const string Chinese = "简中";
 
@@ -116,7 +117,7 @@ namespace ZaoHuaBMod.UI.Core
         {
             if (!File.Exists(file))
             {
-                Log.Warning($"[Localization] 文件不存在: {file}");
+                Log.Warning($"语言文件不存在: {file}");
                 return;
             }
 
@@ -249,7 +250,7 @@ namespace ZaoHuaBMod.UI.Core
             var info = AvailableLanguages.FirstOrDefault(l => l.DisplayName == language);
             if (info == null || string.IsNullOrEmpty(info.FilePath) || !File.Exists(info.FilePath))
             {
-                Log.Warning($"[Localization] 语言文件 {language}.cfg 不存在，回退到简中");
+                Log.Warning($"[Loc] 语言文件 {language}.cfg 不存在，回退到简中");
                 CurrentLanguage = Chinese;
                 ModConfig.Language = Chinese;
                 ModConfig.Save();

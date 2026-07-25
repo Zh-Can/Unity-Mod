@@ -4,9 +4,11 @@ using BepInEx;
 using BepInEx.Unity.Mono;
 using HarmonyLib;
 using UnityEngine;
-using ZaoHuaBMod.Core;
-using ZaoHuaBMod.Core.Adapters;
+using ZaoHuaBMod.UI.Config;
 using ZaoHuaBMod.UI.Core;
+using ZaoHuaBMod.UI.Localization;
+using ZaoHuaBMod.UI.Logger;
+using ZaoHuaBMod.UI.Logger.Adapters;
 
 namespace ZaoHuaBMod
 {
@@ -29,12 +31,12 @@ namespace ZaoHuaBMod
 
             // 初始化 Mod 目录与配置
             var modDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            Localization.ModDirectory = modDir;
-            Localization.ScanLanguages();
+            Loc.ModDirectory = modDir;
+            Loc.ScanLanguages();
 
             ModConfig.Load();
             ModConfig.ApplyToManager();
-            Localization.TryApplyLanguage(ModConfig.Language);
+            Loc.TryApplyLanguage(ModConfig.Language);
 
             GameObject uiObj = new GameObject("ModUI");
             UnityEngine.Object.DontDestroyOnLoad(uiObj);
