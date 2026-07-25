@@ -51,8 +51,7 @@ $outputDir = Split-Path -Parent $OutputFile
 New-Item -ItemType Directory -Force -Path $outputDir | Out-Null
 
 $sb = New-Object System.Text.StringBuilder
-[void]$sb.AppendLine("# Auto-generated Traditional Chinese language file")
-[void]$sb.AppendLine("# zi dong sheng cheng de fan ti zhong wen yu yan bao")
+[void]$sb.AppendLine("# 自动生成的繁中文件")
 [void]$sb.AppendLine()
 
 foreach ($key in $keys)
