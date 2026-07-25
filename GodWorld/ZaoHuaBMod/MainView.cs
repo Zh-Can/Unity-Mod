@@ -1,15 +1,16 @@
 using UnityEngine;
+using ZaoHuaBMod.GuiFramework;
 using ZaoHuaBMod.GuiFramework.Controls;
-using ZaoHuaBMod.GuiFramework.Core;
 using ZaoHuaBMod.GuiFramework.Localization;
 using ZaoHuaBMod.GuiFramework.Logger;
 using ZaoHuaBMod.GuiFramework.Style;
+using UI = ZaoHuaBMod.GuiFramework.Controls.UI;
 
 namespace ZaoHuaBMod
 {
     public class MainView : MonoBehaviour
     {
-        private WindowData _mainWindow;
+        private UI.WindowData _mainWindow;
 
         private int _tab;
         private bool _toggleValue;
@@ -45,11 +46,12 @@ namespace ZaoHuaBMod
 
         private void OnGUI()
         {
-            UI.OnGUI();
+            UI.WindowControls.OnGUI();
         }
 
-        private void Draw(WindowData window)
+        private void Draw(UI.WindowData window)
         {
+            
             // 标签页芯片
             GUILayout.BeginHorizontal();
             
@@ -80,7 +82,7 @@ namespace ZaoHuaBMod
 
             GUILayout.FlexibleSpace();
             DarkSkin.Divider(4f);
-            GUILayout.Label($"{Loc.Get("缩放")}: {Mathf.RoundToInt(GUIManager.Instance.Scale * 100f)}%  {Loc.Get("按 ` 键显示/隐藏")}", DarkSkin.SMuted);
+            GUILayout.Label($"{Loc.Get("缩放")}: {Mathf.RoundToInt(UI.WindowControls.Scale * 100f)}%  {Loc.Get("按 ` 键显示/隐藏")}", DarkSkin.SMuted);
         }
 
         private void DrawBasicTab()

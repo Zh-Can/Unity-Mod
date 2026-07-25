@@ -33,14 +33,15 @@
         <WarningLevel>4</WarningLevel>
     </PropertyGroup>
     <ItemGroup>
+        <Compile Include="GuiFramework\Controls\ButtonControls.cs" />
+        <Compile Include="GuiFramework\Controls\LayoutControls.cs" />
+        <Compile Include="GuiFramework\Controls\UI.cs" />
+        <Compile Include="GuiFramework\Controls\WindowControls.cs" />
         <Compile Include="Main.cs" />
         <Compile Include="MainView.cs" />
         <Compile Include="ModInfo.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
-        <Compile Include="GuiFramework\Config\ModConfig.cs" />
-        <Compile Include="GuiFramework\Controls\UI.cs" />
-        <Compile Include="GuiFramework\Core\GUIManager.cs" />
-        <Compile Include="GuiFramework\Core\WindowData.cs" />
+        <Compile Include="GuiFramework\Config\BaseConfig.cs" />
         <Compile Include="GuiFramework\Localization\Loc.cs" />
         <Compile Include="GuiFramework\Logger\Adapters\BepInExLogger.cs" />
         <Compile Include="GuiFramework\Logger\Adapters\MelonLoggerAdapter.cs" />

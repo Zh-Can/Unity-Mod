@@ -233,8 +233,8 @@ namespace ZaoHuaBMod.GuiFramework.Localization
 
             CurrentLanguage = info.DisplayName;
 
-            ModConfig.Language = info.DisplayName;
-            ModConfig.Save();
+            BaseConfig.Language = info.DisplayName;
+            BaseConfig.Save();
         }
 
 
@@ -252,8 +252,8 @@ namespace ZaoHuaBMod.GuiFramework.Localization
             {
                 Log.Warning($"[Loc] 语言文件 {language}.cfg 不存在，回退到简中");
                 CurrentLanguage = Chinese;
-                ModConfig.Language = Chinese;
-                ModConfig.Save();
+                BaseConfig.Language = Chinese;
+                BaseConfig.Save();
                 return;
             }
 

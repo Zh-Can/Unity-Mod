@@ -1,13 +1,13 @@
 using System;
 using UnityEngine;
-using ZaoHuaBMod.GuiFramework.Core;
+using ZaoHuaBMod.GuiFramework.Style;
 
 namespace ZaoHuaBMod.GuiFramework.Controls
 {
     /// <summary>
-    /// UI 入口，整合 GUIManager 并提供链式调用创建窗体。
+    ///     UI 入口，提供窗体创建与基础控件。
     /// </summary>
-    public static class UI
+    public static partial class UI
     {
         /// <summary>
         ///     创建一个新窗体。
@@ -18,7 +18,7 @@ namespace ZaoHuaBMod.GuiFramework.Controls
         /// <returns>窗体构造器，可继续链式配置。</returns>
         public static WindowBuilder NewWindow(Rect rect, string title, Action<WindowData> content)
         {
-            var window = GUIManager.Instance.CreateWindow(rect, title, content);
+            var window = WindowControls.CreateWindow(rect, title, content);
             return new WindowBuilder(window);
         }
 
@@ -31,37 +31,10 @@ namespace ZaoHuaBMod.GuiFramework.Controls
         /// <returns>窗体构造器，可继续链式配置。</returns>
         public static WindowBuilder NewWindow(Rect rect, WindowData.TitleBarConfig titleBar, Action<WindowData> content)
         {
-            var window = GUIManager.Instance.CreateWindow(rect, titleBar, content);
+            var window = WindowControls.CreateWindow(rect, titleBar, content);
             return new WindowBuilder(window);
         }
-
-        /// <summary>
-        ///     获取指定窗体。
-        /// </summary>
-        /// <param name="id">窗口 ID。</param>
-        /// <returns>窗口数据对象，不存在则返回 null。</returns>
-        public static WindowData GetWindow(int id) => GUIManager.Instance.GetWindow(id);
-
-        /// <summary>
-        ///     销毁所有窗体。
-        /// </summary>
-        public static void DestroyAllWindows() => GUIManager.Instance.DestroyAllWindows();
-
-        /// <summary>
-        ///     主绘制入口，需要在 MonoBehaviour.OnGUI 中调用。
-        /// </summary>
-        public static void OnGUI() => GUIManager.Instance.OnGUI();
-
-        /// <summary>
-        ///     当前全局缩放比例。
-        /// </summary>
-        public static float Scale => GUIManager.Instance.Scale;
-
-        /// <summary>
-        ///     设置全局缩放比例。
-        /// </summary>
-        /// <param name="scale">缩放值，会被限制在 0.8 ~ 2.5 之间。</param>
-        public static void SetScale(float scale) => GUIManager.Instance.SetScale(scale);
+        
     }
 
     /// <summary>
@@ -69,9 +42,9 @@ namespace ZaoHuaBMod.GuiFramework.Controls
     /// </summary>
     public class WindowBuilder
     {
-        private readonly WindowData _window;
+        private readonly UI.WindowData _window;
 
-        public WindowBuilder(WindowData window)
+        public WindowBuilder(UI.WindowData window)
         {
             _window = window ?? throw new ArgumentNullException(nameof(window));
         }
@@ -98,7 +71,7 @@ namespace ZaoHuaBMod.GuiFramework.Controls
         }
 
         /// <summary>设置拖拽模式。</summary>
-        public WindowBuilder DragBy(WindowData.DragMode mode)
+        public WindowBuilder DragBy(UI.WindowData.DragMode mode)
         {
             _window.DragArea = mode;
             return this;
@@ -133,6 +106,6 @@ namespace ZaoHuaBMod.GuiFramework.Controls
         }
 
         /// <summary>获取最终窗体数据。</summary>
-        public WindowData Build() => _window;
+        public UI.WindowData Build() => _window;
     }
 }

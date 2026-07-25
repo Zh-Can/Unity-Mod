@@ -33,9 +33,9 @@ namespace ZaoHuaBMod
             Loc.ModDirectory = modDir;
             Loc.ScanLanguages();
 
-            ModConfig.Load();
-            ModConfig.ApplyToManager();
-            Loc.TryApplyLanguage(ModConfig.Language);
+            BaseConfig.Load();
+            BaseConfig.ApplyToManager();
+            Loc.TryApplyLanguage(BaseConfig.Language);
 
             GameObject uiObj = new GameObject("ModUI");
             UnityEngine.Object.DontDestroyOnLoad(uiObj);
