@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using ZaoHuaBMod.GuiFramework.Style;
 
 namespace ZaoHuaBMod.GuiFramework.Controls
@@ -15,7 +16,7 @@ namespace ZaoHuaBMod.GuiFramework.Controls
         }
 
         /// <summary>
-        ///     按钮构造器，支持 Text/Style/Tooltip 后接 Draw。
+        ///     按钮构造器，支持 Text/Style/Tooltip/OnClick 后接 Draw。
         ///     Draw 返回是否被点击。
         /// </summary>
         public class ButtonBuilder
@@ -23,6 +24,7 @@ namespace ZaoHuaBMod.GuiFramework.Controls
             private string _text;
             private string _tooltip;
             private GUIStyle _style = DarkSkin.SBtn;
+            private Action _onClick;
 
             /// <summary>普通按钮</summary>
             public ButtonBuilder Text(string text)
@@ -59,10 +61,20 @@ namespace ZaoHuaBMod.GuiFramework.Controls
                 return this;
             }
 
+            /// <summary>设置点击回调。</summary>
+            public ButtonBuilder OnClick(Action action)
+            {
+                _onClick = action;
+                return this;
+            }
+
             /// <summary>绘制按钮。</summary>
             public bool Draw()
             {
-                return GUILayout.Button(new GUIContent(_text, _tooltip), _style);
+                bool clicked = GUILayout.Button(new GUIContent(_text, _tooltip), _style);
+                if (clicked)
+                    _onClick?.Invoke();
+                return clicked;
             }
         }
     }

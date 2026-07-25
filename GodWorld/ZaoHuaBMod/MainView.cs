@@ -99,7 +99,21 @@ namespace ZaoHuaBMod
             
             UI.Label().Text(Loc.Get("按钮")).Draw();
 
-            UI.Btn().Text("普通按钮").Draw();
+            UI.Horizontal(() =>
+            {
+                UI.Btn().Text("普通按钮").OnClick(() =>
+                {
+                    Log.Info("普通按钮被点击");
+                }).Draw();
+                UI.Btn().Add("添加按钮").OnClick(() =>
+                {
+                    Log.Info("添加按钮被点击");
+                }).Draw();
+                UI.Btn().Del("删除按钮").OnClick(() =>
+                {
+                    Log.Info("删除按钮被点击");
+                }).Draw();
+            });
             
             if (GUILayout.Button(Loc.Get("普通按钮"), DarkSkin.SBtn))
                 Log.Info("普通按钮被点击");
