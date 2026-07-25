@@ -9,7 +9,10 @@ namespace ZaoHuaBMod.GuiFramework.Controls
     public static partial class UI
     {
         /// <summary>按钮链式构造器入口。</summary>
-        public static ButtonBuilder Button => new ButtonBuilder();
+        public static ButtonBuilder Btn()
+        {
+            return new ButtonBuilder();
+        }
 
         /// <summary>
         ///     按钮构造器，支持 Text/Style/Tooltip 后接 Draw。
@@ -21,10 +24,24 @@ namespace ZaoHuaBMod.GuiFramework.Controls
             private string _tooltip;
             private GUIStyle _style = DarkSkin.SBtn;
 
-            /// <summary>设置按钮文本。</summary>
+            /// <summary>普通按钮</summary>
             public ButtonBuilder Text(string text)
             {
                 _text = text;
+                return this;
+            }
+            /// <summary>添加按钮</summary>
+            public ButtonBuilder Add(string text)
+            {
+                _text = text;
+                _style =  DarkSkin.SBtnAdd;
+                return this;
+            }
+            /// <summary>删除按钮</summary>
+            public ButtonBuilder Del(string text)
+            {
+                _text = text;
+                _style =  DarkSkin.SBtnDel;
                 return this;
             }
 

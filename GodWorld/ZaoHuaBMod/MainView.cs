@@ -87,15 +87,20 @@ namespace ZaoHuaBMod
 
         private void DrawBasicTab()
         {
-            GUILayout.Label(Loc.Get("基础控件"), DarkSkin.STitle);
-
-            GUILayout.Label(Loc.Get("普通文本 Label"), DarkSkin.SLabel);
-            
+            UI.Label().AsTitle(Loc.Get("基础控件(标题)-AsTitle")).Draw();
+            UI.Label().Text(Loc.Get("普通文本-Text")).Draw();
+            UI.Label().AsHint(Loc.Get("灰色提示小字靠右排列-AsHint")).Draw();
+            UI.Label().AsMuted(Loc.Get("灰色小字AsMuted")).Draw();
+            UI.Label().AsCount(Loc.Get("蓝色小字文本AsCount")).Draw();
+            UI.Label().AsField(Loc.Get("输入框文本AsField")).Draw();
             UI.Label().Text(Loc.Get("带提示文本")).Tooltip(Loc.Get("鼠标放上来会显示 Tooltip")).Draw();
                 
-            DarkSkin.Divider(4f);
-            GUILayout.Label(Loc.Get("按钮"), DarkSkin.SLabel);
+            UI.Divider(4f);
+            
+            UI.Label().Text(Loc.Get("按钮")).Draw();
 
+            UI.Btn().Text("普通按钮").Draw();
+            
             if (GUILayout.Button(Loc.Get("普通按钮"), DarkSkin.SBtn))
                 Log.Info("普通按钮被点击");
 

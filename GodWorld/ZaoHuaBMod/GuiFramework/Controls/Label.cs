@@ -25,14 +25,47 @@ namespace ZaoHuaBMod.GuiFramework.Controls
             private string _tooltip;
             private GUIStyle _style = DarkSkin.SLabel;
 
-            /// <summary>使用标题样式。</summary>
-            public LabelBuilder Heading(string text)
+            /// <summary>标题样式</summary>
+            public LabelBuilder AsTitle(string text)
             {
                 _text = text;
                 _tooltip = null;
                 _style = DarkSkin.STitle;
                 return this;
             }
+            /// <summary>靠右侧提示灰色小字样式</summary>
+            public LabelBuilder AsHint(string text)
+            {
+                _text = text;
+                _tooltip = null;
+                _style = DarkSkin.SHint;
+                return this;
+            }
+            /// <summary>灰色小字样式</summary>
+            public LabelBuilder AsMuted(string text)
+            {
+                _text = text;
+                _tooltip = null;
+                _style = DarkSkin.SMuted;
+                return this;
+            }
+            /// <summary>数字样式</summary>
+            public LabelBuilder AsCount(string text)
+            {
+                _text = text;
+                _tooltip = null;
+                _style = DarkSkin.SCount;
+                return this;
+            }
+            /// <summary>字段样式(一般用来放预输入文字)有输入框样式</summary>
+            public LabelBuilder AsField(string text)
+            {
+                _text = text;
+                _tooltip = null;
+                _style = DarkSkin.SField;
+                return this;
+            }
+
 
             /// <summary>使用普通文本样式。</summary>
             public LabelBuilder Text(string text)
