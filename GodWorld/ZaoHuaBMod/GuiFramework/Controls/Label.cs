@@ -57,15 +57,6 @@ namespace ZaoHuaBMod.GuiFramework.Controls
                 _style = DarkSkin.SCount;
                 return this;
             }
-            /// <summary>字段样式(一般用来放预输入文字)有输入框样式</summary>
-            public LabelBuilder AsField(string text)
-            {
-                _text = text;
-                _tooltip = null;
-                _style = DarkSkin.SField;
-                return this;
-            }
-
 
             /// <summary>使用普通文本样式。</summary>
             public LabelBuilder Text(string text)

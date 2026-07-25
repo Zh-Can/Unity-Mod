@@ -23,7 +23,7 @@ namespace ZaoHuaBMod.GuiFramework.Controls
             private GUIStyle _style = DarkSkin.SToggle;
 
             /// <summary>设置当前值和文本。</summary>
-            public ToggleBuilder Value(bool value, string text)
+            public ToggleBuilder Text(string text, bool value = false)
             {
                 _value = value;
                 _text = text;

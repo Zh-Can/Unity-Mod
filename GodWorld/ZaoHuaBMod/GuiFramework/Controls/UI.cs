@@ -163,6 +163,63 @@ namespace ZaoHuaBMod.GuiFramework.Controls
                     }
                 }
             }
+            /// <summary>
+            /// 滑动条
+            /// </summary>
+            /// <param name="text"></param> 文本
+            /// <param name="sliderValue"></param> 值
+            /// <param name="min"></param> 最小值
+            /// <param name="max"></param> 最大值
+            /// <param name="decimals"></param> 保留几位小数
+            /// <param name="topPadding"></param> 
+            /// <returns></returns>
+            public static float Slider(string text, float sliderValue, float min = 0f, float max = 1f, int decimals = 2, float topPadding = 8f)
+            {
+                decimals = Mathf.Max(0, decimals);
+                GUILayout.BeginHorizontal();
+                var format = $"F{decimals}";
+                var content = new GUIContent($"{text}: {sliderValue.ToString(format)}");
+                var size = DarkSkin.SLabel.CalcSize(content);
+                GUILayout.Label(content, DarkSkin.SLabel, GUILayout.Width(size.x));
+                GUILayout.BeginVertical();
+                GUILayout.Space(topPadding);
+                sliderValue = GUILayout.HorizontalSlider(sliderValue, min, max, GUILayout.ExpandWidth(true));
+                GUILayout.EndVertical();
+                GUILayout.EndHorizontal();
+                var multiplier = Mathf.Pow(10f, decimals);
+                return Mathf.Round(sliderValue * multiplier) / multiplier;
+            }
+
+            /// <summary>
+            /// 输入框
+            /// </summary>
+            /// <param name="text"></param>
+            /// <param name="style"></param>
+            /// <param name="options"></param>
+            /// 文本
+            /// <returns>文本</returns>
+            public static string TextFiled(string text, GUIStyle style = null, params GUILayoutOption[] options)
+            {
+                if (style == null) style = DarkSkin.SField;
+                return GUILayout.TextField(text, style, options);
+            }
+
+            /// <summary>
+            /// 文本域
+            /// </summary>
+            /// <param name="text"></param>
+            /// <param name="style"></param>
+            /// <param name="options"></param>
+            /// 文本
+            /// <returns>文本</returns>
+            public static string TextArea(string text, GUIStyle style = null, params GUILayoutOption[] options)
+            {
+                if (style == null) style = DarkSkin.SField;
+                if (options == null || options.Length == 0)
+                        options = new[] { GUILayout.Height(80) };
+                GUILayout.TextArea(text, style, options);
+                return text;
+            }
     }
 
     /// <summary>

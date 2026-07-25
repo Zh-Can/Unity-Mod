@@ -13,6 +13,7 @@ namespace ZaoHuaBMod
 
         private int _tab;
         private bool _toggleValue;
+        private bool _toggleValue1;
         private float _sliderValue = 0.5f;
 
         private int _dropdownIndex;
@@ -92,7 +93,6 @@ namespace ZaoHuaBMod
             UI.Label().AsHint(Loc.Get("灰色提示小字靠右排列-AsHint")).Draw();
             UI.Label().AsMuted(Loc.Get("灰色小字AsMuted")).Draw();
             UI.Label().AsCount(Loc.Get("蓝色小字文本AsCount")).Draw();
-            UI.Label().AsField(Loc.Get("输入框文本AsField")).Draw();
             UI.Label().Text(Loc.Get("带提示文本")).Tooltip(Loc.Get("鼠标放上来会显示 Tooltip")).Draw();
                 
             UI.Divider(4f);
@@ -119,11 +119,12 @@ namespace ZaoHuaBMod
                     }).Draw();
                 });
             });
-            UI.Label().Text(Loc.Get("单选按钮 Radio")).Draw();
+            UI.Label().Text(Loc.Get("单选按钮 Radio 竖3个")).Draw();
             _radioIndex = UI.RadioButtonGroup
                 .Selected(_radioIndex)
                 .Options(Loc.Get("方案一"), Loc.Get("方案二"), Loc.Get("方案三"))
                 .Draw();
+            UI.Label().Text(Loc.Get("单选按钮 Radio 横3个")).Draw();
             _radioIndex = UI.RadioButtonGroup
                 .Selected(_radioIndex)
                 .Options(Loc.Get("方案一"), Loc.Get("方案二"), Loc.Get("方案三"))
@@ -132,20 +133,21 @@ namespace ZaoHuaBMod
 
             DarkSkin.Divider(4f);
             
-            GUILayout.Label(Loc.Get("开关与滑块"), DarkSkin.SLabel);
+            UI.Label().Text(Loc.Get("开关与滑块")).Draw();
+            _toggleValue = UI.Toggle.Text(Loc.Get("开关 Toggle"), _toggleValue).Draw();
+            _toggleValue1 = UI.Toggle.Text(Loc.Get("带提示的开关 Toggle"), _toggleValue).Tooltip(Loc.Get("一个开关")).Draw();
 
-            _toggleValue = GUILayout.Toggle(_toggleValue, Loc.Get("开关 Toggle"), DarkSkin.SToggle);
-
-            GUILayout.Label($"{Loc.Get("滑块值")}: {_sliderValue:F2}", DarkSkin.SLabel);
-            _sliderValue = GUILayout.HorizontalSlider(_sliderValue, 0f, 1f);
+            _sliderValue = UI.Slider(Loc.Get("滑块值"), _sliderValue, 0f, 1f, decimals: 1);
+            UI.Space(3);
 
             DarkSkin.Divider(4f);
-            GUILayout.Label(Loc.Get("输入框"), DarkSkin.SLabel);
 
-            GUILayout.Label(Loc.Get("单行输入:"), DarkSkin.SMuted);
-            GUILayout.TextField(Loc.Get("输入文字"), DarkSkin.SField);
-
-            GUILayout.Label(Loc.Get("多行输入:"), DarkSkin.SMuted);
+            UI.Label().Text(Loc.Get("输入框")).Draw();
+            UI.Label().AsMuted(Loc.Get("单行输入:")).Draw();
+            UI.TextFiled(Loc.Get("单行输入内容"));
+            
+            UI.Label().AsMuted(Loc.Get("多行输入:")).Draw();
+            UI.TextArea(Loc.Get("多行输入区域") + "\n" + Loc.Get("第二行"), options: GUILayout.Height(60));
             GUILayout.TextArea(Loc.Get("多行输入区域") + "\n" + Loc.Get("第二行"), DarkSkin.SField, GUILayout.Height(80));
         }
 
