@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -113,28 +113,25 @@ namespace ZaoHuaBMod.GuiFramework.Controls
                 try
                 {
                     DarkSkin.InitStyles();
-
+                    
                     var previousSkin = GUI.skin;
                     GUI.skin = DarkSkin.Skin;
-                    var matrix = GUI.matrix;
-
+                    var matrixOld = GUI.matrix;
+                    
                     var sortedWindows = _windows.Values
                         .Where(w => w.Visible)
                         .OrderBy(w => w.Layer)
                         .ToList();
-
+                    
                     foreach (var window in sortedWindows)
                     {
-                        GUI.matrix = matrix;
-                        GUIUtility.ScaleAroundPivot(new Vector2(Scale, Scale),
-                            new Vector2(window.Rect.x, window.Rect.y));
-                        GUI.Window(window.Id, window.Rect, id => DrawWindow(id, window), GUIContent.none,
-                            DarkSkin.SWindow);
+                        GUI.matrix = matrixOld;
+                        GUIUtility.ScaleAroundPivot(new Vector2(Scale, Scale), new Vector2(window.Rect.x, window.Rect.y));
+                        GUI.Window(window.Id, window.Rect, id => DrawWindow(id, window), GUIContent.none, DarkSkin.SWindow);
                     }
-
-                    GUI.matrix = matrix;
+                    
+                    GUI.matrix = matrixOld;
                     HandleDragAndResize();
-                    DarkSkin.DrawTooltip();
 
                     GUI.skin = previousSkin;
                 }
@@ -187,6 +184,8 @@ namespace ZaoHuaBMod.GuiFramework.Controls
                 window.ContentScrollPos = GUILayout.BeginScrollView(window.ContentScrollPos);
                 window.Content?.Invoke(window);
                 GUILayout.EndScrollView();
+
+                DrawWindowTooltip();
             }
 
             /// <summary>
@@ -308,6 +307,33 @@ namespace ZaoHuaBMod.GuiFramework.Controls
                         _resizingWindow = null;
                         break;
                 }
+            }
+
+            /// <summary>
+            ///     在窗口内绘制 GUI.tooltip，使用窗口本地坐标。
+            /// </summary>
+            private static void DrawWindowTooltip()
+            {
+                if (Event.current.type != EventType.Repaint)
+                    return;
+
+                var tooltip = GUI.tooltip;
+                if (string.IsNullOrEmpty(tooltip))
+                    return;
+
+                var mouse = Event.current.mousePosition;
+                var scale = Scale;
+                var size = GUI.skin.box.CalcSize(new GUIContent(tooltip));
+
+                GUI.Box(
+                    new Rect(
+                        mouse.x + 15f / scale,
+                        mouse.y + 15f / scale,
+                        size.x + 20,
+                        size.y + 10
+                    ),
+                    tooltip
+                );
             }
         }
 

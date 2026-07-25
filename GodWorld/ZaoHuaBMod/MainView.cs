@@ -1,5 +1,4 @@
 using UnityEngine;
-using ZaoHuaBMod.GuiFramework;
 using ZaoHuaBMod.GuiFramework.Controls;
 using ZaoHuaBMod.GuiFramework.Localization;
 using ZaoHuaBMod.GuiFramework.Logger;
@@ -51,18 +50,19 @@ namespace ZaoHuaBMod
 
         private void Draw(UI.WindowData window)
         {
-            
-            // 标签页芯片
-            GUILayout.BeginHorizontal();
-            
-            string[] tabs = { Loc.Get("基础"), Loc.Get("布局"), Loc.Get("状态"), Loc.Get("表单") };
-            for (int i = 0; i < tabs.Length; i++)
+            UI.Horizontal(() =>
             {
-                if (DarkSkin.TabChip(tabs[i], _tab == i))
-                    _tab = i;
-            }
-            GUILayout.EndHorizontal();
-            DarkSkin.Divider(6f);
+                // 标签页芯片
+                string[] tabs = { Loc.Get("基础"), Loc.Get("布局"), Loc.Get("状态"), Loc.Get("表单") };
+                for (int i = 0; i < tabs.Length; i++)
+                {
+                    if (DarkSkin.TabChip(tabs[i], _tab == i))
+                        _tab = i;
+                }
+            });
+            UI.Divider();
+            
+            
 
             switch (_tab)
             {
@@ -80,8 +80,8 @@ namespace ZaoHuaBMod
                     break;
             }
 
-            GUILayout.FlexibleSpace();
-            DarkSkin.Divider(4f);
+            UI.FlexibleSpace();
+            UI.Divider();
             GUILayout.Label($"{Loc.Get("缩放")}: {Mathf.RoundToInt(UI.WindowControls.Scale * 100f)}%  {Loc.Get("按 ` 键显示/隐藏")}", DarkSkin.SMuted);
         }
 
@@ -90,8 +90,9 @@ namespace ZaoHuaBMod
             GUILayout.Label(Loc.Get("基础控件"), DarkSkin.STitle);
 
             GUILayout.Label(Loc.Get("普通文本 Label"), DarkSkin.SLabel);
-            GUILayout.Label(new GUIContent(Loc.Get("带提示文本"), Loc.Get("鼠标放上来会显示 Tooltip")), DarkSkin.SLabel);
-
+            
+            UI.Label().Text(Loc.Get("带提示文本")).Tooltip(Loc.Get("鼠标放上来会显示 Tooltip")).Draw();
+                
             DarkSkin.Divider(4f);
             GUILayout.Label(Loc.Get("按钮"), DarkSkin.SLabel);
 

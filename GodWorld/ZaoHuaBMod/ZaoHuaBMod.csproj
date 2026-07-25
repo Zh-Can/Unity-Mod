@@ -33,10 +33,12 @@
         <WarningLevel>4</WarningLevel>
     </PropertyGroup>
     <ItemGroup>
-        <Compile Include="GuiFramework\Controls\ButtonControls.cs" />
-        <Compile Include="GuiFramework\Controls\LayoutControls.cs" />
+        <Compile Include="GuiFramework\Controls\Btn.cs" />
+        <Compile Include="GuiFramework\Controls\Label.cs" />
+        <Compile Include="GuiFramework\Controls\Toggle.cs" />
         <Compile Include="GuiFramework\Controls\UI.cs" />
-        <Compile Include="GuiFramework\Controls\WindowControls.cs" />
+        <Compile Include="GuiFramework\Controls\UITooltip.cs" />
+        <Compile Include="GuiFramework\Controls\Window.cs" />
         <Compile Include="Main.cs" />
         <Compile Include="MainView.cs" />
         <Compile Include="ModInfo.cs" />

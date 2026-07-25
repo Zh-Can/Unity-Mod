@@ -395,7 +395,7 @@ public class Plugin : MelonMod
         var scaledWidth = Width * scale;
         var scaledHeight = Hight * scale;
         _mainWindowRect = new Rect(_mainWindowRect.x, _mainWindowRect.y, scaledWidth, scaledHeight);
-        _mainWindowRect = GUI.ModalWindow(0, _mainWindowRect, (GUI.WindowFunction)DrawMainWindow, "");
+        _mainWindowRect = GUI.Window(0, _mainWindowRect, (GUI.WindowFunction)DrawMainWindow, "");
 
         if (shouldConsumePointerEvent && currentEvent != null)
         {
