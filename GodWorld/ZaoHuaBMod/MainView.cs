@@ -88,7 +88,7 @@ namespace ZaoHuaBMod
 
         private void DrawBasicTab()
         {
-            UI.Label().AsTitle(Loc.Get("基础控件(标题)-AsTitle")).Draw();
+            UI.Label().Title(Loc.Get("基础控件(标题)-AsTitle")).Draw();
             UI.Label().Text(Loc.Get("普通文本-Text")).Draw();
             UI.Label().AsHint(Loc.Get("灰色提示小字靠右排列-AsHint")).Draw();
             UI.Label().AsMuted(Loc.Get("灰色小字AsMuted")).Draw();
@@ -137,7 +137,7 @@ namespace ZaoHuaBMod
             _toggleValue = UI.Toggle.Text(Loc.Get("开关 Toggle"), _toggleValue).Draw();
             _toggleValue1 = UI.Toggle.Text(Loc.Get("带提示的开关 Toggle"), _toggleValue).Tooltip(Loc.Get("一个开关")).Draw();
 
-            _sliderValue = UI.Slider(Loc.Get("滑块值"), _sliderValue, 0f, 1f, decimals: 1);
+            _sliderValue = UI.Slider(Loc.Get("滑块值"), _sliderValue, 0f, 2f, decimals: 1);
             UI.Space(3);
 
             DarkSkin.Divider(4f);
@@ -153,42 +153,53 @@ namespace ZaoHuaBMod
         private string _input = "单行输入内容";
         private string _textArea = "多行输入区域\n第二行";
         
+        
         private void DrawLayoutTab()
         {
-            GUILayout.Label(Loc.Get("布局示例"), DarkSkin.STitle);
+            UI.Label().Title(Loc.Get("布局示例"));
 
-            GUILayout.BeginHorizontal();
-            GUILayout.Label(Loc.Get("水平布局左"), DarkSkin.SLabel);
-            GUILayout.FlexibleSpace();
-            GUILayout.Label(Loc.Get("水平布局右"), DarkSkin.SLabel);
-            GUILayout.EndHorizontal();
+            UI.Horizontal(() =>
+            {
+                UI.Label().Text(Loc.Get("水平布局左")).Draw();
+                UI.FlexibleSpace();
+                UI.Label().Text(Loc.Get("水平布局右")).Draw();
+            });
 
-            GUILayout.BeginVertical(DarkSkin.SPanel);
-            GUILayout.Label(Loc.Get("面板 / Box 样式"), DarkSkin.SLabel);
-            GUILayout.Label(Loc.Get("第二行文本"), DarkSkin.SMuted);
-            GUILayout.EndVertical();
+            UI.Box(() =>
+            {
+                UI.Label().Text(Loc.Get("面板 / Box 样式")).Draw();
+                UI.Label().AsMuted(Loc.Get("第二行文本")).Draw();
+                UI.Label().AsMuted(Loc.Get("第三行文本")).Draw();
+            });
 
-            GUILayout.Label(Loc.Get("交替行背景"), DarkSkin.SLabel);
-            GUILayout.BeginHorizontal(DarkSkin.SRow);
-            GUILayout.Label(Loc.Get("行 1"), DarkSkin.SFeatureName);
-            GUILayout.FlexibleSpace();
-            GUILayout.Label(Loc.Get("标签"), DarkSkin.STag);
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal(DarkSkin.SRowAlt);
-            GUILayout.Label(Loc.Get("行 2"), DarkSkin.SFeatureName);
-            GUILayout.FlexibleSpace();
-            GUILayout.Label(Loc.Get("隐藏"), DarkSkin.STagHidden);
-            GUILayout.EndHorizontal();
-
-            GUILayout.Label(Loc.Get("详情面板"), DarkSkin.SLabel);
-            GUILayout.BeginVertical(DarkSkin.SDetail);
-            GUILayout.Label(Loc.Get("详情标题"), DarkSkin.SDetailHead);
-            GUILayout.Label(Loc.Get("这里是详情内容，支持 <color=cyan>RichText</color> 高亮。"), DarkSkin.SBonus);
-            GUILayout.EndVertical();
+            UI.Label().Text(Loc.Get("交替行背景")).Draw();
+            UI.RowAlt(() =>
+            {
+                UI.Label().FeatureName("行 1").Draw();
+                GUILayout.FlexibleSpace();
+                UI.Label().Tag(Loc.Get("标签")).Draw();
+                GUILayout.FlexibleSpace();
+                UI.Label().TagGold(Loc.Get("标签")).Draw();
+            });
+            
+            UI.Row(() =>
+            {
+                UI.Label().FeatureName(Loc.Get("行 2")).Draw();
+                UI.FlexibleSpace();
+                UI.Label().Tag("<color=red>标签</color>").Draw();
+                UI.FlexibleSpace();
+                UI.Label().Tag("<color=green>标签</color>").Draw();
+            });
+            
+            UI.Label().Text(Loc.Get("详情面板"));
+            UI.BoxDetail(() =>
+            {
+                UI.Label().DetailHead(Loc.Get("详情标题")).Draw();
+                UI.Label().DetailText(Loc.Get("这里是详情内容，支持 <color=cyan>RichText</color> 高亮。")).Draw();
+            });
         }
 
-        private string _status = Loc.Get(Loc.Get("就绪"));
+        private string _status = Loc.Get("就绪");
         private void DrawStatusTab()
         {
             GUILayout.Label(Loc.Get("状态示例"), DarkSkin.STitle);

@@ -4,8 +4,8 @@ namespace ZaoHuaBMod.GuiFramework.Logger
 {
     public class UnityDebugLogger : ILogger
     {
-        public void Info(object msg) => Debug.Log($"[ZaoHuaBMod] {msg}");
-        public void Warning(object msg) => Debug.LogWarning($"[ZaoHuaBMod] {msg}");
-        public void Error(object msg) => Debug.LogError($"[ZaoHuaBMod] {msg}");
+        public void Info(string msg) => Debug.Log(msg);
+        public void Warning(string msg) => Debug.LogWarning(msg);
+        public void Error(string msg) => Debug.LogError(msg);
     }
 }

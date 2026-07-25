@@ -12,7 +12,6 @@ namespace ZaoHuaBMod.GuiFramework.Logger.Adapters
         private readonly Action<object> _warning;
         private readonly Action<object> _error;
 
-
         public MelonLoggerAdapter()
         {
             var melonType = Type.GetType("MelonLoader.MelonLogger, MelonLoader");
@@ -24,7 +23,6 @@ namespace ZaoHuaBMod.GuiFramework.Logger.Adapters
             _error = CreateDelegate(melonType, "Error");
         }
 
-
         private static Action<object> CreateDelegate(Type type, string methodName)
         {
             var method = type.GetMethod(methodName, new[] { typeof(object) });
@@ -34,22 +32,19 @@ namespace ZaoHuaBMod.GuiFramework.Logger.Adapters
             return (Action<object>)Delegate.CreateDelegate(typeof(Action<object>), method);
         }
 
-
-        public void Info(object msg)
+        public void Info(string msg)
         {
-            _info?.Invoke($"[ZaoHuaBMod] {msg}");
+            _info?.Invoke(msg);
         }
 
-
-        public void Warning(object msg)
+        public void Warning(string msg)
         {
-            _warning?.Invoke($"[ZaoHuaBMod] {msg}");
+            _warning?.Invoke(msg);
         }
 
-
-        public void Error(object msg)
+        public void Error(string msg)
         {
-            _error?.Invoke($"[ZaoHuaBMod] {msg}");
+            _error?.Invoke(msg);
         }
     }
 }

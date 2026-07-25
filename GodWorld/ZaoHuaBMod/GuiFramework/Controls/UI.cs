@@ -34,193 +34,253 @@ namespace ZaoHuaBMod.GuiFramework.Controls
             var window = WindowControls.CreateWindow(rect, titleBar, content);
             return new WindowBuilder(window);
         }
+
+        /// <summary>
+        ///     Box样式Vertical布局
+        /// </summary>
+        /// <param name="content"></param>
+        /// <param name="options"></param>
+        public static void Box(Action content, params GUILayoutOption[] options)
+        {
+            GUILayout.BeginVertical(DarkSkin.SPanel, options);
+            content?.Invoke();
+            GUILayout.EndVertical();
+        }
+        /// <summary>
+        ///     Box样式Vertical布局
+        /// </summary>
+        /// <param name="content"></param>
+        /// <param name="options"></param>
+        public static void BoxDetail(Action content, params GUILayoutOption[] options)
+        {
+            GUILayout.BeginVertical(DarkSkin.SDetail, options);
+            content?.Invoke();
+            GUILayout.EndVertical();
+        }
+
+        /// <summary>
+        /// 行，交替行 样式1
+        /// </summary>
+        /// <param name="content"></param>
+        /// <param name="height"></param>高度最好去GuiSkin去修改，自定义会new
+        public static void Row(Action content, float height = 30f)
+        {
+            var style = !Mathf.Approximately(height, 30f)
+                ? new GUIStyle(DarkSkin.SRow) { fixedHeight = height }
+                : DarkSkin.SRow;
+            GUILayout.BeginHorizontal(style);
+            content?.Invoke();
+            GUILayout.EndHorizontal();
+        }
+
+        /// <summary>
+        /// 行，交替行 样式2
+        /// </summary>
+        /// <param name="content"></param>
+        /// <param name="height"></param> 高度最好去GuiSkin去修改，自定义会new
+        public static void RowAlt(Action content, float height = 30f)
+        {
+           var style = !Mathf.Approximately(height, 30f)
+                ? new GUIStyle(DarkSkin.SRowAlt) { fixedHeight = height }
+                : DarkSkin.SRowAlt;
+            GUILayout.BeginHorizontal(style);
+            content?.Invoke();
+            GUILayout.EndHorizontal();
+        }
         
-         /// <summary>
-            ///     水平布局容器（回调式）。
-            ///     例如：
-            ///     UI.Horizontal(() =>
-            ///     {
-            ///         UI.Label().Text("普通文本").Draw();
-            ///     });
-            /// </summary>
-            public static void Horizontal(Action content, GUIStyle style = null, params GUILayoutOption[] options)
-            {
-                if (style != null)
-                    GUILayout.BeginHorizontal(style, options);
-                else
-                    GUILayout.BeginHorizontal(options);
+        /// <summary>
+        ///     水平布局容器（回调式）。
+        ///     例如：
+        ///     UI.Horizontal(() =>
+        ///     {
+        ///     UI.Label().Text("普通文本").Draw();
+        ///     });
+        /// </summary>
+        public static void Horizontal(Action content, GUIStyle style = null, params GUILayoutOption[] options)
+        {
+            if (style != null)
+                GUILayout.BeginHorizontal(style, options);
+            else
+                GUILayout.BeginHorizontal(options);
 
-                content?.Invoke();
-                GUILayout.EndHorizontal();
+            content?.Invoke();
+            GUILayout.EndHorizontal();
+        }
+
+        /// <summary>
+        ///     垂直布局容器（回调式）。
+        ///     例如：
+        ///     UI.Vertical(() =>
+        ///     {
+        ///     UI.Label().Text("普通文本").Draw();
+        ///     });
+        /// </summary>
+        public static void Vertical(Action content, GUIStyle style = null, params GUILayoutOption[] options)
+        {
+            if (style != null)
+                GUILayout.BeginVertical(style, options);
+            else
+                GUILayout.BeginVertical(options);
+
+            content?.Invoke();
+            GUILayout.EndVertical();
+        }
+
+        /// <summary>
+        ///     开始一个水平布局容器，配合 using 自动结束。
+        ///     例如：
+        ///     using (UI.HorizontalScope())
+        ///     {
+        ///     UI.Label().Text("普通文本").Draw();
+        ///     }
+        /// </summary>
+        public static LayoutScope HorizontalScope(GUIStyle style = null, params GUILayoutOption[] options)
+        {
+            if (style != null)
+                GUILayout.BeginHorizontal(style, options);
+            else
+                GUILayout.BeginHorizontal(options);
+
+            return new LayoutScope(LayoutScope.LayoutType.Horizontal);
+        }
+
+        /// <summary>
+        ///     开始一个垂直布局容器，配合 using 自动结束。
+        ///     例如：
+        ///     using (UI.VerticalScope())
+        ///     {
+        ///     UI.Label().Text("普通文本").Draw();
+        ///     }
+        public static LayoutScope VerticalScope(GUIStyle style = null, params GUILayoutOption[] options)
+        {
+            if (style != null)
+                GUILayout.BeginVertical(style, options);
+            else
+                GUILayout.BeginVertical(options);
+
+            return new LayoutScope(LayoutScope.LayoutType.Vertical);
+        }
+
+        /// <summary>
+        ///     固定像素间隔。
+        /// </summary>
+        public static void Space(float pixels = 10f)
+        {
+            GUILayout.Space(pixels);
+        }
+
+        /// <summary>
+        ///     弹性间隔，把两边元素推到两端。
+        /// </summary>
+        public static void FlexibleSpace()
+        {
+            GUILayout.FlexibleSpace();
+        }
+
+        /// <summary>
+        ///     绘制一条水平分隔线。
+        /// </summary>
+        public static void Divider(float pad = 6f)
+        {
+            DarkSkin.Divider(pad);
+        }
+
+        /// <summary>
+        ///     布局容器作用域，支持 using 自动结束布局。
+        /// </summary>
+        public readonly struct LayoutScope : IDisposable
+        {
+            public enum LayoutType
+            {
+                Horizontal,
+                Vertical
             }
 
-            /// <summary>
-            ///     垂直布局容器（回调式）。
-            ///     例如：
-            ///     UI.Vertical(() =>
-            ///     {
-            ///         UI.Label().Text("普通文本").Draw();
-            ///     });
-            /// </summary>
-            public static void Vertical(Action content, GUIStyle style = null, params GUILayoutOption[] options)
-            {
-                if (style != null)
-                    GUILayout.BeginVertical(style, options);
-                else
-                    GUILayout.BeginVertical(options);
+            private readonly LayoutType _type;
 
-                content?.Invoke();
-                GUILayout.EndVertical();
+            public LayoutScope(LayoutType type)
+            {
+                _type = type;
             }
 
-            /// <summary>
-            ///     开始一个水平布局容器，配合 using 自动结束。
-            ///     例如：
-            ///     using (UI.HorizontalScope())
-            ///     {
-            ///         UI.Label().Text("普通文本").Draw();
-            ///     }
-            /// </summary>
-            public static LayoutScope HorizontalScope(GUIStyle style = null, params GUILayoutOption[] options)
+            public void Dispose()
             {
-                if (style != null)
-                    GUILayout.BeginHorizontal(style, options);
-                else
-                    GUILayout.BeginHorizontal(options);
-
-                return new LayoutScope(LayoutScope.LayoutType.Horizontal);
-            }
-
-            /// <summary>
-            ///     开始一个垂直布局容器，配合 using 自动结束。
-            ///     例如：
-            ///     using (UI.VerticalScope())
-            ///     {
-            ///         UI.Label().Text("普通文本").Draw();
-            ///     }
-            public static LayoutScope VerticalScope(GUIStyle style = null, params GUILayoutOption[] options)
-            {
-                if (style != null)
-                    GUILayout.BeginVertical(style, options);
-                else
-                    GUILayout.BeginVertical(options);
-
-                return new LayoutScope(LayoutScope.LayoutType.Vertical);
-            }
-
-            /// <summary>
-            ///     固定像素间隔。
-            /// </summary>
-            public static void Space(float pixels = 10f)
-            {
-                GUILayout.Space(pixels);
-            }
-
-            /// <summary>
-            ///     弹性间隔，把两边元素推到两端。
-            /// </summary>
-            public static void FlexibleSpace()
-            {
-                GUILayout.FlexibleSpace();
-            }
-
-            /// <summary>
-            ///     绘制一条水平分隔线。
-            /// </summary>
-            public static void Divider(float pad = 6f)
-            {
-                DarkSkin.Divider(pad);
-            }
-
-            /// <summary>
-            ///     布局容器作用域，支持 using 自动结束布局。
-            /// </summary>
-            public readonly struct LayoutScope : IDisposable
-            {
-                public enum LayoutType
+                switch (_type)
                 {
-                    Horizontal,
-                    Vertical
-                }
-
-                private readonly LayoutType _type;
-
-                public LayoutScope(LayoutType type)
-                {
-                    _type = type;
-                }
-
-                public void Dispose()
-                {
-                    switch (_type)
-                    {
-                        case LayoutType.Horizontal:
-                            GUILayout.EndHorizontal();
-                            break;
-                        case LayoutType.Vertical:
-                            GUILayout.EndVertical();
-                            break;
-                    }
+                    case LayoutType.Horizontal:
+                        GUILayout.EndHorizontal();
+                        break;
+                    case LayoutType.Vertical:
+                        GUILayout.EndVertical();
+                        break;
                 }
             }
-            /// <summary>
-            /// 滑动条
-            /// </summary>
-            /// <param name="text"></param> 文本
-            /// <param name="sliderValue"></param> 值
-            /// <param name="min"></param> 最小值
-            /// <param name="max"></param> 最大值
-            /// <param name="decimals"></param> 保留几位小数
-            /// <param name="topPadding"></param> 
-            /// <returns></returns>
-            public static float Slider(string text, float sliderValue, float min = 0f, float max = 1f, int decimals = 2, float topPadding = 8f)
-            {
-                decimals = Mathf.Max(0, decimals);
-                GUILayout.BeginHorizontal();
-                var format = $"F{decimals}";
-                var content = new GUIContent($"{text}: {sliderValue.ToString(format)}");
-                var size = DarkSkin.SLabel.CalcSize(content);
-                GUILayout.Label(content, DarkSkin.SLabel, GUILayout.Width(size.x));
-                GUILayout.BeginVertical();
-                GUILayout.Space(topPadding);
-                sliderValue = GUILayout.HorizontalSlider(sliderValue, min, max, GUILayout.ExpandWidth(true));
-                GUILayout.EndVertical();
-                GUILayout.EndHorizontal();
-                var multiplier = Mathf.Pow(10f, decimals);
-                return Mathf.Round(sliderValue * multiplier) / multiplier;
-            }
+        }
 
-            /// <summary>
-            /// 输入框
-            /// </summary>
-            /// <param name="text"></param>
-            /// <param name="style"></param>
-            /// <param name="options"></param>
-            /// 文本
-            /// <returns>文本</returns>
-            public static string TextFiled(string text, GUIStyle style = null, params GUILayoutOption[] options)
-            {
-                text = text ?? string.Empty;
-                if (style == null) style = DarkSkin.SField;
-                return GUILayout.TextField(text, style, options);
-            }
+        /// <summary>
+        ///     滑动条
+        /// </summary>
+        /// <param name="text"></param>
+        /// 文本
+        /// <param name="sliderValue"></param>
+        /// 值
+        /// <param name="min"></param>
+        /// 最小值
+        /// <param name="max"></param>
+        /// 最大值
+        /// <param name="decimals"></param>
+        /// 保留几位小数
+        /// <param name="topPadding"></param>
+        /// <returns></returns>
+        public static float Slider(string text, float sliderValue, float min = 0f, float max = 1f, int decimals = 2,
+            float topPadding = 8f)
+        {
+            decimals = Mathf.Max(0, decimals);
+            GUILayout.BeginHorizontal();
+            var format = $"F{decimals}";
+            var content = new GUIContent($"{text}: {sliderValue.ToString(format)}");
+            var size = DarkSkin.SLabel.CalcSize(content);
+            GUILayout.Label(content, DarkSkin.SLabel, GUILayout.Width(size.x));
+            GUILayout.BeginVertical();
+            GUILayout.Space(topPadding);
+            sliderValue = GUILayout.HorizontalSlider(sliderValue, min, max, GUILayout.ExpandWidth(true));
+            GUILayout.EndVertical();
+            GUILayout.EndHorizontal();
+            var multiplier = Mathf.Pow(10f, decimals);
+            return Mathf.Round(sliderValue * multiplier) / multiplier;
+        }
 
-            /// <summary>
-            /// 文本域
-            /// </summary>
-            /// <param name="text"></param>
-            /// <param name="style"></param>
-            /// <param name="options"></param>
-            /// 文本
-            /// <returns>文本</returns>
-            public static string TextArea(string text, GUIStyle style = null, params GUILayoutOption[] options)
-            {
-                text = text ?? string.Empty;
-                if (style == null) style = DarkSkin.SField;
-                if (options == null || options.Length == 0)
-                        options = new[] { GUILayout.Height(80) };
-                return GUILayout.TextArea(text, style, options);
-            }
+        /// <summary>
+        ///     输入框
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="style"></param>
+        /// <param name="options"></param>
+        /// 文本
+        /// <returns>文本</returns>
+        public static string TextFiled(string text, GUIStyle style = null, params GUILayoutOption[] options)
+        {
+            text = text ?? string.Empty;
+            if (style == null) style = DarkSkin.SField;
+            return GUILayout.TextField(text, style, options);
+        }
+
+        /// <summary>
+        ///     文本域
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="style"></param>
+        /// <param name="options"></param>
+        /// 文本
+        /// <returns>文本</returns>
+        public static string TextArea(string text, GUIStyle style = null, params GUILayoutOption[] options)
+        {
+            text = text ?? string.Empty;
+            if (style == null) style = DarkSkin.SField;
+            if (options == null || options.Length == 0)
+                options = new[] { GUILayout.Height(80) };
+            return GUILayout.TextArea(text, style, options);
+        }
     }
 
     /// <summary>
@@ -292,6 +352,9 @@ namespace ZaoHuaBMod.GuiFramework.Controls
         }
 
         /// <summary>获取最终窗体数据。</summary>
-        public UI.WindowData Build() => _window;
+        public UI.WindowData Build()
+        {
+            return _window;
+        }
     }
 }

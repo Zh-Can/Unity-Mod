@@ -26,13 +26,30 @@ namespace ZaoHuaBMod.GuiFramework.Controls
             private GUIStyle _style = DarkSkin.SLabel;
 
             /// <summary>标题样式</summary>
-            public LabelBuilder AsTitle(string text)
+            public LabelBuilder Title(string text)
             {
                 _text = text;
                 _tooltip = null;
                 _style = DarkSkin.STitle;
                 return this;
             }
+            /// <summary>详情标题 样式。</summary>
+            public LabelBuilder DetailHead(string text)
+            {
+                _text = text;
+                _tooltip = null;
+                _style = DarkSkin.SDetailHead;
+                return this;
+            }
+            /// <summary>详情内容 样式。</summary>
+            public LabelBuilder DetailText(string text)
+            {
+                _text = text;
+                _tooltip = null;
+                _style = DarkSkin.SBonus;
+                return this;
+            }
+            
             /// <summary>靠右侧提示灰色小字样式</summary>
             public LabelBuilder AsHint(string text)
             {
@@ -58,7 +75,7 @@ namespace ZaoHuaBMod.GuiFramework.Controls
                 return this;
             }
 
-            /// <summary>使用普通文本样式。</summary>
+            /// <summary>普通文本 样式。</summary>
             public LabelBuilder Text(string text)
             {
                 _text = text;
@@ -66,6 +83,32 @@ namespace ZaoHuaBMod.GuiFramework.Controls
                 _style = DarkSkin.SLabel;
                 return this;
             }
+            /// <summary>功能名称 样式。</summary>
+            public LabelBuilder FeatureName(string text)
+            {
+                _text = text;
+                _tooltip = null;
+                _style = DarkSkin.SFeatureName;
+                return this;
+            }
+            /// <summary>蓝色小字标签 样式。</summary>
+            public LabelBuilder Tag(string text)
+            {
+                _text = text;
+                _tooltip = null;
+                _style = DarkSkin.STag;
+                return this;
+            }
+            
+            /// <summary>金色小字标签 样式。</summary>
+            public LabelBuilder TagGold(string text)
+            {
+                _text = text;
+                _tooltip = null;
+                _style = DarkSkin.STagHidden;
+                return this;
+            }
+           
 
             /// <summary>指定自定义样式。</summary>
             public LabelBuilder Style(GUIStyle style)
@@ -74,6 +117,13 @@ namespace ZaoHuaBMod.GuiFramework.Controls
                 return this;
             }
 
+            public LabelBuilder Color(Color textColor)
+            {
+                _style = new GUIStyle(_style);
+                _style.normal.textColor = textColor;
+                return this;
+            }
+            
             /// <summary>设置 Tooltip 文本。</summary>
             public LabelBuilder Tooltip(string tooltip)
             {

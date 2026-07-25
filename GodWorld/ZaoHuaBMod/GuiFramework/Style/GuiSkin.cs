@@ -203,8 +203,9 @@ namespace ZaoHuaBMod.GuiFramework.Style
 
                 SRow = new GUIStyle
                 {
-                    padding = new RectOffset(10, 10, 7, 7),
-                    margin = new RectOffset(0, 0, 2, 2),
+                    fixedHeight = 30f,
+                    padding = new RectOffset(10, 10, 5, 5),
+                    margin = new RectOffset(0, 0, 1, 1),
                     normal = { background = Tex(RowBg.r, RowBg.g, RowBg.b) }
                 };
 
@@ -227,6 +228,7 @@ namespace ZaoHuaBMod.GuiFramework.Style
                 STag = new GUIStyle(GUI.skin.label)
                 {
                     fontSize = 11,
+                    richText = true,
                     normal = { textColor = TagColor }
                 };
 

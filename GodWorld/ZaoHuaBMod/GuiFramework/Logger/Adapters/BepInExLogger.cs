@@ -35,19 +35,19 @@ namespace ZaoHuaBMod.GuiFramework.Logger.Adapters
         }
 
 
-        public void Info(object msg)
+        public void Info(string msg)
         {
             _info?.Invoke(msg);
         }
 
 
-        public void Warning(object msg)
+        public void Warning(string msg)
         {
             _warning?.Invoke(msg);
         }
 
 
-        public void Error(object msg)
+        public void Error(string msg)
         {
             _error?.Invoke(msg);
         }
