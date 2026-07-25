@@ -90,6 +90,7 @@ namespace ZaoHuaBMod.UI.Style
         public static GUIStyle SPopup { get; private set; }
         public static GUIStyle SRadio { get; private set; }
         public static GUIStyle SRadioOn { get; private set; }
+        public static GUIStyle SFoldout { get; private set; }
 
         // 兼容旧 GUIManager 的快捷属性
         public static GUISkin Skin
@@ -368,6 +369,14 @@ namespace ZaoHuaBMod.UI.Style
                 active = { background = radioChecked }
             };
 
+            // Foldout：可折叠标题，左侧箭头，整行可点
+            SFoldout = new GUIStyle(SBtn)
+            {
+                alignment = TextAnchor.MiddleLeft,
+                padding = new RectOffset(10, 10, 8, 8),
+                fontStyle = FontStyle.Bold
+            };
+
             _skin = ScriptableObject.CreateInstance<GUISkin>();
             _skin.window = SWindow;
             _skin.label = SLabel;
@@ -605,6 +614,15 @@ namespace ZaoHuaBMod.UI.Style
                 if (RadioButton(options[i], i == selectedIndex))
                     selectedIndex = i;
             return selectedIndex;
+        }
+
+        /// <summary>绘制折叠展开标题。返回新的展开状态。</summary>
+        public static bool Foldout(bool expanded, string label)
+        {
+            var icon = expanded ? "▼ " : "▶ ";
+            if (GUILayout.Button(icon + label, SFoldout))
+                expanded = !expanded;
+            return expanded;
         }
 
         /// <summary>绘制分隔线。</summary>

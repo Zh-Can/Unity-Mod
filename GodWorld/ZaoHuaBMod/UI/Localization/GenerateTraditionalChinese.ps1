@@ -1,4 +1,4 @@
-param(
+﻿param(
     [Parameter(Mandatory=$true)]
     [string]$SourceDir,
 
@@ -9,7 +9,7 @@ param(
 # Skip if already exists to avoid overwriting manual translations
 if (Test-Path $OutputFile)
 {
-    Write-Host "[LangGen] $OutputFile already exists, skipping."
+    Write-Host "LangGen: $OutputFile already exists, skipping."
     exit 0
 }
 
@@ -36,7 +36,7 @@ $keys = [System.Collections.Generic.SortedSet[string]]::new()
 Get-ChildItem -Path $SourceDir -Recurse -Filter *.cs |
     Where-Object { $_.FullName -notmatch '\\(obj|bin|Properties)\\' } |
     ForEach-Object {
-        $content = Get-Content $_.FullName -Raw
+        $content = Get-Content $_.FullName -Raw -Encoding UTF8
         foreach ($key in (Extract-Keys $content 'Loc.Get('))
         {
             [void]$keys.Add($key)
@@ -61,4 +61,4 @@ foreach ($key in $keys)
 }
 
 [System.IO.File]::WriteAllText($OutputFile, $sb.ToString(), [System.Text.Encoding]::UTF8)
-Write-Host "[LangGen] Generated $OutputFile with $($keys.Count) entries."
+Write-Host "LangGen: Generated $OutputFile with $($keys.Count) entries."

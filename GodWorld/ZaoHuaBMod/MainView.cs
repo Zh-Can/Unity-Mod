@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using ZaoHuaBMod.UI.Core;
 using ZaoHuaBMod.UI.Localization;
 using ZaoHuaBMod.UI.Logger;
@@ -19,6 +19,7 @@ namespace ZaoHuaBMod
         private int _radioIndex;
         private int _selectedTableRow = -1;
         private int _clickCount;
+        private bool _foldoutExpanded;
        
 
         private void Start()
@@ -203,6 +204,17 @@ namespace ZaoHuaBMod
             DarkSkin.Divider(4f);
             GUILayout.Label(Loc.Get("单项单选 Radio"), DarkSkin.SLabel);
             _radioIndex = DarkSkin.RadioGroup(_radioIndex, Loc.Get("方案一"), Loc.Get("方案二"), Loc.Get("方案三"));
+
+            DarkSkin.Divider(4f);
+            GUILayout.Label(Loc.Get("折叠面板 Foldout"), DarkSkin.SLabel);
+            _foldoutExpanded = DarkSkin.Foldout(_foldoutExpanded, Loc.Get("高级设置"));
+            if (_foldoutExpanded)
+            {
+                GUILayout.BeginVertical(DarkSkin.SPanel);
+                GUILayout.Label(Loc.Get("折叠区内容一"), DarkSkin.SLabel);
+                GUILayout.Label(Loc.Get("折叠区内容二"), DarkSkin.SMuted);
+                GUILayout.EndVertical();
+            }
 
             DarkSkin.Divider(4f);
             GUILayout.Label(Loc.Get("表格 Table"), DarkSkin.SLabel);
