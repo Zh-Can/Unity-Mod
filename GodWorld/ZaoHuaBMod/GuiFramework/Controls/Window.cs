@@ -110,8 +110,7 @@ namespace ZaoHuaBMod.GuiFramework.Controls
             /// </summary>
             public static void OnGUI()
             {
-                try
-                {
+                
                     DarkSkin.InitStyles();
                     
                     var previousSkin = GUI.skin;
@@ -134,11 +133,7 @@ namespace ZaoHuaBMod.GuiFramework.Controls
                     HandleDragAndResize();
 
                     GUI.skin = previousSkin;
-                }
-                catch (Exception ex)
-                {
-                    Log.Error($"[UI] OnGUI 异常: {ex}");
-                }
+                
             }
 
             /// <summary>
@@ -182,9 +177,19 @@ namespace ZaoHuaBMod.GuiFramework.Controls
                 }
 
                 window.ContentScrollPos = GUILayout.BeginScrollView(window.ContentScrollPos);
-                window.Content?.Invoke(window);
-                GUILayout.EndScrollView();
-
+                try
+                {
+                    window.Content?.Invoke(window);
+                }
+                catch (Exception e)
+                {
+                    Log.Error($"[ZaoHuaBMod] 窗口 {window.TitleBar?.Title} 绘制异常: {e}");
+                }
+                finally
+                {
+                    GUILayout.EndScrollView();
+                }
+                
                 DrawWindowTooltip();
             }
 

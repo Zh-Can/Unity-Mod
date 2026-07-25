@@ -144,13 +144,15 @@ namespace ZaoHuaBMod
 
             UI.Label().Text(Loc.Get("输入框")).Draw();
             UI.Label().AsMuted(Loc.Get("单行输入:")).Draw();
-            UI.TextFiled(Loc.Get("单行输入内容"));
-            
+            _input = UI.TextFiled(_input);
             UI.Label().AsMuted(Loc.Get("多行输入:")).Draw();
-            UI.TextArea(Loc.Get("多行输入区域") + "\n" + Loc.Get("第二行"), options: GUILayout.Height(60));
-            GUILayout.TextArea(Loc.Get("多行输入区域") + "\n" + Loc.Get("第二行"), DarkSkin.SField, GUILayout.Height(80));
+            _textArea = UI.TextArea(_textArea);
+            
         }
 
+        private string _input = "单行输入内容";
+        private string _textArea = "多行输入区域\n第二行";
+        
         private void DrawLayoutTab()
         {
             GUILayout.Label(Loc.Get("布局示例"), DarkSkin.STitle);

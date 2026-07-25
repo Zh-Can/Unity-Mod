@@ -1,4 +1,6 @@
+using System;
 using UnityEngine;
+using ZaoHuaBMod.GuiFramework.Logger;
 
 namespace ZaoHuaBMod.GuiFramework.Style
 {
@@ -97,11 +99,11 @@ namespace ZaoHuaBMod.GuiFramework.Style
         {
             get
             {
-                InitStyles();
+                if (!_initialized) InitStyles();
                 return _skin;
             }
         }
-
+        
         public static GUIStyle Window => SWindow;
         public static GUIStyle Label => SLabel;
         public static GUIStyle Button => SBtn;
@@ -116,343 +118,355 @@ namespace ZaoHuaBMod.GuiFramework.Style
         public static void InitStyles()
         {
             if (_initialized) return;
+            if (Event.current == null && GUI.skin == null) return;
+
+            try
+            {
+
+                
+                _lineTex = Tex(BorderDim.r, BorderDim.g, BorderDim.b, BorderDim.a);
+
+                SWindow = new GUIStyle(GUI.skin.window);
+                SkinR(SWindow, WindowBg, TextBright, 9, null, null, WindowBorder);
+                SWindow.padding = new RectOffset(16, 16, 14, 14);
+
+                STitle = new GUIStyle(GUI.skin.label)
+                {
+                    fontSize = 18,
+                    fontStyle = FontStyle.Bold,
+                    normal = { textColor = TextBright }
+                };
+
+                SHint = new GUIStyle(GUI.skin.label)
+                {
+                    fontSize = 11,
+                    alignment = TextAnchor.MiddleRight,
+                    normal = { textColor = TextDim }
+                };
+
+                SLabel = new GUIStyle(GUI.skin.label)
+                {
+                    fontSize = 13,
+                    normal = { textColor = TextNormal },
+                    hover = { textColor = TextBright },
+                    padding = new RectOffset(4, 4, 3, 3),
+                    wordWrap = true,
+                    richText = true
+                };
+
+                SMuted = new GUIStyle(GUI.skin.label)
+                {
+                    fontSize = 12,
+                    normal = { textColor = TextDim }
+                };
+
+                SCount = new GUIStyle(GUI.skin.label)
+                {
+                    fontSize = 12,
+                    fontStyle = FontStyle.Bold,
+                    normal = { textColor = CountColor }
+                };
+
+                SField = new GUIStyle(GUI.skin.textField)
+                {
+                    fontSize = 13,
+                    padding = new RectOffset(10, 10, 8, 8),
+                    margin = new RectOffset(2, 2, 2, 2),
+                    alignment = TextAnchor.UpperLeft,
+                    wordWrap = false
+                };
+                SkinR(SField, InputBg, TextBright, 5, null, null, BorderDim);
+
+                SPanel = new GUIStyle(GUI.skin.box);
+                SkinR(SPanel, PanelBg, TextNormal, 7, null, null, BorderDim);
+                SPanel.padding = new RectOffset(12, 12, 10, 10);
+                SPanel.fontSize = 13;
+                SPanel.alignment = TextAnchor.UpperLeft;
+                SPanel.wordWrap = true;
+
+                SBtn = new GUIStyle(GUI.skin.button)
+                {
+                    fontSize = 13,
+                    fixedHeight = 30f,
+                    alignment = TextAnchor.MiddleCenter,
+                    wordWrap = false,
+                    padding = new RectOffset(14, 14, 4, 4),
+                    margin = new RectOffset(3, 3, 2, 2)
+                };
+                SkinR(SBtn, BtnNormal, TextBright, 6, BtnHover, BtnActive);
+
+                SBtnAdd = new GUIStyle(SBtn);
+                SkinR(SBtnAdd, BtnAddNormal, new Color(0.9f, 0.97f, 0.92f), 6, BtnAddHover, BtnAddActive);
+
+                SBtnDel = new GUIStyle(SBtn);
+                SkinR(SBtnDel, BtnDelNormal, TextBright, 6, BtnDelHover, BtnDelActive);
+
+                SRow = new GUIStyle
+                {
+                    padding = new RectOffset(10, 10, 7, 7),
+                    margin = new RectOffset(0, 0, 2, 2),
+                    normal = { background = Tex(RowBg.r, RowBg.g, RowBg.b) }
+                };
+
+                SRowAlt = new GUIStyle(SRow)
+                {
+                    normal = { background = Tex(RowBgAlt.r, RowBgAlt.g, RowBgAlt.b) }
+                };
+
+                SRowSelected = new GUIStyle(SRow)
+                {
+                    normal = { background = Tex(ChipOnBg.r, ChipOnBg.g, ChipOnBg.b) }
+                };
+
+                SFeatureName = new GUIStyle(GUI.skin.label)
+                {
+                    fontSize = 13,
+                    normal = { textColor = TextBright }
+                };
+
+                STag = new GUIStyle(GUI.skin.label)
+                {
+                    fontSize = 11,
+                    normal = { textColor = TagColor }
+                };
+
+                STagHidden = new GUIStyle(GUI.skin.label)
+                {
+                    fontSize = 11,
+                    normal = { textColor = TagHiddenColor }
+                };
+
+                SStatusOk = new GUIStyle(GUI.skin.label)
+                {
+                    fontSize = 12,
+                    normal = { textColor = StatusOk }
+                };
+
+                SStatusErr = new GUIStyle(GUI.skin.label)
+                {
+                    fontSize = 12,
+                    normal = { textColor = StatusErr }
+                };
+
+                SNameBtn = new GUIStyle(GUI.skin.label)
+                {
+                    fontSize = 13,
+                    alignment = TextAnchor.MiddleLeft,
+                    richText = true,
+                    normal = { textColor = TextBright },
+                    hover = { textColor = new Color(0.66f, 0.82f, 0.98f) }
+                };
+
+                SDetail = new GUIStyle(GUI.skin.box);
+                SkinR(SDetail, DetailBg, TextNormal, 7, null, null, BorderDim);
+                SDetail.padding = new RectOffset(14, 14, 10, 10);
+                SDetail.fontSize = 12;
+                SDetail.alignment = TextAnchor.UpperLeft;
+                SDetail.wordWrap = true;
+                SDetail.richText = true;
+
+                SDetailHead = new GUIStyle(GUI.skin.label)
+                {
+                    fontSize = 12,
+                    fontStyle = FontStyle.Bold,
+                    normal = { textColor = new Color(0.78f, 0.8f, 0.86f) }
+                };
+
+                SBonus = new GUIStyle(GUI.skin.label)
+                {
+                    fontSize = 12,
+                    richText = true,
+                    normal = { textColor = TextNormal }
+                };
+
+                SChip = new GUIStyle(GUI.skin.button)
+                {
+                    fontSize = 12,
+                    fixedHeight = 30f,
+                    padding = new RectOffset(14, 14, 5, 5),
+                    margin = new RectOffset(3, 3, 2, 2)
+                };
+                SkinR(SChip, ChipBg, TextDim, 8, ChipHover, ChipActive);
+
+                SChipOn = new GUIStyle(SChip);
+                SkinR(SChipOn, ChipOnBg, Color.white, 8, ChipOnHover, ChipOnActive);
+                SChipOn.fontStyle = FontStyle.Bold;
+
+                SScroll = new GUIStyle
+                {
+                    fixedWidth = 8f,
+                    border = new RectOffset(0, 0, 0, 0),
+                    normal = { background = Tex(0f, 0f, 0f, 0f) }
+                };
+
+                SScrollThumb = new GUIStyle
+                {
+                    border = new RectOffset(4, 4, 4, 4),
+                    fixedWidth = 8f
+                };
+                var thumbTex = RoundTex(ScrollThumb, 4);
+                SScrollThumb.normal.background = thumbTex;
+                SScrollThumb.hover.background = thumbTex;
+                SScrollThumb.active.background = thumbTex;
+
+                STypeGood = new GUIStyle(GUI.skin.label)
+                {
+                    fontSize = 11,
+                    alignment = TextAnchor.MiddleCenter,
+                    normal = { textColor = TypeGood }
+                };
+                STypeBad = new GUIStyle(STypeGood) { normal = { textColor = TypeBad } };
+                STypeSpecial = new GUIStyle(STypeGood) { normal = { textColor = TypeSpecial } };
+                STypeTemp = new GUIStyle(STypeGood) { normal = { textColor = TypeTemp } };
+
+                // Toggle：窗口暗色底 + 灰色细边框，选中后与滑块 thumb 同色
+                var toggleUnchecked = SquareTex(16, WindowBg, new Color(0.35f, 0.37f, 0.42f));
+                var toggleChecked = SquareTex(16, Accent, AccentBright);
+                SToggle = new GUIStyle
+                {
+                    fontSize = 12,
+                    fixedWidth = 16,
+                    fixedHeight = 16,
+                    normal = { background = toggleUnchecked, textColor = TextNormal },
+                    hover = { background = toggleUnchecked, textColor = TextBright },
+                    active = { background = toggleUnchecked, textColor = TextNormal },
+                    onNormal = { background = toggleChecked, textColor = TextNormal },
+                    onHover = { background = toggleChecked, textColor = TextBright },
+                    onActive = { background = toggleChecked, textColor = TextNormal },
+                    padding = new RectOffset(22, 4, 3, 3),
+                    margin = new RectOffset(4, 4, 4, 4),
+                    overflow = new RectOffset(1, 1, 1, 1),
+                    border = new RectOffset(0, 0, 0, 0),
+                    alignment = TextAnchor.MiddleLeft
+                };
+
+                // Popup / Dropdown：与输入框同款暗底，留出右侧箭头位置
+                SPopup = new GUIStyle(SField)
+                {
+                    alignment = TextAnchor.MiddleLeft,
+                    padding = new RectOffset(10, 24, 8, 8)
+                };
+                var popupHover = new Color(InputBg.r + 0.03f, InputBg.g + 0.03f, InputBg.b + 0.03f);
+                SkinR(SPopup, InputBg, TextBright, 5, popupHover, InputBg, BorderDim);
+
+                // Radio：未选中暗底灰框，选中蓝色填充
+                var radioUnchecked = SquareTex(16, WindowBg, new Color(0.35f, 0.37f, 0.42f));
+                var radioChecked = SquareTex(16, Accent, AccentBright);
+                var radioBase = new GUIStyle
+                {
+                    fixedWidth = 16,
+                    fixedHeight = 16,
+                    padding = new RectOffset(0, 0, 0, 0),
+                    margin = new RectOffset(4, 4, 4, 4),
+                    overflow = new RectOffset(1, 1, 1, 1),
+                    border = new RectOffset(0, 0, 0, 0),
+                    alignment = TextAnchor.MiddleCenter
+                };
+                SRadio = new GUIStyle(radioBase)
+                {
+                    normal = { background = radioUnchecked },
+                    hover = { background = radioUnchecked },
+                    active = { background = radioUnchecked }
+                };
+                SRadioOn = new GUIStyle(radioBase)
+                {
+                    normal = { background = radioChecked },
+                    hover = { background = radioChecked },
+                    active = { background = radioChecked }
+                };
+
+                // Foldout：可折叠标题，左侧箭头，整行可点
+                SFoldout = new GUIStyle(SBtn)
+                {
+                    alignment = TextAnchor.MiddleLeft,
+                    padding = new RectOffset(10, 10, 8, 8),
+                    fontStyle = FontStyle.Bold
+                };
+
+                _skin = ScriptableObject.CreateInstance<GUISkin>();
+                _skin.font = GUI.skin.font;
+                _skin.window = SWindow;
+                _skin.label = SLabel;
+                _skin.button = SBtn;
+                _skin.textField = SField;
+                _skin.textArea = new GUIStyle(SField) { wordWrap = true };
+                _skin.box = SPanel;
+                _skin.toggle = SToggle;
+                _skin.scrollView = new GUIStyle("scrollView")
+                {
+                    normal = new GUIStyleState { background = null, textColor = TextNormal },
+                    padding = new RectOffset(2, 2, 2, 2)
+                };
+                _skin.verticalScrollbar = SScroll;
+                _skin.verticalScrollbarThumb = SScrollThumb;
+                _skin.verticalScrollbarUpButton = GUIStyle.none;
+                _skin.verticalScrollbarDownButton = GUIStyle.none;
+                _skin.horizontalScrollbar = GUIStyle.none;
+
+                // 滑块样式：单条轨道 + 居中蓝色方块滑块
+                var trackColor = new Color(0.18f, 0.19f, 0.22f);
+                var sliderTrackTex = Tex(trackColor.r, trackColor.g, trackColor.b);
+                _skin.horizontalSlider = new GUIStyle(GUI.skin.horizontalSlider)
+                {
+                    normal =
+                    {
+                        background = sliderTrackTex,
+                        textColor = Color.clear
+                    },
+
+                    fixedHeight = 12f,
+                    stretchWidth = true,
+
+                    margin = new RectOffset(4, 4, 0, 0),
+
+                    border = new RectOffset(0, 0, 0, 0)
+                };
+                var sliderThumbTex = SliderThumbTex(12, Accent);
+
+                _skin.horizontalSliderThumb = new GUIStyle(GUI.skin.horizontalSliderThumb)
+                {
+                    normal =
+                    {
+                        background = sliderThumbTex,
+                        textColor = Color.clear
+                    },
+                    hover =
+                    {
+                        background = sliderThumbTex,
+                        textColor = Color.clear
+                    },
+                    active =
+                    {
+                        background = sliderThumbTex,
+                        textColor = Color.clear
+                    },
+
+                    fixedWidth = 12f,
+                    fixedHeight = 12f,
+                    alignment = TextAnchor.MiddleCenter
+                };
+
+                _skin.customStyles = new[]
+                {
+                    STitle, SHint, SMuted, SCount, SBtnAdd, SBtnDel,
+                    SRow, SRowAlt, SRowSelected, SFeatureName, STag, STagHidden,
+                    SStatusOk, SStatusErr, SNameBtn, SDetail, SDetailHead,
+                    SBonus, SChip, SChipOn, STypeGood, STypeBad,
+                    STypeSpecial, STypeTemp, SPopup, SRadio, SRadioOn
+                };
+
+                _skin.settings.selectionColor = C.Selection;
+                _skin.settings.cursorColor = C.Cursor;
+                _skin.settings.cursorFlashSpeed = 2.0f;
+                _skin.settings.doubleClickSelectsWord = true;
+                _skin.settings.tripleClickSelectsLine = true;
+
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"[ZaoHuaBMod] 皮肤初始化失败:  {ex}");
+            }
             _initialized = true;
-
-            _lineTex = Tex(BorderDim.r, BorderDim.g, BorderDim.b, BorderDim.a);
-
-            SWindow = new GUIStyle(GUI.skin.window);
-            SkinR(SWindow, WindowBg, TextBright, 9, null, null, WindowBorder);
-            SWindow.padding = new RectOffset(16, 16, 14, 14);
-
-            STitle = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 18,
-                fontStyle = FontStyle.Bold,
-                normal = { textColor = TextBright }
-            };
-
-            SHint = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 11,
-                alignment = TextAnchor.MiddleRight,
-                normal = { textColor = TextDim }
-            };
-
-            SLabel = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 13,
-                normal = { textColor = TextNormal },
-                hover = { textColor = TextBright },
-                padding = new RectOffset(4, 4, 3, 3),
-                wordWrap = true,
-                richText = true
-            };
-
-            SMuted = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 12,
-                normal = { textColor = TextDim }
-            };
-
-            SCount = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 12,
-                fontStyle = FontStyle.Bold,
-                normal = { textColor = CountColor }
-            };
-
-            SField = new GUIStyle(GUI.skin.textField)
-            {
-                fontSize = 13,
-                padding = new RectOffset(10, 10, 8, 8),
-                margin = new RectOffset(2, 2, 2, 2),
-                alignment = TextAnchor.UpperLeft,
-                wordWrap = false
-            };
-            SkinR(SField, InputBg, TextBright, 5, null, null, BorderDim);
-
-            SPanel = new GUIStyle(GUI.skin.box);
-            SkinR(SPanel, PanelBg, TextNormal, 7, null, null, BorderDim);
-            SPanel.padding = new RectOffset(12, 12, 10, 10);
-            SPanel.fontSize = 13;
-            SPanel.alignment = TextAnchor.UpperLeft;
-            SPanel.wordWrap = true;
-
-            SBtn = new GUIStyle(GUI.skin.button)
-            {
-                fontSize = 13,
-                fixedHeight = 30f,
-                alignment = TextAnchor.MiddleCenter,
-                wordWrap = false,
-                padding = new RectOffset(14, 14, 4, 4),
-                margin = new RectOffset(3, 3, 2, 2)
-            };
-            SkinR(SBtn, BtnNormal, TextBright, 6, BtnHover, BtnActive);
-
-            SBtnAdd = new GUIStyle(SBtn);
-            SkinR(SBtnAdd, BtnAddNormal, new Color(0.9f, 0.97f, 0.92f), 6, BtnAddHover, BtnAddActive);
-
-            SBtnDel = new GUIStyle(SBtn);
-            SkinR(SBtnDel, BtnDelNormal, TextBright, 6, BtnDelHover, BtnDelActive);
-
-            SRow = new GUIStyle
-            {
-                padding = new RectOffset(10, 10, 7, 7),
-                margin = new RectOffset(0, 0, 2, 2),
-                normal = { background = Tex(RowBg.r, RowBg.g, RowBg.b) }
-            };
-
-            SRowAlt = new GUIStyle(SRow)
-            {
-                normal = { background = Tex(RowBgAlt.r, RowBgAlt.g, RowBgAlt.b) }
-            };
-
-            SRowSelected = new GUIStyle(SRow)
-            {
-                normal = { background = Tex(ChipOnBg.r, ChipOnBg.g, ChipOnBg.b) }
-            };
-
-            SFeatureName = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 13,
-                normal = { textColor = TextBright }
-            };
-
-            STag = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 11,
-                normal = { textColor = TagColor }
-            };
-
-            STagHidden = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 11,
-                normal = { textColor = TagHiddenColor }
-            };
-
-            SStatusOk = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 12,
-                normal = { textColor = StatusOk }
-            };
-
-            SStatusErr = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 12,
-                normal = { textColor = StatusErr }
-            };
-
-            SNameBtn = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 13,
-                alignment = TextAnchor.MiddleLeft,
-                richText = true,
-                normal = { textColor = TextBright },
-                hover = { textColor = new Color(0.66f, 0.82f, 0.98f) }
-            };
-
-            SDetail = new GUIStyle(GUI.skin.box);
-            SkinR(SDetail, DetailBg, TextNormal, 7, null, null, BorderDim);
-            SDetail.padding = new RectOffset(14, 14, 10, 10);
-            SDetail.fontSize = 12;
-            SDetail.alignment = TextAnchor.UpperLeft;
-            SDetail.wordWrap = true;
-            SDetail.richText = true;
-
-            SDetailHead = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 12,
-                fontStyle = FontStyle.Bold,
-                normal = { textColor = new Color(0.78f, 0.8f, 0.86f) }
-            };
-
-            SBonus = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 12,
-                richText = true,
-                normal = { textColor = TextNormal }
-            };
-
-            SChip = new GUIStyle(GUI.skin.button)
-            {
-                fontSize = 12,
-                fixedHeight = 30f,
-                padding = new RectOffset(14, 14, 5, 5),
-                margin = new RectOffset(3, 3, 2, 2)
-            };
-            SkinR(SChip, ChipBg, TextDim, 8, ChipHover, ChipActive);
-
-            SChipOn = new GUIStyle(SChip);
-            SkinR(SChipOn, ChipOnBg, Color.white, 8, ChipOnHover, ChipOnActive);
-            SChipOn.fontStyle = FontStyle.Bold;
-
-            SScroll = new GUIStyle
-            {
-                fixedWidth = 8f,
-                border = new RectOffset(0, 0, 0, 0),
-                normal = { background = Tex(0f, 0f, 0f, 0f) }
-            };
-
-            SScrollThumb = new GUIStyle
-            {
-                border = new RectOffset(4, 4, 4, 4),
-                fixedWidth = 8f
-            };
-            var thumbTex = RoundTex(ScrollThumb, 4);
-            SScrollThumb.normal.background = thumbTex;
-            SScrollThumb.hover.background = thumbTex;
-            SScrollThumb.active.background = thumbTex;
-
-            STypeGood = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 11,
-                alignment = TextAnchor.MiddleCenter,
-                normal = { textColor = TypeGood }
-            };
-            STypeBad = new GUIStyle(STypeGood) { normal = { textColor = TypeBad } };
-            STypeSpecial = new GUIStyle(STypeGood) { normal = { textColor = TypeSpecial } };
-            STypeTemp = new GUIStyle(STypeGood) { normal = { textColor = TypeTemp } };
-
-            // Toggle：窗口暗色底 + 灰色细边框，选中后与滑块 thumb 同色
-            var toggleUnchecked = SquareTex(16, WindowBg, new Color(0.35f, 0.37f, 0.42f));
-            var toggleChecked = SquareTex(16, Accent, AccentBright);
-            SToggle = new GUIStyle
-            {
-                fontSize = 12,
-                fixedWidth = 16,
-                fixedHeight = 16,
-                normal = { background = toggleUnchecked, textColor = TextNormal },
-                hover = { background = toggleUnchecked, textColor = TextBright },
-                active = { background = toggleUnchecked, textColor = TextNormal },
-                onNormal = { background = toggleChecked, textColor = TextNormal },
-                onHover = { background = toggleChecked, textColor = TextBright },
-                onActive = { background = toggleChecked, textColor = TextNormal },
-                padding = new RectOffset(22, 4, 3, 3),
-                margin = new RectOffset(4, 4, 4, 4),
-                overflow = new RectOffset(1, 1, 1, 1),
-                border = new RectOffset(0, 0, 0, 0),
-                alignment = TextAnchor.MiddleLeft
-            };
-
-            // Popup / Dropdown：与输入框同款暗底，留出右侧箭头位置
-            SPopup = new GUIStyle(SField)
-            {
-                alignment = TextAnchor.MiddleLeft,
-                padding = new RectOffset(10, 24, 8, 8)
-            };
-            var popupHover = new Color(InputBg.r + 0.03f, InputBg.g + 0.03f, InputBg.b + 0.03f);
-            SkinR(SPopup, InputBg, TextBright, 5, popupHover, InputBg, BorderDim);
-
-            // Radio：未选中暗底灰框，选中蓝色填充
-            var radioUnchecked = SquareTex(16, WindowBg, new Color(0.35f, 0.37f, 0.42f));
-            var radioChecked = SquareTex(16, Accent, AccentBright);
-            var radioBase = new GUIStyle
-            {
-                fixedWidth = 16,
-                fixedHeight = 16,
-                padding = new RectOffset(0, 0, 0, 0),
-                margin = new RectOffset(4, 4, 4, 4),
-                overflow = new RectOffset(1, 1, 1, 1),
-                border = new RectOffset(0, 0, 0, 0),
-                alignment = TextAnchor.MiddleCenter
-            };
-            SRadio = new GUIStyle(radioBase)
-            {
-                normal = { background = radioUnchecked },
-                hover = { background = radioUnchecked },
-                active = { background = radioUnchecked }
-            };
-            SRadioOn = new GUIStyle(radioBase)
-            {
-                normal = { background = radioChecked },
-                hover = { background = radioChecked },
-                active = { background = radioChecked }
-            };
-
-            // Foldout：可折叠标题，左侧箭头，整行可点
-            SFoldout = new GUIStyle(SBtn)
-            {
-                alignment = TextAnchor.MiddleLeft,
-                padding = new RectOffset(10, 10, 8, 8),
-                fontStyle = FontStyle.Bold
-            };
-
-            _skin = ScriptableObject.CreateInstance<GUISkin>();
-            _skin.window = SWindow;
-            _skin.label = SLabel;
-            _skin.button = SBtn;
-            _skin.textField = SField;
-            _skin.textArea = new GUIStyle(SField) { wordWrap = true };
-            _skin.box = SPanel;
-            _skin.toggle = SToggle;
-            _skin.scrollView = new GUIStyle("scrollView")
-            {
-                normal = new GUIStyleState { background = null, textColor = TextNormal },
-                padding = new RectOffset(2, 2, 2, 2)
-            };
-            _skin.verticalScrollbar = SScroll;
-            _skin.verticalScrollbarThumb = SScrollThumb;
-            _skin.verticalScrollbarUpButton = GUIStyle.none;
-            _skin.verticalScrollbarDownButton = GUIStyle.none;
-            _skin.horizontalScrollbar = GUIStyle.none;
-
-            // 滑块样式：单条轨道 + 居中蓝色方块滑块
-            var trackColor = new Color(0.18f, 0.19f, 0.22f);
-            var sliderTrackTex = Tex(trackColor.r, trackColor.g, trackColor.b);
-            _skin.horizontalSlider = new GUIStyle(GUI.skin.horizontalSlider)
-            {
-                normal =
-                {
-                    background = sliderTrackTex,
-                    textColor = Color.clear
-                },
-
-                fixedHeight = 12f,
-                stretchWidth = true,
-
-                margin = new RectOffset(4, 4, 0, 0),
-
-                border = new RectOffset(0, 0, 0, 0)
-            };
-            var sliderThumbTex = SliderThumbTex(12, Accent);
-
-            _skin.horizontalSliderThumb = new GUIStyle(GUI.skin.horizontalSliderThumb)
-            {
-                normal =
-                {
-                    background = sliderThumbTex,
-                    textColor = Color.clear
-                },
-                hover =
-                {
-                    background = sliderThumbTex,
-                    textColor = Color.clear
-                },
-                active =
-                {
-                    background = sliderThumbTex,
-                    textColor = Color.clear
-                },
-
-                fixedWidth = 12f,
-                fixedHeight = 12f,
-                alignment = TextAnchor.MiddleCenter
-            };
-
-            _skin.customStyles = new[]
-            {
-                STitle, SHint, SMuted, SCount, SBtnAdd, SBtnDel,
-                SRow, SRowAlt, SRowSelected, SFeatureName, STag, STagHidden,
-                SStatusOk, SStatusErr, SNameBtn, SDetail, SDetailHead,
-                SBonus, SChip, SChipOn, STypeGood, STypeBad,
-                STypeSpecial, STypeTemp, SPopup, SRadio, SRadioOn
-            };
-
-            _skin.settings.selectionColor = C.Selection;
-            _skin.settings.cursorColor = C.Cursor;
-            _skin.settings.cursorFlashSpeed = 2.0f;
-            _skin.settings.doubleClickSelectsWord = true;
-            _skin.settings.tripleClickSelectsLine = true;
         }
 
         // ==================== 辅助方法 ====================

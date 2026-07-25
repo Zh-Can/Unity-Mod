@@ -200,6 +200,7 @@ namespace ZaoHuaBMod.GuiFramework.Controls
             /// <returns>文本</returns>
             public static string TextFiled(string text, GUIStyle style = null, params GUILayoutOption[] options)
             {
+                text = text ?? string.Empty;
                 if (style == null) style = DarkSkin.SField;
                 return GUILayout.TextField(text, style, options);
             }
@@ -214,11 +215,11 @@ namespace ZaoHuaBMod.GuiFramework.Controls
             /// <returns>文本</returns>
             public static string TextArea(string text, GUIStyle style = null, params GUILayoutOption[] options)
             {
+                text = text ?? string.Empty;
                 if (style == null) style = DarkSkin.SField;
                 if (options == null || options.Length == 0)
                         options = new[] { GUILayout.Height(80) };
-                GUILayout.TextArea(text, style, options);
-                return text;
+                return GUILayout.TextArea(text, style, options);
             }
     }
 
