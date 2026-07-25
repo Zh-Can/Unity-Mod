@@ -119,12 +119,17 @@ namespace ZaoHuaBMod
                     }).Draw();
                 });
             });
+            UI.Label().Text(Loc.Get("单选按钮 Radio")).Draw();
+            _radioIndex = UI.RadioButtonGroup
+                .Selected(_radioIndex)
+                .Options(Loc.Get("方案一"), Loc.Get("方案二"), Loc.Get("方案三"))
+                .Draw();
 
             DarkSkin.Divider(4f);
             
             GUILayout.Label(Loc.Get("开关与滑块"), DarkSkin.SLabel);
 
-            _toggleValue = GUILayout.Toggle(_toggleValue, Loc.Get(" 开关 Toggle"), DarkSkin.SToggle);
+            _toggleValue = GUILayout.Toggle(_toggleValue, Loc.Get("开关 Toggle"), DarkSkin.SToggle);
 
             GUILayout.Label($"{Loc.Get("滑块值")}: {_sliderValue:F2}", DarkSkin.SLabel);
             _sliderValue = GUILayout.HorizontalSlider(_sliderValue, 0f, 1f);
@@ -221,10 +226,6 @@ namespace ZaoHuaBMod
             GUILayout.Label(Loc.Get("单选下拉菜单"), DarkSkin.SLabel);
             string[] dropdownOptions = { Loc.Get("选项 A"), Loc.Get("选项 B"), Loc.Get("选项 C"), Loc.Get("选项 D") };
             _dropdownIndex = DarkSkin.Dropdown(_dropdownIndex, dropdownOptions, ref _dropdownExpanded);
-
-            DarkSkin.Divider(4f);
-            GUILayout.Label(Loc.Get("单项单选 Radio"), DarkSkin.SLabel);
-            _radioIndex = DarkSkin.RadioGroup(_radioIndex, Loc.Get("方案一"), Loc.Get("方案二"), Loc.Get("方案三"));
 
             DarkSkin.Divider(4f);
             GUILayout.Label(Loc.Get("折叠面板 Foldout"), DarkSkin.SLabel);

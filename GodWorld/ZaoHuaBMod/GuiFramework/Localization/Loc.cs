@@ -10,7 +10,7 @@ namespace ZaoHuaBMod.GuiFramework.Localization
 {
     /// <summary>
     /// 简易多语言支持类，语言包使用 key=value 纯文本格式。
-    /// 语言直接用显示名（如"简中"、"en-US"）作为唯一标识。
+    /// 语言直接用文件名显示名（如"en-US.cfg，显示的就是en-US"）作为唯一标识。
     /// </summary>
     public static class Loc
     {
@@ -51,6 +51,7 @@ namespace ZaoHuaBMod.GuiFramework.Localization
         /// <summary>
         /// 获取文本。
         /// 如果当前语言没有对应翻译，则返回 key 作为默认文本。
+        /// 重要提醒：开头不要有空格
         /// </summary>
         public static string Get(string key)
         {
@@ -62,7 +63,6 @@ namespace ZaoHuaBMod.GuiFramework.Localization
             {
                 return value;
             }
-
             return key;
         }
 

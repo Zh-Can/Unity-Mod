@@ -597,7 +597,7 @@ namespace ZaoHuaBMod.GuiFramework.Style
         }
 
         /// <summary>绘制单选按钮。返回是否被点击（调用方根据返回值更新选中索引）。</summary>
-        public static bool RadioButton(string label, bool selected)
+        private static bool RadioButton(string label, bool selected)
         {
             GUILayout.BeginHorizontal();
             var clicked = GUILayout.Button(string.Empty, selected ? SRadioOn : SRadio, GUILayout.Width(16),
