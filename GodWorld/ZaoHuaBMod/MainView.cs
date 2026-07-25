@@ -124,6 +124,11 @@ namespace ZaoHuaBMod
                 .Selected(_radioIndex)
                 .Options(Loc.Get("方案一"), Loc.Get("方案二"), Loc.Get("方案三"))
                 .Draw();
+            _radioIndex = UI.RadioButtonGroup
+                .Selected(_radioIndex)
+                .Options(Loc.Get("方案一"), Loc.Get("方案二"), Loc.Get("方案三"))
+                .Horizontal()
+                .Draw();
 
             DarkSkin.Divider(4f);
             

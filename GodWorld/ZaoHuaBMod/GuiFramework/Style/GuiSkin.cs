@@ -596,26 +596,6 @@ namespace ZaoHuaBMod.GuiFramework.Style
             return selectedIndex;
         }
 
-        /// <summary>绘制单选按钮。返回是否被点击（调用方根据返回值更新选中索引）。</summary>
-        private static bool RadioButton(string label, bool selected)
-        {
-            GUILayout.BeginHorizontal();
-            var clicked = GUILayout.Button(string.Empty, selected ? SRadioOn : SRadio, GUILayout.Width(16),
-                GUILayout.Height(16));
-            GUILayout.Label(label, SLabel);
-            GUILayout.EndHorizontal();
-            return clicked;
-        }
-
-        /// <summary>绘制单选按钮组。返回新选中的索引。</summary>
-        public static int RadioGroup(int selectedIndex, params string[] options)
-        {
-            for (var i = 0; i < options.Length; i++)
-                if (RadioButton(options[i], i == selectedIndex))
-                    selectedIndex = i;
-            return selectedIndex;
-        }
-
         /// <summary>绘制折叠展开标题。返回新的展开状态。</summary>
         public static bool Foldout(bool expanded, string label)
         {
