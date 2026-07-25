@@ -37,6 +37,11 @@ namespace ZaoHuaBMod.GuiFramework.Controls
         
          /// <summary>
             ///     水平布局容器（回调式）。
+            ///     例如：
+            ///     UI.Horizontal(() =>
+            ///     {
+            ///         UI.Label().Text("普通文本").Draw();
+            ///     });
             /// </summary>
             public static void Horizontal(Action content, GUIStyle style = null, params GUILayoutOption[] options)
             {
@@ -51,6 +56,11 @@ namespace ZaoHuaBMod.GuiFramework.Controls
 
             /// <summary>
             ///     垂直布局容器（回调式）。
+            ///     例如：
+            ///     UI.Vertical(() =>
+            ///     {
+            ///         UI.Label().Text("普通文本").Draw();
+            ///     });
             /// </summary>
             public static void Vertical(Action content, GUIStyle style = null, params GUILayoutOption[] options)
             {
@@ -65,6 +75,11 @@ namespace ZaoHuaBMod.GuiFramework.Controls
 
             /// <summary>
             ///     开始一个水平布局容器，配合 using 自动结束。
+            ///     例如：
+            ///     using (UI.HorizontalScope())
+            ///     {
+            ///         UI.Label().Text("普通文本").Draw();
+            ///     }
             /// </summary>
             public static LayoutScope HorizontalScope(GUIStyle style = null, params GUILayoutOption[] options)
             {
@@ -78,7 +93,11 @@ namespace ZaoHuaBMod.GuiFramework.Controls
 
             /// <summary>
             ///     开始一个垂直布局容器，配合 using 自动结束。
-            /// </summary>
+            ///     例如：
+            ///     using (UI.VerticalScope())
+            ///     {
+            ///         UI.Label().Text("普通文本").Draw();
+            ///     }
             public static LayoutScope VerticalScope(GUIStyle style = null, params GUILayoutOption[] options)
             {
                 if (style != null)

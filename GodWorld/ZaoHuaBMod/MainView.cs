@@ -99,32 +99,29 @@ namespace ZaoHuaBMod
             
             UI.Label().Text(Loc.Get("按钮")).Draw();
 
-            UI.Horizontal(() =>
+            UI.Vertical(() =>
             {
-                UI.Btn().Text("普通按钮").OnClick(() =>
+                UI.Horizontal(() =>
                 {
-                    Log.Info("普通按钮被点击");
-                }).Draw();
-                UI.Btn().Add("添加按钮").OnClick(() =>
-                {
-                    Log.Info("添加按钮被点击");
-                }).Draw();
-                UI.Btn().Del("删除按钮").OnClick(() =>
-                {
-                    Log.Info("删除按钮被点击");
-                }).Draw();
+                    UI.Btn().Text("普通按钮").OnClick(() =>
+                    {
+                        Log.Info("普通按钮被点击");
+                    }).Draw();
+                    UI.Space();
+                    UI.Btn().Add("添加按钮").OnClick(() =>
+                    {
+                        Log.Info("添加按钮被点击");
+                    }).Draw();
+                    UI.Space();
+                    UI.Btn().Del("删除按钮").OnClick(() =>
+                    {
+                        Log.Info("删除按钮被点击");
+                    }).Draw();
+                });
             });
-            
-            if (GUILayout.Button(Loc.Get("普通按钮"), DarkSkin.SBtn))
-                Log.Info("普通按钮被点击");
-
-            if (GUILayout.Button(Loc.Get("添加按钮"), DarkSkin.SBtnAdd))
-                Log.Info("添加按钮被点击");
-
-            if (GUILayout.Button(Loc.Get("删除按钮"), DarkSkin.SBtnDel))
-                Log.Info("删除按钮被点击");
 
             DarkSkin.Divider(4f);
+            
             GUILayout.Label(Loc.Get("开关与滑块"), DarkSkin.SLabel);
 
             _toggleValue = GUILayout.Toggle(_toggleValue, Loc.Get(" 开关 Toggle"), DarkSkin.SToggle);
