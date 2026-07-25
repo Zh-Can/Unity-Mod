@@ -2,11 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using ZaoHuaBMod.UI.Config;
-using ZaoHuaBMod.UI.Logger;
-using ZaoHuaBMod.UI.Style;
+using ZaoHuaBMod.GuiFramework.Config;
+using ZaoHuaBMod.GuiFramework.Localization;
+using ZaoHuaBMod.GuiFramework.Logger;
+using ZaoHuaBMod.GuiFramework.Style;
 
-namespace ZaoHuaBMod.UI.Core
+namespace ZaoHuaBMod.GuiFramework.Core
 {
     /// <summary>
     ///     GUI 窗口管理器。
@@ -140,9 +141,9 @@ namespace ZaoHuaBMod.UI.Core
             {
                 DarkSkin.InitStyles();
 
-                var previousSkin = GUI.skin;
-                GUI.skin = DarkSkin.Skin;
-                var matrix = GUI.matrix;
+                var previousSkin = UnityEngine.GUI.skin;
+                UnityEngine.GUI.skin = DarkSkin.Skin;
+                var matrix = UnityEngine.GUI.matrix;
 
                 var sortedWindows = _windows.Values
                     .Where(w => w.Visible)
@@ -151,16 +152,16 @@ namespace ZaoHuaBMod.UI.Core
 
                 foreach (var window in sortedWindows)
                 {
-                    GUI.matrix = matrix;
+                    UnityEngine.GUI.matrix = matrix;
                     GUIUtility.ScaleAroundPivot(new Vector2(Scale, Scale), new Vector2(window.Rect.x, window.Rect.y));
-                    GUI.Window(window.Id, window.Rect, id => DrawWindow(id, window), GUIContent.none, DarkSkin.SWindow);
+                    UnityEngine.GUI.Window(window.Id, window.Rect, id => DrawWindow(id, window), GUIContent.none, DarkSkin.SWindow);
                 }
 
-                GUI.matrix = matrix;
+                UnityEngine.GUI.matrix = matrix;
                 HandleDragAndResize();
                 DarkSkin.DrawTooltip();
 
-                GUI.skin = previousSkin;
+                UnityEngine.GUI.skin = previousSkin;
             }
             catch (Exception ex)
             {
@@ -193,10 +194,10 @@ namespace ZaoHuaBMod.UI.Core
 
                 // 语言切换按钮：始终显示当前语言
                 {
-                    var btnLabel = Localization.Loc.CurrentLanguage;
+                    var btnLabel = Loc.CurrentLanguage;
 
-                    if (GUILayout.Button(btnLabel, DarkSkin.SBtn) && Localization.Loc.AvailableLanguages.Count > 1)
-                        Localization.Loc.CycleLanguage();
+                    if (GUILayout.Button(btnLabel, DarkSkin.SBtn) && Loc.AvailableLanguages.Count > 1)
+                        Loc.CycleLanguage();
 
                     GUILayout.Space(10f);
                 }

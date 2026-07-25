@@ -4,11 +4,10 @@ using BepInEx;
 using BepInEx.Unity.Mono;
 using HarmonyLib;
 using UnityEngine;
-using ZaoHuaBMod.UI.Config;
-using ZaoHuaBMod.UI.Core;
-using ZaoHuaBMod.UI.Localization;
-using ZaoHuaBMod.UI.Logger;
-using ZaoHuaBMod.UI.Logger.Adapters;
+using ZaoHuaBMod.GuiFramework.Config;
+using ZaoHuaBMod.GuiFramework.Localization;
+using ZaoHuaBMod.GuiFramework.Logger;
+using ZaoHuaBMod.GuiFramework.Logger.Adapters;
 
 namespace ZaoHuaBMod
 {

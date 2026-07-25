@@ -1,7 +1,8 @@
 using UnityEngine;
-using ZaoHuaBMod.UI.Core;
+using ZaoHuaBMod.GuiFramework.Core;
+using ZaoHuaBMod.GuiFramework.Localization;
 
-namespace ZaoHuaBMod.UI.Config
+namespace ZaoHuaBMod.GuiFramework.Config
 {
     /// <summary>
     /// 管理 Mod 持久化配置（使用 Unity PlayerPrefs）。
@@ -12,13 +13,13 @@ namespace ZaoHuaBMod.UI.Config
         private const string LanguageKey = "_Mod_Language";
 
         public static float Scale { get; set; } = 1f;
-        public static string Language { get; set; } = Localization.Loc.Chinese;
+        public static string Language { get; set; } = Loc.Chinese;
 
 
         public static void Load()
         {
             Scale = PlayerPrefs.GetFloat(ScaleKey, 1f);
-            Language = PlayerPrefs.GetString(LanguageKey, Localization.Loc.Chinese);
+            Language = PlayerPrefs.GetString(LanguageKey, Loc.Chinese);
         }
 
 
@@ -33,7 +34,7 @@ namespace ZaoHuaBMod.UI.Config
         public static void ApplyToManager()
         {
             GUIManager.Instance.SetScale(Scale);
-            Localization.Loc.CurrentLanguage = Language;
+            Loc.CurrentLanguage = Language;
         }
     }
 }

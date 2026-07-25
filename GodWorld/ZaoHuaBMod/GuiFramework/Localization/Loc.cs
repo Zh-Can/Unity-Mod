@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using ZaoHuaBMod.UI.Config;
-using ZaoHuaBMod.UI.Logger;
+using ZaoHuaBMod.GuiFramework.Config;
+using ZaoHuaBMod.GuiFramework.Logger;
 
-namespace ZaoHuaBMod.UI.Localization
+namespace ZaoHuaBMod.GuiFramework.Localization
 {
     /// <summary>
     /// 简易多语言支持类，语言包使用 key=value 纯文本格式。

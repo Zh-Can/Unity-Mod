@@ -37,17 +37,17 @@
         <Compile Include="MainView.cs" />
         <Compile Include="ModInfo.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
-        <Compile Include="UI\Config\ModConfig.cs" />
-        <Compile Include="UI\Controls\UI.cs" />
-        <Compile Include="UI\Core\GUIManager.cs" />
-        <Compile Include="UI\Core\WindowData.cs" />
-        <Compile Include="UI\Localization\Loc.cs" />
-        <Compile Include="UI\Logger\Adapters\BepInExLogger.cs" />
-        <Compile Include="UI\Logger\Adapters\MelonLoggerAdapter.cs" />
-        <Compile Include="UI\Logger\ILogger.cs" />
-        <Compile Include="UI\Logger\Log.cs" />
-        <Compile Include="UI\Logger\UnityDebugLogger.cs" />
-        <Compile Include="UI\Style\GuiSkin.cs" />
+        <Compile Include="GuiFramework\Config\ModConfig.cs" />
+        <Compile Include="GuiFramework\Controls\UI.cs" />
+        <Compile Include="GuiFramework\Core\GUIManager.cs" />
+        <Compile Include="GuiFramework\Core\WindowData.cs" />
+        <Compile Include="GuiFramework\Localization\Loc.cs" />
+        <Compile Include="GuiFramework\Logger\Adapters\BepInExLogger.cs" />
+        <Compile Include="GuiFramework\Logger\Adapters\MelonLoggerAdapter.cs" />
+        <Compile Include="GuiFramework\Logger\ILogger.cs" />
+        <Compile Include="GuiFramework\Logger\Log.cs" />
+        <Compile Include="GuiFramework\Logger\UnityDebugLogger.cs" />
+        <Compile Include="GuiFramework\Style\GuiSkin.cs" />
     </ItemGroup>
     <ItemGroup>
       <Reference Include="System" />
@@ -93,16 +93,16 @@
       </Reference>
     </ItemGroup>
     <ItemGroup>
-      <Content Include="UI\Localization\GenerateTraditionalChinese.ps1" />
-      <Content Include="UI\Logger\Readme.md" />
-      <Content Include="UI\Readme.md" />
+      <Content Include="GuiFramework\Localization\GenerateTraditionalChinese.ps1" />
+      <Content Include="GuiFramework\Logger\Readme.md" />
+      <Content Include="GuiFramework\Readme.md" />
       <Content Include="ZaoHuaBMod.sln" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
 
     <!-- 编译后自动生成繁体中文语言包 -->
     <Target Name="GenerateTraditionalChinese" AfterTargets="Build">
-        <Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\UI\Localization\GenerateTraditionalChinese.ps1&quot; -SourceDir &quot;$(MSBuildProjectDirectory)&quot; -OutputFile &quot;$(TargetDir)languages\繁中.cfg&quot;" />
+        <Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\GuiFramework\Localization\GenerateTraditionalChinese.ps1&quot; -SourceDir &quot;$(MSBuildProjectDirectory)&quot; -OutputFile &quot;$(TargetDir)languages\繁中.cfg&quot;" />
     </Target>
 
 </Project>

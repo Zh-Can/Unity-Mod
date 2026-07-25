@@ -1,8 +1,9 @@
 using UnityEngine;
-using ZaoHuaBMod.UI.Core;
-using ZaoHuaBMod.UI.Localization;
-using ZaoHuaBMod.UI.Logger;
-using ZaoHuaBMod.UI.Style;
+using ZaoHuaBMod.GuiFramework.Controls;
+using ZaoHuaBMod.GuiFramework.Core;
+using ZaoHuaBMod.GuiFramework.Localization;
+using ZaoHuaBMod.GuiFramework.Logger;
+using ZaoHuaBMod.GuiFramework.Style;
 
 namespace ZaoHuaBMod
 {
@@ -24,12 +25,13 @@ namespace ZaoHuaBMod
 
         private void Start()
         {
-            _mainWindow = GUIManager.Instance.CreateWindow(
-                new Rect(100, 100, 520, 680),
-                "ZaoHuaBMod",
-                Draw);
-            _mainWindow.Resizable = true;
-            _mainWindow.Show();
+            _mainWindow = UI.NewWindow(
+                    new Rect(100, 100, 520, 680),
+                    "ZaoHuaBMod",
+                    Draw)
+                .Resizable()
+                .Show()
+                .Build();
         }
 
         private void Update()
@@ -43,7 +45,7 @@ namespace ZaoHuaBMod
 
         private void OnGUI()
         {
-            GUIManager.Instance.OnGUI();
+            UI.OnGUI();
         }
 
         private void Draw(WindowData window)

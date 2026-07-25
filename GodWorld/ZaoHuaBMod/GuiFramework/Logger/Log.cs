@@ -1,4 +1,4 @@
-﻿namespace ZaoHuaBMod.UI.Logger
+namespace ZaoHuaBMod.GuiFramework.Logger
 {
     /// <summary>
     /// 通用日志入口，默认使用 Unity Debug，也可由外部传入 ILogger 实现。
