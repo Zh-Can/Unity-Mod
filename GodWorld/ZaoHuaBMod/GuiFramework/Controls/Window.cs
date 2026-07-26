@@ -21,7 +21,6 @@ namespace ZaoHuaBMod.GuiFramework.Controls
             private static readonly Dictionary<int, WindowData> _windows = new Dictionary<int, WindowData>();
             private static WindowData _draggingWindow;
             private static Vector2 _dragOffset;
-            private static int _nextWindowId = 1000;
             private static Vector2 _resizeStartMouse;
             private static Vector2 _resizeStartSize;
             private static WindowData _resizingWindow;
@@ -45,25 +44,26 @@ namespace ZaoHuaBMod.GuiFramework.Controls
             ///     创建一个新窗口。
             /// </summary>
             internal static WindowData CreateWindow(
+                int id,
                 Rect rect,
                 WindowData.TitleBarConfig titleBar,
                 Action<WindowData> content)
             {
-                var id = _nextWindowId++;
+                if (_windows.ContainsKey(id))
+                    throw new InvalidOperationException($"窗口 Id {id} 已存在，请为每个窗口指定唯一 Id。");
+
                 var window = new WindowData(id, rect, titleBar, content);
+
+                // 读取并应用上次保存的位置/尺寸
+                var savedRect = BaseConfig.LoadWindowRect(id);
+                if (savedRect.HasValue)
+                    window.Rect = savedRect.Value;
+
+                // 窗口关闭时保存位置/尺寸
+                window.OnClose += () => BaseConfig.SaveWindowRect(id, window.Rect);
+
                 _windows[id] = window;
                 return window;
-            }
-
-            /// <summary>
-            ///     创建一个新窗口（使用默认标题栏配置）。
-            /// </summary>
-            internal static WindowData CreateWindow(
-                Rect rect,
-                string title,
-                Action<WindowData> content)
-            {
-                return CreateWindow(rect, new WindowData.TitleBarConfig(title), content);
             }
 
             /// <summary>
@@ -308,6 +308,11 @@ namespace ZaoHuaBMod.GuiFramework.Controls
                         break;
 
                     case EventType.MouseUp:
+                        if (_draggingWindow != null)
+                            BaseConfig.SaveWindowRect(_draggingWindow.Id, _draggingWindow.Rect);
+                        if (_resizingWindow != null)
+                            BaseConfig.SaveWindowRect(_resizingWindow.Id, _resizingWindow.Rect);
+
                         _draggingWindow = null;
                         _resizingWindow = null;
                         break;

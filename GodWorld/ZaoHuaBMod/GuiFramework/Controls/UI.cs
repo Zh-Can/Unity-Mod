@@ -21,8 +21,7 @@ namespace ZaoHuaBMod.GuiFramework.Controls
         /// <returns>窗体构造器，可继续链式配置。</returns>
         public static WindowBuilder NewWindow(Rect rect, string title, Action<WindowData> content)
         {
-            var window = WindowControls.CreateWindow(rect, title, content);
-            return new WindowBuilder(window);
+            return new WindowBuilder(rect, new WindowData.TitleBarConfig(title), content);
         }
 
         /// <summary>
@@ -34,8 +33,7 @@ namespace ZaoHuaBMod.GuiFramework.Controls
         /// <returns>窗体构造器，可继续链式配置。</returns>
         public static WindowBuilder NewWindow(Rect rect, WindowData.TitleBarConfig titleBar, Action<WindowData> content)
         {
-            var window = WindowControls.CreateWindow(rect, titleBar, content);
-            return new WindowBuilder(window);
+            return new WindowBuilder(rect, titleBar, content);
         }
 
         /// <summary>
@@ -154,6 +152,7 @@ namespace ZaoHuaBMod.GuiFramework.Controls
         ///     {
         ///     UI.Label().Text("普通文本").Draw();
         ///     }
+        /// </summary>
         public static LayoutScope VerticalScope(GUIStyle style = null, params GUILayoutOption[] options)
         {
             if (style != null)
@@ -374,73 +373,100 @@ namespace ZaoHuaBMod.GuiFramework.Controls
     /// </summary>
     public class WindowBuilder
     {
-        private readonly UI.WindowData _window;
+        private readonly Rect _rect;
+        private readonly UI.WindowData.TitleBarConfig _titleBar;
+        private readonly Action<UI.WindowData> _content;
+        private int _id = 1000;
+        private bool _visible = true;
+        private bool _draggable = true;
+        private UI.WindowData.DragMode _dragMode = UI.WindowData.DragMode.TitleBarOnly;
+        private bool _resizable;
+        private int _layer;
+        private Vector2 _minSize = new Vector2(200f, 100f);
+        private Action _onClose;
 
-        public WindowBuilder(UI.WindowData window)
+        public WindowBuilder(Rect rect, UI.WindowData.TitleBarConfig titleBar, Action<UI.WindowData> content)
         {
-            _window = window ?? throw new ArgumentNullException(nameof(window));
+            _rect = rect;
+            _titleBar = titleBar ?? throw new ArgumentNullException(nameof(titleBar));
+            _content = content;
+        }
+
+        /// <summary>窗口唯一标识，同时用于 GUI 绘制和位置持久化。</summary>
+        public WindowBuilder Id(int id)
+        {
+            _id = id;
+            return this;
         }
 
         /// <summary>显示窗体。</summary>
         public WindowBuilder Show()
         {
-            _window.Show();
+            _visible = true;
             return this;
         }
 
         /// <summary>隐藏窗体。</summary>
         public WindowBuilder Hide()
         {
-            _window.Hide();
+            _visible = false;
             return this;
         }
 
         /// <summary>设置是否可拖拽。</summary>
         public WindowBuilder Draggable(bool value = true)
         {
-            _window.Draggable = value;
+            _draggable = value;
             return this;
         }
 
         /// <summary>设置拖拽模式。</summary>
         public WindowBuilder DragBy(UI.WindowData.DragMode mode)
         {
-            _window.DragArea = mode;
+            _dragMode = mode;
             return this;
         }
 
         /// <summary>设置是否可调整大小。</summary>
         public WindowBuilder Resizable(bool value = true)
         {
-            _window.Resizable = value;
+            _resizable = value;
             return this;
         }
 
         /// <summary>设置窗口层级，越大越在上层。</summary>
         public WindowBuilder Layer(int layer)
         {
-            _window.Layer = layer;
+            _layer = layer;
             return this;
         }
 
         /// <summary>设置窗口最小尺寸。</summary>
         public WindowBuilder MinSize(Vector2 size)
         {
-            _window.MinSize = size;
+            _minSize = size;
             return this;
         }
 
         /// <summary>设置关闭回调。</summary>
         public WindowBuilder OnClose(Action callback)
         {
-            _window.OnClose = callback;
+            _onClose = callback;
             return this;
         }
 
         /// <summary>获取最终窗体数据。</summary>
         public UI.WindowData Build()
         {
-            return _window;
+            var window = UI.WindowControls.CreateWindow(_id, _rect, _titleBar, _content);
+            window.Visible = _visible;
+            window.Draggable = _draggable;
+            window.DragArea = _dragMode;
+            window.Resizable = _resizable;
+            window.Layer = _layer;
+            window.MinSize = _minSize;
+            if (_onClose != null) window.OnClose += _onClose;
+            return window;
         }
     }
 }

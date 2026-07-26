@@ -36,5 +36,31 @@ namespace ZaoHuaBMod.GuiFramework.Config
             UI.WindowControls.SetScale(Scale);
             Loc.CurrentLanguage = Language;
         }
+
+
+        // ---------- 窗口位置/尺寸 ----------
+        private static string WindowKey(int id, string suffix) => $"_Mod_Window_{id}_{suffix}";
+
+        public static Rect? LoadWindowRect(int id)
+        {
+            var xKey = WindowKey(id, "X");
+            if (!PlayerPrefs.HasKey(xKey)) return null;
+
+            return new Rect(
+                PlayerPrefs.GetFloat(WindowKey(id, "X"), 100f),
+                PlayerPrefs.GetFloat(WindowKey(id, "Y"), 100f),
+                PlayerPrefs.GetFloat(WindowKey(id, "W"), 600f),
+                PlayerPrefs.GetFloat(WindowKey(id, "H"), 400f)
+            );
+        }
+
+        public static void SaveWindowRect(int id, Rect rect)
+        {
+            PlayerPrefs.SetFloat(WindowKey(id, "X"), rect.x);
+            PlayerPrefs.SetFloat(WindowKey(id, "Y"), rect.y);
+            PlayerPrefs.SetFloat(WindowKey(id, "W"), rect.width);
+            PlayerPrefs.SetFloat(WindowKey(id, "H"), rect.height);
+            PlayerPrefs.Save();
+        }
     }
 }

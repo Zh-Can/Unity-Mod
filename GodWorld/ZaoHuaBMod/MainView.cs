@@ -41,6 +41,7 @@ namespace ZaoHuaBMod
                     new Rect(100, 100, 520, 680),
                     "ZaoHuaBMod",
                     Draw)
+                .Id(1)
                 .Resizable()
                 .Show()
                 .Build();
