@@ -6,6 +6,7 @@ using ZaoHuaBMod.GuiFramework.Config;
 using ZaoHuaBMod.GuiFramework.Localization;
 using ZaoHuaBMod.GuiFramework.Logger;
 using ZaoHuaBMod.GuiFramework.Logger.Adapters;
+using ZaoHuaBMod.GuiFramework.Other;
 
 [assembly: MelonInfo(typeof(ZaoHuaBMod.Main), "ZaoHuaMod", "1.0.0", "Can")]
 [assembly: MelonGame("XiaMenLeiYun", "Zaohua")]
@@ -38,8 +39,7 @@ namespace ZaoHuaBMod
             BaseConfig.Load();
             BaseConfig.ApplyToManager();
             Loc.TryApplyLanguage(BaseConfig.Language);
-
-           
+            
         }
         private GameObject _uiObj;
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)

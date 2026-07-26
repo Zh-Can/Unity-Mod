@@ -139,7 +139,7 @@ namespace ZaoHuaBMod.GuiFramework.Style
 
                 SHint = new GUIStyle(GUI.skin.label)
                 {
-                    fontSize = 11,
+                    fontSize = 12,
                     alignment = TextAnchor.MiddleRight,
                     normal = { textColor = TextDim }
                 };

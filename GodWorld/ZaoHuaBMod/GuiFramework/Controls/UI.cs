@@ -217,8 +217,32 @@ namespace ZaoHuaBMod.GuiFramework.Controls
             }
         }
 
+        /// <summary>单选下拉框</summary>
+        /// <param name="selectedIndex">当前选中索引</param>
+        /// <param name="options">选项数组</param>
+        /// <param name="expanded">展开状态（ref）</param>
+        /// <returns>选中的索引</returns>
+        public static int Dropdown(int selectedIndex, string[] options, ref bool expanded)
+        {
+            return DarkSkin.Dropdown(selectedIndex, options, ref expanded);
+        }
+
+        /// <summary>标签页组，水平排列芯片按钮，返回新的选中索引。</summary>
+        public static int TabGroup(string[] labels, int active)
+        {
+            Horizontal(() =>
+            {
+                for (int i = 0; i < labels.Length; i++)
+                {
+                    if (DarkSkin.TabChip(labels[i], active == i))
+                        active = i;
+                }
+            });
+            return active;
+        }
+
         /// <summary>
-        ///     滑动条
+        /// 滑动条
         /// </summary>
         /// <param name="text"></param>
         /// 文本

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using ZaoHuaBMod.GuiFramework.Style;
 
@@ -91,25 +91,37 @@ namespace ZaoHuaBMod.GuiFramework.Controls
                 _style = DarkSkin.SFeatureName;
                 return this;
             }
-            /// <summary>蓝色小字标签 样式。</summary>
-            public LabelBuilder Tag(string text)
+            public enum TagKind
+            {
+                Tag,
+                Good,
+                Bad,
+                Special,
+                Temp,
+                Hidden
+            }
+            GUIStyle GetTagStyle(TagKind kind)
+            {
+                switch (kind)
+                {
+                    case TagKind.Tag: return DarkSkin.STag;
+                    case TagKind.Good: return DarkSkin.STypeGood;
+                    case TagKind.Bad: return DarkSkin.STypeBad;
+                    case TagKind.Special: return DarkSkin.STypeSpecial;
+                    case TagKind.Temp: return DarkSkin.STypeTemp;
+                    case TagKind.Hidden: return DarkSkin.STagHidden;
+                    default: return DarkSkin.STag;
+                }
+            }
+            /// <summary>标签 样式。</summary>
+            public LabelBuilder Tag(string text, TagKind kind = default)
             {
                 _text = text;
                 _tooltip = null;
-                _style = DarkSkin.STag;
+                _style = GetTagStyle(kind);
                 return this;
             }
             
-            /// <summary>金色小字标签 样式。</summary>
-            public LabelBuilder TagGold(string text)
-            {
-                _text = text;
-                _tooltip = null;
-                _style = DarkSkin.STagHidden;
-                return this;
-            }
-           
-
             /// <summary>指定自定义样式。</summary>
             public LabelBuilder Style(GUIStyle style)
             {
@@ -132,10 +144,10 @@ namespace ZaoHuaBMod.GuiFramework.Controls
             }
 
             /// <summary>绘制 Label。</summary>
-            public Rect Draw()
+            public Rect Draw(params GUILayoutOption[] options)
             {
                 var content = new GUIContent(_text, _tooltip);
-                Rect rect = GUILayoutUtility.GetRect(content, _style);
+                Rect rect = GUILayoutUtility.GetRect(content, _style, options);
                 GUI.Label(rect, content, _style);
                 return rect;
             }

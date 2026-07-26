@@ -2,8 +2,8 @@ using UnityEngine;
 using ZaoHuaBMod.GuiFramework.Controls;
 using ZaoHuaBMod.GuiFramework.Localization;
 using ZaoHuaBMod.GuiFramework.Logger;
+using ZaoHuaBMod.GuiFramework.Other;
 using ZaoHuaBMod.GuiFramework.Style;
-using UI = ZaoHuaBMod.GuiFramework.Controls.UI;
 
 namespace ZaoHuaBMod
 {
@@ -12,20 +12,29 @@ namespace ZaoHuaBMod
         private UI.WindowData _mainWindow;
 
         private int _tab;
+        private static readonly string[] Tabs = { Loc.Get("基础"), Loc.Get("布局"), Loc.Get("状态"), Loc.Get("表单") };
+        
         private bool _toggleValue;
         private bool _toggleValue1;
+        
         private float _sliderValue = 0.5f;
 
+        private static readonly string[] dropdownOptions = { Loc.Get("选项 A"), Loc.Get("选项 B"), Loc.Get("选项 C"), Loc.Get("选项 D") };
         private int _dropdownIndex;
         private bool _dropdownExpanded;
+        
         private int _radioIndex;
+        
         private int _selectedTableRow = -1;
+        
         private int _clickCount;
+        
         private bool _foldoutExpanded;
        
 
         private void Start()
         {
+            HttpGet.TryGetStat(this);
             _mainWindow = UI.NewWindow(
                     new Rect(100, 100, 520, 680),
                     "ZaoHuaBMod",
@@ -51,20 +60,11 @@ namespace ZaoHuaBMod
 
         private void Draw(UI.WindowData window)
         {
-            UI.Horizontal(() =>
-            {
-                // 标签页芯片
-                string[] tabs = { Loc.Get("基础"), Loc.Get("布局"), Loc.Get("状态"), Loc.Get("表单") };
-                for (int i = 0; i < tabs.Length; i++)
-                {
-                    if (DarkSkin.TabChip(tabs[i], _tab == i))
-                        _tab = i;
-                }
-            });
+            
+            _tab = UI.TabGroup(Tabs, _tab);           
+            
             UI.Divider();
             
-            
-
             switch (_tab)
             {
                 case 0:
@@ -82,8 +82,24 @@ namespace ZaoHuaBMod
             }
 
             UI.FlexibleSpace();
+            
             UI.Divider();
-            GUILayout.Label($"{Loc.Get("缩放")}: {Mathf.RoundToInt(UI.WindowControls.Scale * 100f)}%  {Loc.Get("按 ` 键显示/隐藏")}", DarkSkin.SMuted);
+            
+            UI.Horizontal(() =>
+            {
+                UI.Label().AsMuted(
+                        $"{Loc.Get("缩放")}: {Mathf.RoundToInt(UI.WindowControls.Scale * 100f)}%  {Loc.Get("按`键显示/隐藏")}")
+                    .Draw(GUILayout.Width(180));
+                
+                UI.FlexibleSpace();
+                
+                UI.Btn().Label(Loc.Get("点赞数:") + HttpGet.Count).OnClick(() =>
+                {
+                    HttpGet.TryHit(this);
+                }).Style(DarkSkin.SHint).Draw(GUILayout.Width(100));
+                
+            });
+
         }
 
         private void DrawBasicTab()
@@ -135,7 +151,7 @@ namespace ZaoHuaBMod
             
             UI.Label().Text(Loc.Get("开关与滑块")).Draw();
             _toggleValue = UI.Toggle.Text(Loc.Get("开关 Toggle"), _toggleValue).Draw();
-            _toggleValue1 = UI.Toggle.Text(Loc.Get("带提示的开关 Toggle"), _toggleValue).Tooltip(Loc.Get("一个开关")).Draw();
+            _toggleValue1 = UI.Toggle.Text(Loc.Get("带提示的开关 Toggle"), _toggleValue1).Tooltip(Loc.Get("一个开关")).Draw();
 
             _sliderValue = UI.Slider(Loc.Get("滑块值"), _sliderValue, 0f, 2f, decimals: 1);
             UI.Space(3);
@@ -177,9 +193,9 @@ namespace ZaoHuaBMod
             {
                 UI.Label().FeatureName("行 1").Draw();
                 GUILayout.FlexibleSpace();
-                UI.Label().Tag(Loc.Get("标签")).Draw();
+                UI.Label().Tag(Loc.Get("标签"), UI.LabelBuilder.TagKind.Special).Draw();
                 GUILayout.FlexibleSpace();
-                UI.Label().TagGold(Loc.Get("标签")).Draw();
+                UI.Label().Tag(Loc.Get("标签"), UI.LabelBuilder.TagKind.Hidden).Draw();
             });
             
             UI.Row(() =>
@@ -202,53 +218,62 @@ namespace ZaoHuaBMod
         private string _status = Loc.Get("就绪");
         private void DrawStatusTab()
         {
-            GUILayout.Label(Loc.Get("状态示例"), DarkSkin.STitle);
-
-            GUILayout.BeginHorizontal();
-            GUILayout.Label(Loc.Get("当前状态:"), DarkSkin.SLabel);
-            GUILayout.Label(_status, _status.Contains("失败") ? DarkSkin.SStatusErr : DarkSkin.SStatusOk);
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            if (GUILayout.Button(Loc.Get("成功"), DarkSkin.SBtnAdd))
-                _status = "操作成功";
-            if (GUILayout.Button(Loc.Get("失败"), DarkSkin.SBtnDel))
-                _status = "操作失败";
-            GUILayout.EndHorizontal();
-
+            UI.Label().Title(Loc.Get("状态示例")).Draw();
+            
+            UI.Horizontal(() =>
+            {
+                UI.Label().Text(Loc.Get("当前状态:")).Draw();
+                UI.Label().Text(_status).Style(_status.Contains("失败") ? DarkSkin.SStatusErr : DarkSkin.SStatusOk).Draw();
+            });
+            
+            UI.Horizontal(() =>
+            {
+                UI.Btn().Add(Loc.Get("成功")).OnClick(() =>
+                {
+                    _status = Loc.Get("操作成功");
+                });
+                UI.Btn().Add(Loc.Get("失败")).OnClick(() =>
+                {
+                    _status = Loc.Get("操作失败");
+                });
+            });
+            
             DarkSkin.Divider(4f);
-            GUILayout.Label(Loc.Get("类型标签"), DarkSkin.SLabel);
-
-            GUILayout.BeginHorizontal();
-            GUILayout.Label(Loc.Get("正面"), DarkSkin.STypeGood);
-            GUILayout.Label(Loc.Get("负面"), DarkSkin.STypeBad);
-            GUILayout.Label(Loc.Get("特殊"), DarkSkin.STypeSpecial);
-            GUILayout.Label(Loc.Get("临时"), DarkSkin.STypeTemp);
-            GUILayout.EndHorizontal();
-
+            
+            UI.Label().Text(Loc.Get("类型标签")).Draw();
+            UI.Row(() =>
+            {
+                UI.Label().Tag(Loc.Get("正面"), UI.LabelBuilder.TagKind.Good).Tooltip(Loc.Get("正面")).Draw();
+                UI.Label().Tag(Loc.Get("负面"), UI.LabelBuilder.TagKind.Bad).Tooltip(Loc.Get("负面")).Draw();
+                UI.Label().Tag(Loc.Get("特殊"), UI.LabelBuilder.TagKind.Special).Tooltip(Loc.Get("特殊")).Draw();
+                UI.Label().Tag(Loc.Get("临时"), UI.LabelBuilder.TagKind.Temp).Tooltip(Loc.Get("临时")).Draw();
+            });
+            
             DarkSkin.Divider(4f);
-            GUILayout.Label(Loc.Get("计数 / 名称按钮"), DarkSkin.SLabel);
-            GUILayout.BeginHorizontal();
-            GUILayout.Label(Loc.Get("数量:"), DarkSkin.SLabel);
-            GUILayout.Label("42", DarkSkin.SCount);
-            GUILayout.EndHorizontal();
 
-            if (GUILayout.Button($"<color=cyan>{Loc.Get("可点击名称")} ({_clickCount})</color>", DarkSkin.SNameBtn))
+            UI.Label().Text(Loc.Get("计数 / 名称按钮")).Draw();
+            UI.Horizontal(() =>
+            {
+                UI.Label().Text(Loc.Get("数量：")).Draw();
+                UI.Label().AsCount("40").Draw();
+            });
+            UI.Btn().Label($"<color=cyan>{Loc.Get("可点击名称")} ({_clickCount})</color>").OnClick(() =>
             {
                 _clickCount++;
-            }
+            }).Draw();
         }
 
         private void DrawFormTab()
         {
-            GUILayout.Label(Loc.Get("表单控件"), DarkSkin.STitle);
+            UI.Label().Title(Loc.Get("表单控件")).Draw();
 
-            GUILayout.Label(Loc.Get("单选下拉菜单"), DarkSkin.SLabel);
-            string[] dropdownOptions = { Loc.Get("选项 A"), Loc.Get("选项 B"), Loc.Get("选项 C"), Loc.Get("选项 D") };
-            _dropdownIndex = DarkSkin.Dropdown(_dropdownIndex, dropdownOptions, ref _dropdownExpanded);
+            UI.Label().Title(Loc.Get("单选下拉菜单")).Draw();
+            _dropdownIndex = UI.Dropdown(_dropdownIndex, dropdownOptions, ref _dropdownExpanded);
 
-            DarkSkin.Divider(4f);
-            GUILayout.Label(Loc.Get("折叠面板 Foldout"), DarkSkin.SLabel);
+            DarkSkin.Divider();
+
+            UI.Label().Text(Loc.Get("折叠面板 Foldout")).Draw();
+            
             _foldoutExpanded = DarkSkin.Foldout(_foldoutExpanded, Loc.Get("高级设置"));
             if (_foldoutExpanded)
             {
@@ -258,9 +283,9 @@ namespace ZaoHuaBMod
                 GUILayout.EndVertical();
             }
 
-            DarkSkin.Divider(4f);
-            GUILayout.Label(Loc.Get("表格 Table"), DarkSkin.SLabel);
-
+            DarkSkin.Divider();
+            
+            UI.Label().Title(Loc.Get("表格")).Draw();
             // 表头
             string[,] tableData =
             {

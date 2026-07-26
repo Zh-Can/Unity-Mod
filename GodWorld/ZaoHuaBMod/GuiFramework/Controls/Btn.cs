@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using ZaoHuaBMod.GuiFramework.Style;
 
@@ -46,6 +46,13 @@ namespace ZaoHuaBMod.GuiFramework.Controls
                 _style =  DarkSkin.SBtnDel;
                 return this;
             }
+            /// <summary>文本按钮</summary>
+            public ButtonBuilder Label(string text)
+            {
+                _text = text;
+                _style =  DarkSkin.SNameBtn;
+                return this;
+            }
 
             /// <summary>指定自定义样式。</summary>
             public ButtonBuilder Style(GUIStyle style)
@@ -69,9 +76,9 @@ namespace ZaoHuaBMod.GuiFramework.Controls
             }
 
             /// <summary>绘制按钮。</summary>
-            public bool Draw()
+            public bool Draw(params GUILayoutOption[] options)
             {
-                bool clicked = GUILayout.Button(new GUIContent(_text, _tooltip), _style);
+                bool clicked = GUILayout.Button(new GUIContent(_text, _tooltip), _style, options);
                 if (clicked)
                     _onClick?.Invoke();
                 return clicked;

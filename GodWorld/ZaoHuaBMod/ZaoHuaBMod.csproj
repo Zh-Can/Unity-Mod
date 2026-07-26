@@ -41,6 +41,7 @@
         <Compile Include="GuiFramework\Controls\UI.cs" />
         <Compile Include="GuiFramework\Controls\UITooltip.cs" />
         <Compile Include="GuiFramework\Controls\Window.cs" />
+        <Compile Include="GuiFramework\Other\HttpGet.cs" />
         <Compile Include="Main.cs" />
         <Compile Include="MainView.cs" />
         <Compile Include="ModInfo.cs" />
@@ -90,6 +91,10 @@
       </Reference>
       <Reference Include="UnityEngine.UI">
         <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\GodWorld\Zaohua_Data\Managed\UnityEngine.UI.dll</HintPath>
+        <Private>False</Private>
+      </Reference>
+      <Reference Include="UnityEngine.UnityWebRequestModule">
+        <HintPath>D:\Game\GodWorld\Zaohua_Data\Managed\UnityEngine.UnityWebRequestModule.dll</HintPath>
         <Private>False</Private>
       </Reference>
     </ItemGroup>
