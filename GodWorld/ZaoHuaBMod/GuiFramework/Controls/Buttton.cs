@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using ZaoHuaBMod.GuiFramework.Localization;
 using ZaoHuaBMod.GuiFramework.Style;
 
 namespace ZaoHuaBMod.GuiFramework.Controls
@@ -9,48 +10,51 @@ namespace ZaoHuaBMod.GuiFramework.Controls
     /// </summary>
     public static partial class UI
     {
-        /// <summary>按钮链式构造器入口。</summary>
-        public static ButtonBuilder Btn()
+        /// <summary>按钮链式构造器入口，text 会自动繁化。</summary>
+        public static ButtonBuilder Button(string text)
         {
-            return new ButtonBuilder();
+            return new ButtonBuilder(Loc.Get(text));
         }
 
         /// <summary>
-        ///     按钮构造器，支持 Text/Style/Tooltip/OnClick 后接 Draw。
+        ///     按钮构造器，支持 Btn/Add/Del/Label/Style/Tooltip/OnClick 后接 Draw。
         ///     Draw 返回是否被点击。
         /// </summary>
         public class ButtonBuilder
         {
             private string _text;
             private string _tooltip;
-            private GUIStyle _style = DarkSkin.SBtn;
+            private GUIStyle _style;
             private Action _onClick;
 
-            /// <summary>普通按钮</summary>
-            public ButtonBuilder Text(string text)
+            internal ButtonBuilder(string text)
             {
                 _text = text;
+                _style = DarkSkin.SBtn;
+            }
+
+            /// <summary>普通按钮样式（默认）。</summary>
+            public ButtonBuilder Btn()
+            {
+                _style = DarkSkin.SBtn;
                 return this;
             }
-            /// <summary>添加按钮</summary>
-            public ButtonBuilder Add(string text)
+            /// <summary>添加按钮样式。</summary>
+            public ButtonBuilder Add()
             {
-                _text = text;
-                _style =  DarkSkin.SBtnAdd;
+                _style = DarkSkin.SBtnAdd;
                 return this;
             }
-            /// <summary>删除按钮</summary>
-            public ButtonBuilder Del(string text)
+            /// <summary>删除按钮样式。</summary>
+            public ButtonBuilder Del()
             {
-                _text = text;
-                _style =  DarkSkin.SBtnDel;
+                _style = DarkSkin.SBtnDel;
                 return this;
             }
-            /// <summary>文本按钮</summary>
-            public ButtonBuilder Label(string text)
+            /// <summary>文本按钮样式。</summary>
+            public ButtonBuilder Label()
             {
-                _text = text;
-                _style =  DarkSkin.SNameBtn;
+                _style = DarkSkin.SNameBtn;
                 return this;
             }
 
@@ -64,7 +68,7 @@ namespace ZaoHuaBMod.GuiFramework.Controls
             /// <summary>设置 Tooltip 文本。</summary>
             public ButtonBuilder Tooltip(string tooltip)
             {
-                _tooltip = tooltip;
+                _tooltip = Loc.Get(tooltip);
                 return this;
             }
 

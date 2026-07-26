@@ -1,4 +1,5 @@
 using UnityEngine;
+using ZaoHuaBMod.GuiFramework.Localization;
 using ZaoHuaBMod.GuiFramework.Style;
 
 namespace ZaoHuaBMod.GuiFramework.Controls
@@ -8,8 +9,11 @@ namespace ZaoHuaBMod.GuiFramework.Controls
     /// </summary>
     public static partial class UI
     {
-        /// <summary>开关链式构造器入口。</summary>
-        public static ToggleBuilder Toggle => new ToggleBuilder();
+        /// <summary>开关链式构造器入口，text 会自动繁化。</summary>
+        public static ToggleBuilder Toggle(string text)
+        {
+            return new ToggleBuilder(Loc.Get(text));
+        }
 
         /// <summary>
         ///     开关构造器，支持 Value/Style/Tooltip 后接 Draw。
@@ -20,13 +24,18 @@ namespace ZaoHuaBMod.GuiFramework.Controls
             private bool _value;
             private string _text;
             private string _tooltip;
-            private GUIStyle _style = DarkSkin.SToggle;
+            private GUIStyle _style;
 
-            /// <summary>设置当前值和文本。</summary>
-            public ToggleBuilder Text(string text, bool value = false)
+            internal ToggleBuilder(string text)
+            {
+                _text = text;
+                _style = DarkSkin.SToggle;
+            }
+
+            /// <summary>设置开关状态。</summary>
+            public ToggleBuilder Value(bool value)
             {
                 _value = value;
-                _text = text;
                 return this;
             }
 
@@ -40,7 +49,7 @@ namespace ZaoHuaBMod.GuiFramework.Controls
             /// <summary>设置 Tooltip 文本。</summary>
             public ToggleBuilder Tooltip(string tooltip)
             {
-                _tooltip = tooltip;
+                _tooltip = Loc.Get(tooltip);
                 return this;
             }
 

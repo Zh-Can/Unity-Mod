@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using UnityEngine;
+using ZaoHuaBMod.GuiFramework.Localization;
 using ZaoHuaBMod.GuiFramework.Logger;
 using ZaoHuaBMod.GuiFramework.Style;
 
@@ -220,13 +221,13 @@ namespace ZaoHuaBMod.GuiFramework.Controls
         }
 
         /// <summary>折叠面板（包含标题和展开内容区）</summary>
-        /// <param name="expanded">是否展开</param>
         /// <param name="title">标题文本</param>
+        /// <param name="expanded">是否展开</param>
         /// <param name="content">展开后绘制的内容</param>
         /// <returns>新的展开状态</returns>
-        public static bool Foldout(bool expanded, string title, Action content = null)
+        public static bool Foldout(string title, bool expanded, Action content = null)
         {
-            bool newExpanded = DarkSkin.Foldout(expanded, title);
+            bool newExpanded = DarkSkin.Foldout(expanded, Loc.Get(title));
             if (newExpanded && content != null)
                 Box(content);
             return newExpanded;
@@ -262,7 +263,7 @@ namespace ZaoHuaBMod.GuiFramework.Controls
                 Horizontal(() =>
                 {
                     for (int c = 0; c < cols; c++)
-                        UI.Label().Text(data[row, c]).Draw(GUILayout.Width(colWidth));
+                        UI.Label(data[row, c]).Text().Draw(GUILayout.Width(colWidth));
                 }, rowStyle);
 
                 if (selectable)
@@ -323,7 +324,7 @@ namespace ZaoHuaBMod.GuiFramework.Controls
             decimals = Mathf.Max(0, decimals);
             GUILayout.BeginHorizontal();
             var format = $"F{decimals}";
-            var content = new GUIContent($"{text}: {sliderValue.ToString(format)}");
+            var content = new GUIContent($"{Loc.Get(text)}: {sliderValue.ToString(format)}");
             var size = DarkSkin.SLabel.CalcSize(content);
             GUILayout.Label(content, DarkSkin.SLabel, GUILayout.Width(size.x));
             GUILayout.BeginVertical();

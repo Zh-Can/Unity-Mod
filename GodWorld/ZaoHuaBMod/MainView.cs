@@ -20,7 +20,8 @@ namespace ZaoHuaBMod
         
         private float _sliderValue = 0.5f;
 
-        private static readonly string[] dropdownOptions = { Loc.Get("选项 A"), Loc.Get("选项 B"), Loc.Get("选项 C"), Loc.Get("选项 D") };
+        private static readonly string[] DropdownOptions = { Loc.Get("选项 A"), Loc.Get("选项 B"), Loc.Get("选项 C"), Loc.Get("选项 D") };
+        private static readonly string[] RadioButton = { Loc.Get("选项一"), Loc.Get("选项二"), Loc.Get("选项三"), Loc.Get("选项四") };
         private int _dropdownIndex;
         private bool _dropdownExpanded;
         
@@ -88,13 +89,13 @@ namespace ZaoHuaBMod
             
             UI.Horizontal(() =>
             {
-                UI.Label().AsMuted(
-                        $"{Loc.Get("缩放")}: {Mathf.RoundToInt(UI.WindowControls.Scale * 100f)}%  {Loc.Get("按`键显示/隐藏")}")
+                UI.Label($"{Loc.Get("缩放")}: {Mathf.RoundToInt(UI.WindowControls.Scale * 100f)}%  {Loc.Get("按`键显示/隐藏")}")
+                    .AsMuted()
                     .Draw(GUILayout.Width(180));
                 
                 UI.FlexibleSpace();
                 
-                UI.Btn().Label(Loc.Get("点赞数:") + HttpGet.Count).OnClick(() =>
+                UI.Button(Loc.Get("点赞数:") + HttpGet.Count).Label().OnClick(() =>
                 {
                     HttpGet.TryHit(this);
                 }).Style(DarkSkin.SHint).Draw(GUILayout.Width(100));
@@ -105,64 +106,64 @@ namespace ZaoHuaBMod
 
         private void DrawBasicTab()
         {
-            UI.Label().Title(Loc.Get("基础控件(标题)-AsTitle")).Draw();
-            UI.Label().Text(Loc.Get("普通文本-Text")).Draw();
-            UI.Label().AsHint(Loc.Get("灰色提示小字靠右排列-AsHint")).Draw();
-            UI.Label().AsMuted(Loc.Get("灰色小字AsMuted")).Draw();
-            UI.Label().AsCount(Loc.Get("蓝色小字文本AsCount")).Draw();
-            UI.Label().Text(Loc.Get("带提示文本")).Tooltip(Loc.Get("鼠标放上来会显示 Tooltip")).Draw();
+            UI.Label("基础控件(标题)-AsTitle").Title().Draw();
+            UI.Label("普通文本-Text").Text().Draw();
+            UI.Label("灰色提示小字靠右排列-AsHint").AsHint().Draw();
+            UI.Label("灰色小字AsMuted").AsMuted().Draw();
+            UI.Label("蓝色小字文本AsCount").AsCount().Draw();
+            UI.Label("带提示文本").Text().Tooltip(Loc.Get("鼠标放上来会显示 Tooltip")).Draw();
                 
             UI.Divider(4f);
             
-            UI.Label().Text(Loc.Get("按钮")).Draw();
+            UI.Label("按钮").Text().Draw();
 
             UI.Vertical(() =>
             {
                 UI.Horizontal(() =>
                 {
-                    UI.Btn().Text("普通按钮").OnClick(() =>
+                    UI.Button("普通按钮").Btn().OnClick(() =>
                     {
                         Log.Info("普通按钮被点击");
                     }).Draw();
                     UI.Space();
-                    UI.Btn().Add("添加按钮").OnClick(() =>
+                    UI.Button("添加按钮").Add().OnClick(() =>
                     {
                         Log.Info("添加按钮被点击");
                     }).Draw();
                     UI.Space();
-                    UI.Btn().Del("删除按钮").OnClick(() =>
+                    UI.Button("删除按钮").Del().OnClick(() =>
                     {
                         Log.Info("删除按钮被点击");
                     }).Draw();
                 });
             });
-            UI.Label().Text(Loc.Get("单选按钮 Radio 竖3个")).Draw();
+            UI.Label("单选按钮 Radio 竖4个").Text().Draw();
             _radioIndex = UI.RadioButtonGroup
                 .Selected(_radioIndex)
-                .Options(Loc.Get("方案一"), Loc.Get("方案二"), Loc.Get("方案三"))
+                .Options(RadioButton)
                 .Draw();
-            UI.Label().Text(Loc.Get("单选按钮 Radio 横3个")).Draw();
+            UI.Label("单选按钮 Radio 横4个").Text().Draw();
             _radioIndex = UI.RadioButtonGroup
                 .Selected(_radioIndex)
-                .Options(Loc.Get("方案一"), Loc.Get("方案二"), Loc.Get("方案三"))
+                .Options(RadioButton)
                 .Horizontal()
                 .Draw();
 
             DarkSkin.Divider(4f);
             
-            UI.Label().Text(Loc.Get("开关与滑块")).Draw();
-            _toggleValue = UI.Toggle.Text(Loc.Get("开关 Toggle"), _toggleValue).Draw();
-            _toggleValue1 = UI.Toggle.Text(Loc.Get("带提示的开关 Toggle"), _toggleValue1).Tooltip(Loc.Get("一个开关")).Draw();
+            UI.Label("开关与滑块").Text().Draw();
+            _toggleValue = UI.Toggle("开关 Toggle").Value(_toggleValue).Draw();
+            _toggleValue1 = UI.Toggle("带提示的开关 Toggle").Value(_toggleValue1).Tooltip(Loc.Get("一个开关")).Draw();
 
             _sliderValue = UI.Slider(Loc.Get("滑块值"), _sliderValue, 0f, 2f, decimals: 1);
             UI.Space(3);
 
             DarkSkin.Divider(4f);
 
-            UI.Label().Text(Loc.Get("输入框")).Draw();
-            UI.Label().AsMuted(Loc.Get("单行输入:")).Draw();
+            UI.Label("输入框").Text().Draw();
+            UI.Label("单行输入:").AsMuted().Draw();
             _input = UI.TextFiled(_input);
-            UI.Label().AsMuted(Loc.Get("多行输入:")).Draw();
+            UI.Label("多行输入:").AsMuted().Draw();
             _textArea = UI.TextArea(_textArea);
             
         }
@@ -173,67 +174,68 @@ namespace ZaoHuaBMod
         
         private void DrawLayoutTab()
         {
-            UI.Label().Title(Loc.Get("布局示例"));
+            UI.Label("布局示例").Title();
 
             UI.Horizontal(() =>
             {
-                UI.Label().Text(Loc.Get("水平布局左")).Draw();
+                UI.Label("水平布局左").Text().Draw();
                 UI.FlexibleSpace();
-                UI.Label().Text(Loc.Get("水平布局右")).Draw();
+                UI.Label("水平布局右").Text().Draw();
             });
 
             UI.Box(() =>
             {
-                UI.Label().Text(Loc.Get("面板 / Box 样式")).Draw();
-                UI.Label().AsMuted(Loc.Get("第二行文本")).Draw();
-                UI.Label().AsMuted(Loc.Get("第三行文本")).Draw();
+                UI.Label("面板 / Box 样式").Text().Draw();
+                UI.Label("第二行文本").AsMuted().Draw();
+                UI.Label("第三行文本").AsMuted().Draw();
             });
 
-            UI.Label().Text(Loc.Get("交替行背景")).Draw();
+            UI.Label("交替行背景").Text().Draw();
             UI.RowAlt(() =>
             {
-                UI.Label().FeatureName("行 1").Draw();
+                UI.Label("行 1").FeatureName().Draw();
                 GUILayout.FlexibleSpace();
-                UI.Label().Tag(Loc.Get("标签"), UI.LabelBuilder.TagKind.Special).Draw();
+                UI.Label("标签").Tag(UI.LabelBuilder.TagKind.Special).Draw();
                 GUILayout.FlexibleSpace();
-                UI.Label().Tag(Loc.Get("标签"), UI.LabelBuilder.TagKind.Hidden).Draw();
+                UI.Label("标签").Tag(UI.LabelBuilder.TagKind.Hidden).Draw();
             });
             
             UI.Row(() =>
             {
-                UI.Label().FeatureName(Loc.Get("行 2")).Draw();
+                UI.Label("行 2").FeatureName().Draw();
                 UI.FlexibleSpace();
-                UI.Label().Tag("<color=red>标签</color>").Draw();
+                UI.Label($"<color=red>{Loc.Get("标签")}</color>").Tag().Draw();
                 UI.FlexibleSpace();
-                UI.Label().Tag("<color=green>标签</color>").Draw();
+                UI.Label($"<color=green>{Loc.Get("标签")}</color>").Tag().Draw();
             });
             
-            UI.Label().Text(Loc.Get("详情面板"));
+            UI.Label("详情面板").Text();
             UI.BoxDetail(() =>
             {
-                UI.Label().DetailHead(Loc.Get("详情标题")).Draw();
-                UI.Label().DetailText(Loc.Get("这里是详情内容，支持 <color=cyan>RichText</color> 高亮。")).Draw();
+                UI.Label("详情标题").DetailHead().Draw();
+                UI.Label($"{Loc.Get("这里是详情内容，支持")} <color=cyan>{Loc.Get("RichText")}</color> {Loc.Get("高亮")}。").DetailText().Draw();
+                
             });
         }
 
         private string _status = Loc.Get("就绪");
         private void DrawStatusTab()
         {
-            UI.Label().Title(Loc.Get("状态示例")).Draw();
+            UI.Label("状态示例").Title().Draw();
             
             UI.Horizontal(() =>
             {
-                UI.Label().Text(Loc.Get("当前状态:")).Draw();
-                UI.Label().Text(_status).Style(_status.Contains("失败") ? DarkSkin.SStatusErr : DarkSkin.SStatusOk).Draw();
+                UI.Label("当前状态:").Text().Draw();
+                UI.Label(_status).Text().Style(_status.Contains("失败") ? DarkSkin.SStatusErr : DarkSkin.SStatusOk).Draw();
             });
             
             UI.Horizontal(() =>
             {
-                UI.Btn().Add(Loc.Get("成功")).OnClick(() =>
+                UI.Button(Loc.Get("成功")).Add().OnClick(() =>
                 {
                     _status = Loc.Get("操作成功");
                 });
-                UI.Btn().Add(Loc.Get("失败")).OnClick(() =>
+                UI.Button(Loc.Get("失败")).Add().OnClick(() =>
                 {
                     _status = Loc.Get("操作失败");
                 });
@@ -241,24 +243,24 @@ namespace ZaoHuaBMod
             
             DarkSkin.Divider(4f);
             
-            UI.Label().Text(Loc.Get("类型标签")).Draw();
+            UI.Label("类型标签").Text().Draw();
             UI.Row(() =>
             {
-                UI.Label().Tag(Loc.Get("正面"), UI.LabelBuilder.TagKind.Good).Tooltip(Loc.Get("正面")).Draw();
-                UI.Label().Tag(Loc.Get("负面"), UI.LabelBuilder.TagKind.Bad).Tooltip(Loc.Get("负面")).Draw();
-                UI.Label().Tag(Loc.Get("特殊"), UI.LabelBuilder.TagKind.Special).Tooltip(Loc.Get("特殊")).Draw();
-                UI.Label().Tag(Loc.Get("临时"), UI.LabelBuilder.TagKind.Temp).Tooltip(Loc.Get("临时")).Draw();
+                UI.Label("正面").Tag(UI.LabelBuilder.TagKind.Good).Tooltip("正面").Draw();
+                UI.Label("负面").Tag(UI.LabelBuilder.TagKind.Bad).Tooltip("负面").Draw();
+                UI.Label("特殊").Tag(UI.LabelBuilder.TagKind.Special).Tooltip("特殊").Draw();
+                UI.Label("临时").Tag(UI.LabelBuilder.TagKind.Temp).Tooltip("临时").Draw();
             });
             
             DarkSkin.Divider(4f);
 
-            UI.Label().Text(Loc.Get("计数 / 名称按钮")).Draw();
+            UI.Label("计数 / 名称按钮").Text().Draw();
             UI.Horizontal(() =>
             {
-                UI.Label().Text(Loc.Get("数量：")).Draw();
-                UI.Label().AsCount("40").Draw();
+                UI.Label("数量：").Text().Draw();
+                UI.Label("40").AsCount().Draw();
             });
-            UI.Btn().Label($"<color=cyan>{Loc.Get("可点击名称")} ({_clickCount})</color>").OnClick(() =>
+            UI.Button($"<color=cyan>{Loc.Get("可点击名称")} ({_clickCount})</color>").Label().OnClick(() =>
             {
                 _clickCount++;
             }).Draw();
@@ -266,29 +268,29 @@ namespace ZaoHuaBMod
 
         private void DrawFormTab()
         {
-            UI.Label().Title(Loc.Get("表单控件")).Draw();
+            UI.Label("表单控件").Title().Draw();
 
-            UI.Label().Title(Loc.Get("单选下拉菜单")).Draw();
-            _dropdownIndex = UI.Dropdown(_dropdownIndex, dropdownOptions, ref _dropdownExpanded);
-            UI.Btn().Text("获取单选下拉菜单选中的数据").OnClick(() =>
+            UI.Label("单选下拉菜单").Title().Draw();
+            _dropdownIndex = UI.Dropdown(_dropdownIndex, DropdownOptions, ref _dropdownExpanded);
+            UI.Button("获取单选下拉菜单选中的数据").Btn().OnClick(() =>
             {
-                Log.Info(dropdownOptions[_dropdownIndex]);
+                Log.Info(DropdownOptions[_dropdownIndex]);
             }).Draw();
             
             DarkSkin.Divider();
 
-            UI.Label().Text(Loc.Get("折叠面板 Foldout")).Draw();
+            UI.Label("折叠面板 Foldout").Text().Draw();
             
-            _foldoutExpanded = UI.Foldout(_foldoutExpanded, Loc.Get("高级设置"), () =>
+            _foldoutExpanded = UI.Foldout("高级设置", _foldoutExpanded,() =>
             {
-                UI.Label().Text(Loc.Get("折叠区内容一")).Draw();
-                UI.Label().AsMuted(Loc.Get("折叠区内容二")).Draw();
+                UI.Label("折叠区内容一").Text().Draw();
+                UI.Label("折叠区内容二").AsMuted().Draw();
             });
 
             DarkSkin.Divider();
             
             
-            UI.Label().Title(Loc.Get("普通表格")).Draw();
+            UI.Label("普通表格").Title().Draw();
             string[,] tableData =
             {
                 { Loc.Get("名称"), Loc.Get("类型"), Loc.Get("数值") },
@@ -299,10 +301,10 @@ namespace ZaoHuaBMod
             };
             _selectedTableRow = UI.Table(tableData, _selectedTableRow, selectable:false);
             
-            UI.Label().Title(Loc.Get("可选中表格")).Draw();
+            UI.Label("可选中表格").Title().Draw();
             _selectedTableRow = UI.Table(tableData, _selectedTableRow);
 
-            UI.Btn().Text("获取选中的行的数据").OnClick(() =>
+            UI.Button("获取选中的行的数据").Btn().OnClick(() =>
             {
                 Log.Info(string.Join(", ", Enumerable.Range(0, tableData.GetLength(1))
                     .Select(c => tableData[_selectedTableRow, c])));

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using ZaoHuaBMod.GuiFramework.Localization;
 using ZaoHuaBMod.GuiFramework.Style;
 
 namespace ZaoHuaBMod.GuiFramework.Controls
@@ -9,11 +10,10 @@ namespace ZaoHuaBMod.GuiFramework.Controls
     /// </summary>
     public static partial class UI
     {
-        
-        /// <summary>Label 链式构造器入口。</summary>
-        public static LabelBuilder Label()
+        /// <summary>Label 链式构造器入口，text 会自动繁化。</summary>
+        public static LabelBuilder Label(string text)
         {
-            return new LabelBuilder();
+            return new LabelBuilder(Loc.Get(text));
         }
         
         /// <summary>
@@ -23,70 +23,68 @@ namespace ZaoHuaBMod.GuiFramework.Controls
         {
             private string _text;
             private string _tooltip;
-            private GUIStyle _style = DarkSkin.SLabel;
+            private GUIStyle _style;
 
-            /// <summary>标题样式</summary>
-            public LabelBuilder Title(string text)
+            internal LabelBuilder(string text)
             {
                 _text = text;
+                _style = DarkSkin.SLabel;
+            }
+
+            /// <summary>标题样式</summary>
+            public LabelBuilder Title()
+            {
                 _tooltip = null;
                 _style = DarkSkin.STitle;
                 return this;
             }
             /// <summary>详情标题 样式。</summary>
-            public LabelBuilder DetailHead(string text)
+            public LabelBuilder DetailHead()
             {
-                _text = text;
                 _tooltip = null;
                 _style = DarkSkin.SDetailHead;
                 return this;
             }
             /// <summary>详情内容 样式。</summary>
-            public LabelBuilder DetailText(string text)
+            public LabelBuilder DetailText()
             {
-                _text = text;
                 _tooltip = null;
                 _style = DarkSkin.SBonus;
                 return this;
             }
             
             /// <summary>靠右侧提示灰色小字样式</summary>
-            public LabelBuilder AsHint(string text)
+            public LabelBuilder AsHint()
             {
-                _text = text;
                 _tooltip = null;
                 _style = DarkSkin.SHint;
                 return this;
             }
             /// <summary>灰色小字样式</summary>
-            public LabelBuilder AsMuted(string text)
+            public LabelBuilder AsMuted()
             {
-                _text = text;
                 _tooltip = null;
                 _style = DarkSkin.SMuted;
                 return this;
             }
             /// <summary>数字样式</summary>
-            public LabelBuilder AsCount(string text)
+            public LabelBuilder AsCount()
             {
-                _text = text;
                 _tooltip = null;
                 _style = DarkSkin.SCount;
                 return this;
             }
 
             /// <summary>普通文本 样式。</summary>
-            public LabelBuilder Text(string text)
+            public LabelBuilder Text()
             {
-                _text = text;
                 _tooltip = null;
                 _style = DarkSkin.SLabel;
                 return this;
             }
             /// <summary>功能名称 样式。</summary>
-            public LabelBuilder FeatureName(string text)
+            public LabelBuilder FeatureName()
             {
-                _text = text;
                 _tooltip = null;
                 _style = DarkSkin.SFeatureName;
                 return this;
@@ -114,9 +112,8 @@ namespace ZaoHuaBMod.GuiFramework.Controls
                 }
             }
             /// <summary>标签 样式。</summary>
-            public LabelBuilder Tag(string text, TagKind kind = default)
+            public LabelBuilder Tag(TagKind kind = default)
             {
-                _text = text;
                 _tooltip = null;
                 _style = GetTagStyle(kind);
                 return this;
@@ -129,17 +126,16 @@ namespace ZaoHuaBMod.GuiFramework.Controls
                 return this;
             }
 
-            public LabelBuilder Color(Color textColor)
+            public LabelBuilder Color(Color color)
             {
-                _style = new GUIStyle(_style);
-                _style.normal.textColor = textColor;
+                _style.normal.textColor = color;
                 return this;
             }
             
             /// <summary>设置 Tooltip 文本。</summary>
             public LabelBuilder Tooltip(string tooltip)
             {
-                _tooltip = tooltip;
+                _tooltip = Loc.Get(tooltip);
                 return this;
             }
 

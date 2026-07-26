@@ -34,7 +34,7 @@
         <WarningLevel>4</WarningLevel>
     </PropertyGroup>
     <ItemGroup>
-        <Compile Include="GuiFramework\Controls\Btn.cs" />
+        <Compile Include="GuiFramework\Controls\Buttton.cs" />
         <Compile Include="GuiFramework\Controls\Label.cs" />
         <Compile Include="GuiFramework\Controls\RadioGroup.cs" />
         <Compile Include="GuiFramework\Controls\Toggle.cs" />
@@ -108,7 +108,10 @@
 
     <!-- 编译后自动生成繁体中文语言包 -->
     <Target Name="GenerateTraditionalChinese" AfterTargets="Build">
-        <Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\GuiFramework\Localization\GenerateTraditionalChinese.ps1&quot; -SourceDir &quot;$(MSBuildProjectDirectory)&quot; -OutputFile &quot;$(TargetDir)languages\繁中.cfg&quot;" />
+        <!-- 全扫描 -->
+        <!-- <Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\GuiFramework\Localization\GenerateTraditionalChinese.ps1&quot; -SourceDir &quot;$(MSBuildProjectDirectory)&quot; -OutputFile &quot;$(TargetDir)languages\繁中.cfg&quot;" /> -->
+        <!-- 指定文件扫描 -->
+        <Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\GuiFramework\Localization\GenerateTraditionalChinese.ps1&quot; -SourceDir &quot;$(MSBuildProjectDirectory)&quot; -OutputFile &quot;$(TargetDir)languages\繁中.cfg&quot; -Files &quot;MainView.cs&quot;,&quot;GuiFramework\Controls\UI.cs&quot;" />
     </Target>
 
 </Project>
