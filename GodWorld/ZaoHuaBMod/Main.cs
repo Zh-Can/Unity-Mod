@@ -1,6 +1,7 @@
 using System.IO;
 using System.Reflection;
 using MelonLoader;
+using MelonLoader.Utils;
 using UnityEngine;
 using ZaoHuaBMod.GuiFramework.Config;
 using ZaoHuaBMod.GuiFramework.Localization;
@@ -16,7 +17,7 @@ namespace ZaoHuaBMod
     public class Main : MelonMod
     {
         public static Main Instance;
-
+        
         public override void OnInitializeMelon()
         {
             Instance = this;
@@ -40,6 +41,7 @@ namespace ZaoHuaBMod
             BaseConfig.ApplyToManager();
             Loc.TryApplyLanguage(BaseConfig.Language);
             
+            ConfinInit();
         }
         private GameObject _uiObj;
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
@@ -51,6 +53,22 @@ namespace ZaoHuaBMod
                 _uiObj.AddComponent<MainView>();
                 Log.Info("ModUI 已在场景加载后创建");
             }
+            
+            // 初始化
+        }
+
+        public MelonPreferences_Category MainCategory;
+        public MelonPreferences_Entry<bool> TestFlag;
+        private void ConfinInit()
+        {
+            MainCategory = MelonPreferences.CreateCategory("ZaoHuaModConfig", "功能配置");
+            MainCategory.SetFilePath(MelonEnvironment.UserDataDirectory + $"\\{ModInfo.Name}.cfg");
+            TestFlag = MainCategory.CreateEntry("_testFlag", false,  description: "测试");
+        }
+
+        public void SaveConfig()
+        {
+            MainCategory.SaveToFile();
         }
     }
 }
@@ -74,7 +92,10 @@ namespace ZaoHuaBMod
 //     public class Main : BaseUnityPlugin
 //     {
 //         public static Main Instance;
-//
+//         private void Awake()
+//         {
+//             ConfinInit();
+//         }
 //         private void Start()
 //         {
 //             Instance = this;

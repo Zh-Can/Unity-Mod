@@ -156,6 +156,23 @@ namespace ZaoHuaBMod
             _toggleValue = UI.Toggle("开关 Toggle").Value(_toggleValue).Draw();
             _toggleValue1 = UI.Toggle("带提示的开关 Toggle").Value(_toggleValue1).Tooltip(Loc.Get("一个开关")).Draw();
 
+
+            // 带新值
+            var c = Main.Instance.TestFlag;
+            c.Value = UI.Toggle("测试自动保存配置项的开关")
+                .Value(c.Value)
+                .OnChange(v =>
+                {
+                    c.Value = v;
+                    Main.Instance.SaveConfig();
+                })
+                .Draw();
+
+            // 无参数
+            _toggleValue = UI.Toggle("测试开关，切换状态触发Log.info")
+                .Value(_toggleValue)
+                .OnChange(() => Log.Info("切换了"))
+                .Draw();
             _sliderValue = UI.Slider(Loc.Get("滑块值"), _sliderValue, 0f, 2f, decimals: 1);
             UI.Space(3);
 

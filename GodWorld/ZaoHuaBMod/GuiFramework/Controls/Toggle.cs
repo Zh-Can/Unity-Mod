@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using ZaoHuaBMod.GuiFramework.Localization;
 using ZaoHuaBMod.GuiFramework.Style;
@@ -25,6 +26,8 @@ namespace ZaoHuaBMod.GuiFramework.Controls
             private string _text;
             private string _tooltip;
             private GUIStyle _style;
+            private Action _onChange;
+            private Action<bool> _onChangeWithValue;
 
             internal ToggleBuilder(string text)
             {
@@ -53,10 +56,30 @@ namespace ZaoHuaBMod.GuiFramework.Controls
                 return this;
             }
 
+            /// <summary>开关状态变化时触发（无参数）。</summary>
+            public ToggleBuilder OnChange(Action onChange)
+            {
+                _onChange = onChange;
+                return this;
+            }
+
+            /// <summary>开关状态变化时触发（带新值）。</summary>
+            public ToggleBuilder OnChange(Action<bool> onChange)
+            {
+                _onChangeWithValue = onChange;
+                return this;
+            }
+
             /// <summary>绘制开关。</summary>
             public bool Draw()
             {
-                return GUILayout.Toggle(_value, new GUIContent(_text, _tooltip), _style);
+                var newValue = GUILayout.Toggle(_value, new GUIContent(_text, _tooltip), _style);
+                if (newValue != _value)
+                {
+                    _onChange?.Invoke();
+                    _onChangeWithValue?.Invoke(newValue);
+                }
+                return newValue;
             }
         }
     }
