@@ -186,8 +186,8 @@ namespace ZaoHuaBMod
             
         }
 
-        private string _input = "单行输入内容";
-        private string _textArea = "多行输入区域\n第二行";
+        private string _input = Loc.Get("单行输入内容");
+        private string _textArea = Loc.Get("多行输入区域")+ "\n" + Loc.Get("第二行");
         
         
         private void DrawLayoutTab()
