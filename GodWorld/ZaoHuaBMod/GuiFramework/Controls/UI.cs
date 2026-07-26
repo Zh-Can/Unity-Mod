@@ -1,5 +1,7 @@
 using System;
+using System.Linq;
 using UnityEngine;
+using ZaoHuaBMod.GuiFramework.Logger;
 using ZaoHuaBMod.GuiFramework.Style;
 
 namespace ZaoHuaBMod.GuiFramework.Controls
@@ -215,6 +217,65 @@ namespace ZaoHuaBMod.GuiFramework.Controls
                         break;
                 }
             }
+        }
+
+        /// <summary>折叠面板（包含标题和展开内容区）</summary>
+        /// <param name="expanded">是否展开</param>
+        /// <param name="title">标题文本</param>
+        /// <param name="content">展开后绘制的内容</param>
+        /// <returns>新的展开状态</returns>
+        public static bool Foldout(bool expanded, string title, Action content = null)
+        {
+            bool newExpanded = DarkSkin.Foldout(expanded, title);
+            if (newExpanded && content != null)
+                Box(content);
+            return newExpanded;
+        }
+
+        /// <summary>
+        ///     表格（首行为表头，支持点击选中行）
+        /// </summary>
+        /// <param name="data">二维数组，第 0 行为表头</param>
+        /// <param name="selectedRow">当前选中行索引</param>
+        /// <param name="colWidth">列宽（所有列统一）</param>
+        /// <param name="selectable">是否可以选中</param>
+        /// <returns>新的选中行索引</returns>
+        public static int Table(string[,] data, int selectedRow, float colWidth = 120, bool selectable = true)
+        {
+            var cols = data.GetLength(1);
+
+            // 表头
+            Horizontal(() =>
+            {
+                for (int c = 0; c < cols; c++)
+                    GUILayout.Label(data[0, c], DarkSkin.SDetailHead, GUILayout.Width(colWidth));
+            });
+
+            // 数据行
+            for (int r = 1; r < data.GetLength(0); r++)
+            {
+                var row = r;
+                var rowStyle = selectable && row == selectedRow
+                    ? DarkSkin.SRowSelected
+                    : (row % 2 == 0 ? DarkSkin.SRow : DarkSkin.SRowAlt);
+
+                Horizontal(() =>
+                {
+                    for (int c = 0; c < cols; c++)
+                        UI.Label().Text(data[row, c]).Draw(GUILayout.Width(colWidth));
+                }, rowStyle);
+
+                if (selectable)
+                {
+                    var rowRect = GUILayoutUtility.GetLastRect();
+                    if (Event.current.type == EventType.MouseDown && rowRect.Contains(Event.current.mousePosition))
+                    {
+                        selectedRow = row;
+                        Event.current.Use();
+                    }
+                }
+            }
+            return selectedRow;
         }
 
         /// <summary>单选下拉框</summary>

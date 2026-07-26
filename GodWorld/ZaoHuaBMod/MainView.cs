@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 using ZaoHuaBMod.GuiFramework.Controls;
 using ZaoHuaBMod.GuiFramework.Localization;
@@ -269,24 +270,25 @@ namespace ZaoHuaBMod
 
             UI.Label().Title(Loc.Get("单选下拉菜单")).Draw();
             _dropdownIndex = UI.Dropdown(_dropdownIndex, dropdownOptions, ref _dropdownExpanded);
-
+            UI.Btn().Text("获取单选下拉菜单选中的数据").OnClick(() =>
+            {
+                Log.Info(dropdownOptions[_dropdownIndex]);
+            }).Draw();
+            
             DarkSkin.Divider();
 
             UI.Label().Text(Loc.Get("折叠面板 Foldout")).Draw();
             
-            _foldoutExpanded = DarkSkin.Foldout(_foldoutExpanded, Loc.Get("高级设置"));
-            if (_foldoutExpanded)
+            _foldoutExpanded = UI.Foldout(_foldoutExpanded, Loc.Get("高级设置"), () =>
             {
-                GUILayout.BeginVertical(DarkSkin.SPanel);
-                GUILayout.Label(Loc.Get("折叠区内容一"), DarkSkin.SLabel);
-                GUILayout.Label(Loc.Get("折叠区内容二"), DarkSkin.SMuted);
-                GUILayout.EndVertical();
-            }
+                UI.Label().Text(Loc.Get("折叠区内容一")).Draw();
+                UI.Label().AsMuted(Loc.Get("折叠区内容二")).Draw();
+            });
 
             DarkSkin.Divider();
             
-            UI.Label().Title(Loc.Get("表格")).Draw();
-            // 表头
+            
+            UI.Label().Title(Loc.Get("普通表格")).Draw();
             string[,] tableData =
             {
                 { Loc.Get("名称"), Loc.Get("类型"), Loc.Get("数值") },
@@ -295,34 +297,17 @@ namespace ZaoHuaBMod
                 { Loc.Get("物品三"), Loc.Get("道具"), "30"},
                 { Loc.Get("物品四"), Loc.Get("材料"), "999" }
             };
-            GUILayout.BeginHorizontal(DarkSkin.SRow);
-            for (int col = 0; col < tableData.GetLength(1); col++)
+            _selectedTableRow = UI.Table(tableData, _selectedTableRow, selectable:false);
+            
+            UI.Label().Title(Loc.Get("可选中表格")).Draw();
+            _selectedTableRow = UI.Table(tableData, _selectedTableRow);
+
+            UI.Btn().Text("获取选中的行的数据").OnClick(() =>
             {
-                GUILayout.Label(tableData[0, col], DarkSkin.SDetailHead, GUILayout.Width(120));
-            }
-            GUILayout.EndHorizontal();
-
-            // 数据行（点击可选中）
-            for (int row = 1; row < tableData.GetLength(0); row++)
-            {
-                var rowStyle = row == _selectedTableRow
-                    ? DarkSkin.SRowSelected
-                    : (row % 2 == 0 ? DarkSkin.SRow : DarkSkin.SRowAlt);
-
-                GUILayout.BeginHorizontal(rowStyle);
-                for (int col = 0; col < tableData.GetLength(1); col++)
-                {
-                    GUILayout.Label(tableData[row, col], DarkSkin.SLabel, GUILayout.Width(120));
-                }
-                GUILayout.EndHorizontal();
-
-                var rowRect = GUILayoutUtility.GetLastRect();
-                if (Event.current.type == EventType.MouseDown && rowRect.Contains(Event.current.mousePosition))
-                {
-                    _selectedTableRow = row;
-                    Event.current.Use();
-                }
-            }
+                Log.Info(string.Join(", ", Enumerable.Range(0, tableData.GetLength(1))
+                    .Select(c => tableData[_selectedTableRow, c])));
+            }).Draw();
+            
         }
     }
 }
