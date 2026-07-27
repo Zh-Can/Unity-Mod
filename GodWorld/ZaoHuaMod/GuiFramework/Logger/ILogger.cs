@@ -1,4 +1,4 @@
-namespace ZaoHuaBMod.GuiFramework.Logger
+﻿namespace ZaoHuaMod.GuiFramework.Logger
 {
     public interface ILogger
     {

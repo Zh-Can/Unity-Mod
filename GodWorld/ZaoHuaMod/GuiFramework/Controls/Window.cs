@@ -1,13 +1,13 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using ZaoHuaBMod.GuiFramework.Config;
-using ZaoHuaBMod.GuiFramework.Localization;
-using ZaoHuaBMod.GuiFramework.Logger;
-using ZaoHuaBMod.GuiFramework.Style;
+using ZaoHuaMod.GuiFramework.Config;
+using ZaoHuaMod.GuiFramework.Localization;
+using ZaoHuaMod.GuiFramework.Logger;
+using ZaoHuaMod.GuiFramework.Style;
 
-namespace ZaoHuaBMod.GuiFramework.Controls
+namespace ZaoHuaMod.GuiFramework.Controls
 {
     /// <summary>
     ///     UI 窗体管理分部：创建、绘制、拖拽、缩放。
@@ -183,7 +183,7 @@ namespace ZaoHuaBMod.GuiFramework.Controls
                 }
                 catch (Exception e)
                 {
-                    Log.Error($"[ZaoHuaBMod] 窗口 {window.TitleBar?.Title} 绘制异常: {e}");
+                    Log.Error($"[ZaoHuaMod] 窗口 {window.TitleBar?.Title} 绘制异常: {e}");
                 }
                 finally
                 {

@@ -1,6 +1,6 @@
-using System;
+﻿using System;
 
-namespace ZaoHuaBMod.GuiFramework.Logger.Adapters
+namespace ZaoHuaMod.GuiFramework.Logger.Adapters
 {
     /// <summary>
     /// 通过反射调用 BepInEx.Logging.ManualLogSource，不直接引用 BepInEx 程序集。

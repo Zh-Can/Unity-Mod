@@ -1,8 +1,8 @@
-using UnityEngine;
-using ZaoHuaBMod.GuiFramework.Controls;
-using ZaoHuaBMod.GuiFramework.Localization;
+﻿using UnityEngine;
+using ZaoHuaMod.GuiFramework.Controls;
+using ZaoHuaMod.GuiFramework.Localization;
 
-namespace ZaoHuaBMod.GuiFramework.Config
+namespace ZaoHuaMod.GuiFramework.Config
 {
     /// <summary>
     ///     管理 Mod 持久化配置（使用 Unity PlayerPrefs）。

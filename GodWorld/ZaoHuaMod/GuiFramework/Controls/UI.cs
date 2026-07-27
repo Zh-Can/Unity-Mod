@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Linq;
 using UnityEngine;
-using ZaoHuaBMod.GuiFramework.Localization;
-using ZaoHuaBMod.GuiFramework.Logger;
-using ZaoHuaBMod.GuiFramework.Style;
+using ZaoHuaMod.GuiFramework.Localization;
+using ZaoHuaMod.GuiFramework.Logger;
+using ZaoHuaMod.GuiFramework.Style;
 
-namespace ZaoHuaBMod.GuiFramework.Controls
+namespace ZaoHuaMod.GuiFramework.Controls
 {
     /// <summary>
     ///     UI 入口，提供窗体创建与布局。

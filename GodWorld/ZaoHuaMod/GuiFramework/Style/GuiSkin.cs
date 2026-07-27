@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using UnityEngine;
-using ZaoHuaBMod.GuiFramework.Logger;
+using ZaoHuaMod.GuiFramework.Logger;
 
-namespace ZaoHuaBMod.GuiFramework.Style
+namespace ZaoHuaMod.GuiFramework.Style
 {
     /// <summary>
     ///     复刻 FeatureEditor.Frontend 的暗色 IMGUI 皮肤。
@@ -466,7 +466,7 @@ namespace ZaoHuaBMod.GuiFramework.Style
             }
             catch (Exception ex)
             {
-                Log.Error($"[ZaoHuaBMod] 皮肤初始化失败:  {ex}");
+                Log.Error($"[ZaoHuaMod] 皮肤初始化失败:  {ex}");
             }
             _initialized = true;
         }

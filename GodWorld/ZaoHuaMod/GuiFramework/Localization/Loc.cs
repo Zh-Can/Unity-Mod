@@ -1,12 +1,12 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using ZaoHuaBMod.GuiFramework.Config;
-using ZaoHuaBMod.GuiFramework.Logger;
+using ZaoHuaMod.GuiFramework.Config;
+using ZaoHuaMod.GuiFramework.Logger;
 
-namespace ZaoHuaBMod.GuiFramework.Localization
+namespace ZaoHuaMod.GuiFramework.Localization
 {
     /// <summary>
     /// 简易多语言支持类，语言包使用 key=value 纯文本格式。

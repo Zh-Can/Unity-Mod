@@ -1,7 +1,7 @@
-using UnityEngine;
-using ZaoHuaBMod.GuiFramework.Style;
+﻿using UnityEngine;
+using ZaoHuaMod.GuiFramework.Style;
 
-namespace ZaoHuaBMod.GuiFramework.Controls
+namespace ZaoHuaMod.GuiFramework.Controls
 {
     /// <summary>
     ///     单选按钮组控件，提供链式调用支持。

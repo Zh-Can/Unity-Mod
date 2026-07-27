@@ -2,9 +2,9 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
-using ZaoHuaBMod.GuiFramework.Logger;
+using ZaoHuaMod.GuiFramework.Logger;
 
-namespace ZaoHuaBMod.GuiFramework.Other
+namespace ZaoHuaMod.GuiFramework.Other
 {
     public static class HttpGet
     {

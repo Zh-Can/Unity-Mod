@@ -107,6 +107,7 @@
     </ItemGroup>
     <ItemGroup>
       <Content Include="GuiFramework\Localization\GenerateTraditionalChinese.ps1" />
+      <Content Include="GuiFramework\Localization\RenameNamespace.ps1" />
       <Content Include="GuiFramework\Logger\Readme.md" />
       <Content Include="GuiFramework\Readme.md" />
     </ItemGroup>

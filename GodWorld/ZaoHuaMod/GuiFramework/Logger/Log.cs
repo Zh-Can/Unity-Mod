@@ -1,6 +1,6 @@
-using System.Reflection;
+﻿using System.Reflection;
 
-namespace ZaoHuaBMod.GuiFramework.Logger
+namespace ZaoHuaMod.GuiFramework.Logger
 {
     /// <summary>
     /// 通用日志入口，默认使用 Unity Debug，也可由外部传入 ILogger 实现。
@@ -17,7 +17,7 @@ namespace ZaoHuaBMod.GuiFramework.Logger
         {
             try
             {
-                var modInfoType = typeof(Log).Assembly.GetType("ZaoHuaBMod.ModInfo");
+                var modInfoType = typeof(Log).Assembly.GetType("ZaoHuaMod.ModInfo");
                 if (modInfoType != null)
                 {
                     var nameField = modInfoType.GetField("Name", BindingFlags.Public | BindingFlags.Static);
@@ -27,7 +27,7 @@ namespace ZaoHuaBMod.GuiFramework.Logger
             }
             catch { }
             UnityEngine.Debug.LogWarning(
-                "[Log] 未检测到 ModInfo.Name（ZaoHuaBMod.ModInfo），日志前缀使用默认 \"[Mod] \"。\n" +
+                "[Log] 未检测到 ModInfo.Name（ZaoHuaMod.ModInfo），日志前缀使用默认 \"[Mod] \"。\n" +
                 "建议创建 ModInfo.cs：public static class ModInfo { public const string Name = \"你的Mod名\"; }");
             return "[Mod] ";
         }

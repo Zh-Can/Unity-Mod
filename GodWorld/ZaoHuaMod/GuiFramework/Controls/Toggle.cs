@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using UnityEngine;
-using ZaoHuaBMod.GuiFramework.Localization;
-using ZaoHuaBMod.GuiFramework.Style;
+using ZaoHuaMod.GuiFramework.Localization;
+using ZaoHuaMod.GuiFramework.Style;
 
-namespace ZaoHuaBMod.GuiFramework.Controls
+namespace ZaoHuaMod.GuiFramework.Controls
 {
     /// <summary>
     ///     开关相关控件，提供链式调用支持。

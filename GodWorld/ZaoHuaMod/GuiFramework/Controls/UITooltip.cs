@@ -1,7 +1,7 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace ZaoHuaBMod.GuiFramework.Controls
+namespace ZaoHuaMod.GuiFramework.Controls
 {
     public static class UITooltip
     {
