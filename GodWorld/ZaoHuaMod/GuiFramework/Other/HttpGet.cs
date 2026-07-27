@@ -2,11 +2,11 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
-using ZaoHuaMod.GuiFramework.Logger;
+using ZaoHuaBMod.GuiFramework.Logger;
 
-namespace ZaoHuaMod.GuiFramework.Other
+namespace ZaoHuaBMod.GuiFramework.Other
 {
-    public class HttpGet
+    public static class HttpGet
     {
         static IEnumerator SimpleGet(string url, Action<string> success, Action<string> error)
         {

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace ZaoHuaMod.GuiFramework.Controls
+namespace ZaoHuaBMod.GuiFramework.Controls
 {
     public static class UITooltip
     {
@@ -53,7 +53,7 @@ namespace ZaoHuaMod.GuiFramework.Controls
         {
             // 在 GUI.Window 内直接以本地坐标绘制，避免屏幕坐标换算出错
             Vector2 pos = Event.current.mousePosition;
-            float scale = global::ZaoHuaMod.GuiFramework.Controls.UI.WindowControls.Scale;
+            float scale = UI.WindowControls.Scale;
             Vector2 size = GUI.skin.box.CalcSize(new GUIContent(text));
 
             GUI.Box(

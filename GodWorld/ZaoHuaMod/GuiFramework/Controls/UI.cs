@@ -1,9 +1,11 @@
 using System;
+using System.Linq;
 using UnityEngine;
-using ZaoHuaMod.GuiFramework.Localization;
-using ZaoHuaMod.GuiFramework.Style;
+using ZaoHuaBMod.GuiFramework.Localization;
+using ZaoHuaBMod.GuiFramework.Logger;
+using ZaoHuaBMod.GuiFramework.Style;
 
-namespace ZaoHuaMod.GuiFramework.Controls
+namespace ZaoHuaBMod.GuiFramework.Controls
 {
     /// <summary>
     ///     UI 入口，提供窗体创建与布局。
@@ -17,9 +19,9 @@ namespace ZaoHuaMod.GuiFramework.Controls
         /// <param name="title">窗口标题。</param>
         /// <param name="content">窗口内容绘制回调。</param>
         /// <returns>窗体构造器，可继续链式配置。</returns>
-        public static WindowBuilder NewWindow(Rect rect, string title, Action<UI.WindowData> content)
+        public static WindowBuilder NewWindow(Rect rect, string title, Action<WindowData> content)
         {
-            return new WindowBuilder(rect, new UI.WindowData.TitleBarConfig(title), content);
+            return new WindowBuilder(rect, new WindowData.TitleBarConfig(title), content);
         }
 
         /// <summary>
@@ -29,7 +31,7 @@ namespace ZaoHuaMod.GuiFramework.Controls
         /// <param name="titleBar">标题栏配置。</param>
         /// <param name="content">窗口内容绘制回调。</param>
         /// <returns>窗体构造器，可继续链式配置。</returns>
-        public static WindowBuilder NewWindow(Rect rect, UI.WindowData.TitleBarConfig titleBar, Action<UI.WindowData> content)
+        public static WindowBuilder NewWindow(Rect rect, WindowData.TitleBarConfig titleBar, Action<WindowData> content)
         {
             return new WindowBuilder(rect, titleBar, content);
         }
@@ -260,7 +262,7 @@ namespace ZaoHuaMod.GuiFramework.Controls
                 Horizontal(() =>
                 {
                     for (int c = 0; c < cols; c++)
-                        global::ZaoHuaMod.GuiFramework.Controls.UI.Label(data[row, c]).Text().Draw(GUILayout.Width(colWidth));
+                        UI.Label(data[row, c]).Text().Draw(GUILayout.Width(colWidth));
                 }, rowStyle);
 
                 if (selectable)
@@ -372,18 +374,18 @@ namespace ZaoHuaMod.GuiFramework.Controls
     public class WindowBuilder
     {
         private readonly Rect _rect;
-        private readonly global::ZaoHuaMod.GuiFramework.Controls.UI.WindowData.TitleBarConfig _titleBar;
-        private readonly Action<global::ZaoHuaMod.GuiFramework.Controls.UI.WindowData> _content;
+        private readonly UI.WindowData.TitleBarConfig _titleBar;
+        private readonly Action<UI.WindowData> _content;
         private int _id = 1000;
         private bool _visible = true;
         private bool _draggable = true;
-        private global::ZaoHuaMod.GuiFramework.Controls.UI.WindowData.DragMode _dragMode = global::ZaoHuaMod.GuiFramework.Controls.UI.WindowData.DragMode.TitleBarOnly;
+        private UI.WindowData.DragMode _dragMode = UI.WindowData.DragMode.TitleBarOnly;
         private bool _resizable;
         private int _layer;
         private Vector2 _minSize = new Vector2(200f, 100f);
         private Action _onClose;
 
-        public WindowBuilder(Rect rect, global::ZaoHuaMod.GuiFramework.Controls.UI.WindowData.TitleBarConfig titleBar, Action<global::ZaoHuaMod.GuiFramework.Controls.UI.WindowData> content)
+        public WindowBuilder(Rect rect, UI.WindowData.TitleBarConfig titleBar, Action<UI.WindowData> content)
         {
             _rect = rect;
             _titleBar = titleBar ?? throw new ArgumentNullException(nameof(titleBar));
@@ -419,7 +421,7 @@ namespace ZaoHuaMod.GuiFramework.Controls
         }
 
         /// <summary>设置拖拽模式。</summary>
-        public WindowBuilder DragBy(global::ZaoHuaMod.GuiFramework.Controls.UI.WindowData.DragMode mode)
+        public WindowBuilder DragBy(UI.WindowData.DragMode mode)
         {
             _dragMode = mode;
             return this;
@@ -454,9 +456,9 @@ namespace ZaoHuaMod.GuiFramework.Controls
         }
 
         /// <summary>获取最终窗体数据。</summary>
-        public global::ZaoHuaMod.GuiFramework.Controls.UI.WindowData Build()
+        public UI.WindowData Build()
         {
-            var window = global::ZaoHuaMod.GuiFramework.Controls.UI.WindowControls.CreateWindow(_id, _rect, _titleBar, _content);
+            var window = UI.WindowControls.CreateWindow(_id, _rect, _titleBar, _content);
             window.Visible = _visible;
             window.Draggable = _draggable;
             window.DragArea = _dragMode;

@@ -1,6 +1,6 @@
 using System;
 
-namespace ZaoHuaMod.GuiFramework.Logger.Adapters
+namespace ZaoHuaBMod.GuiFramework.Logger.Adapters
 {
     /// <summary>
     /// 通过反射调用 MelonLoader.MelonLogger，无需直接引用 MelonLoader.dll。

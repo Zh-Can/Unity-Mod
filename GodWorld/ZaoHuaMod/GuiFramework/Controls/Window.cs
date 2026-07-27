@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using ZaoHuaMod.GuiFramework.Config;
-using ZaoHuaMod.GuiFramework.Localization;
-using ZaoHuaMod.GuiFramework.Logger;
-using ZaoHuaMod.GuiFramework.Style;
+using ZaoHuaBMod.GuiFramework.Config;
+using ZaoHuaBMod.GuiFramework.Localization;
+using ZaoHuaBMod.GuiFramework.Logger;
+using ZaoHuaBMod.GuiFramework.Style;
 
-namespace ZaoHuaMod.GuiFramework.Controls
+namespace ZaoHuaBMod.GuiFramework.Controls
 {
     /// <summary>
     ///     UI 窗体管理分部：创建、绘制、拖拽、缩放。
@@ -426,7 +426,7 @@ namespace ZaoHuaMod.GuiFramework.Controls
             /// </summary>
             public void Destroy()
             {
-                global::ZaoHuaMod.GuiFramework.Controls.UI.WindowControls.DestroyWindow(Id);
+                Controls.UI.WindowControls.DestroyWindow(Id);
             }
 
             /// <summary>

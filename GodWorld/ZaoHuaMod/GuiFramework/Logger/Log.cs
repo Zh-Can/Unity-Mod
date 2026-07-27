@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace ZaoHuaMod.GuiFramework.Logger
+namespace ZaoHuaBMod.GuiFramework.Logger
 {
     /// <summary>
     /// 通用日志入口，默认使用 Unity Debug，也可由外部传入 ILogger 实现。
@@ -17,7 +17,7 @@ namespace ZaoHuaMod.GuiFramework.Logger
         {
             try
             {
-                var modInfoType = typeof(Log).Assembly.GetType(ModInfo.Name+".ModInfo");
+                var modInfoType = typeof(Log).Assembly.GetType("ZaoHuaBMod.ModInfo");
                 if (modInfoType != null)
                 {
                     var nameField = modInfoType.GetField("Name", BindingFlags.Public | BindingFlags.Static);

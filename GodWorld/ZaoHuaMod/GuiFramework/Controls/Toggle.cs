@@ -1,9 +1,9 @@
 using System;
 using UnityEngine;
-using ZaoHuaMod.GuiFramework.Localization;
-using ZaoHuaMod.GuiFramework.Style;
+using ZaoHuaBMod.GuiFramework.Localization;
+using ZaoHuaBMod.GuiFramework.Style;
 
-namespace ZaoHuaMod.GuiFramework.Controls
+namespace ZaoHuaBMod.GuiFramework.Controls
 {
     /// <summary>
     ///     开关相关控件，提供链式调用支持。
@@ -22,6 +22,9 @@ namespace ZaoHuaMod.GuiFramework.Controls
         /// </summary>
         public class ToggleBuilder
         {
+            private static GUIStyle _labelStyle;
+            private static GUIStyle LabelStyle => _labelStyle ?? (_labelStyle = new GUIStyle(GUI.skin.label) { contentOffset = new Vector2(0, -2f) });
+
             private bool _value;
             private string _text;
             private string _tooltip;
@@ -70,10 +73,13 @@ namespace ZaoHuaMod.GuiFramework.Controls
                 return this;
             }
 
-            /// <summary>绘制开关。</summary>
+            /// <summary>绘制开关（checkbox + 文字分开放置）。</summary>
             public bool Draw()
             {
-                var newValue = GUILayout.Toggle(_value, new GUIContent(_text, _tooltip), _style);
+                GUILayout.BeginHorizontal();
+                var newValue = GUILayout.Toggle(_value, GUIContent.none, _style, GUILayout.Width(16), GUILayout.Height(16));
+                GUILayout.Label(new GUIContent(_text, _tooltip), LabelStyle);
+                GUILayout.EndHorizontal();
                 if (newValue != _value)
                 {
                     _onChange?.Invoke();

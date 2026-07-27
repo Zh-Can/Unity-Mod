@@ -1,8 +1,9 @@
+using System.Collections.Generic;
 using UnityEngine;
-using ZaoHuaMod.GuiFramework.Localization;
-using ZaoHuaMod.GuiFramework.Style;
+using ZaoHuaBMod.GuiFramework.Localization;
+using ZaoHuaBMod.GuiFramework.Style;
 
-namespace ZaoHuaMod.GuiFramework.Controls
+namespace ZaoHuaBMod.GuiFramework.Controls
 {
     /// <summary>
     ///     Label 相关控件，提供链式调用支持。

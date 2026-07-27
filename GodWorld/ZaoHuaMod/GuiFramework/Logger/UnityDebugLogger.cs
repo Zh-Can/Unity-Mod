@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace ZaoHuaMod.GuiFramework.Logger
+namespace ZaoHuaBMod.GuiFramework.Logger
 {
     public class UnityDebugLogger : ILogger
     {

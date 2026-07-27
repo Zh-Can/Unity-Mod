@@ -1,8 +1,8 @@
 using System;
 using UnityEngine;
-using ZaoHuaMod.GuiFramework.Logger;
+using ZaoHuaBMod.GuiFramework.Logger;
 
-namespace ZaoHuaMod.GuiFramework.Style
+namespace ZaoHuaBMod.GuiFramework.Style
 {
     /// <summary>
     ///     复刻 FeatureEditor.Frontend 的暗色 IMGUI 皮肤。
@@ -327,8 +327,8 @@ namespace ZaoHuaMod.GuiFramework.Style
                 SToggle = new GUIStyle
                 {
                     fontSize = 12,
+                    fixedWidth = 16,
                     fixedHeight = 16,
-                    imagePosition = ImagePosition.ImageLeft,
                     normal = { background = toggleUnchecked, textColor = TextNormal },
                     hover = { background = toggleUnchecked, textColor = TextBright },
                     active = { background = toggleUnchecked, textColor = TextNormal },
