@@ -17,6 +17,16 @@ namespace LYMod;
 public class GameDataControllerPatches
 {
     [HarmonyPostfix]
+    [HarmonyPatch(typeof(TimeScaleController), nameof(TimeScaleController.Update))]
+    public static void TimeScaleController_Update_Postfix(TimeScaleController __instance)
+    {
+        if (Plugin.Instance.GameSpeed.Value > 1f)
+        {
+            Time.timeScale = Plugin.Instance.GameSpeed.Value;
+        }
+    }
+    
+    [HarmonyPostfix]
     [HarmonyPatch(typeof(AuctionController), nameof(AuctionController.Update))]
     public static void AuctionController_Update_Postfix(AuctionController __instance)
     {
@@ -1452,19 +1462,6 @@ public class HeroDataPatch
     {
         __instance.HideInteractUI();
     }
-
-    // /// <summary>
-    // /// 晋升要求不受武学限制数量修改后影响影响
-    // /// </summary>
-    // /// <param name="__instance"></param>
-    // /// <param name="__result"></param>
-    // [HarmonyPostfix]
-    // [HarmonyPatch(typeof(HeroData), nameof(HeroData.GetUpgradeForceLvNeedSkillNum))]
-    // public static void HeroData_GetUpgradeForceLvNeedSkillNum_Postfix(HeroData __instance, ref int __result)
-    // {
-    //     if (ModConfig.HaveNpcMod) return;
-    //     __result /= Plugin.Instance.KungFuMaxLimitTimes.Value;
-    // }
     
     /// <summary>
     /// 玩家/Npc 最大天赋数量设置

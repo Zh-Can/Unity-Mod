@@ -88,7 +88,6 @@ public class Plugin : MelonMod
     public MelonPreferences_Entry<int> TeammateLeaveDay = null!; // 队友离队时间
     public MelonPreferences_Entry<int> PlayerMaxTagNum = null!; // 玩家天赋数量上限
     public MelonPreferences_Entry<int> NpcMaxTagNum = null!; // NPC天赋数量上限
-    // public MelonPreferences_Entry<int> KungFuMaxLimitTimes = null!; // 武学修炼数量限制倍数
     public MelonPreferences_Entry<bool> AddSpeBuildingsFlag = null!; // 添加特殊建筑开关
     public MelonPreferences_Entry<bool> BattleMaxTime999Flag = null!; // 战斗最大回合数999开关
     public MelonPreferences_Entry<bool> AutoReadBookFlag = null!; // 一键阅读开关
@@ -113,6 +112,7 @@ public class Plugin : MelonMod
     public MelonPreferences_Entry<bool> BookWriterSelfFlag = null!; // 私宅抄书/默写开关
     public MelonPreferences_Entry<bool> AskHeroJoinForceFlag = null!; // 请人物加入玩家门派是否收为徒弟
     public MelonPreferences_Entry<bool> AuctionAutoOfferFlag = null!; // 拍卖会自动出价
+    public MelonPreferences_Entry<float> GameSpeed = null; // 游戏速度
     
     
     private MelonPreferences_Entry<bool> _useModifier = null!; // 使用组合键
@@ -205,10 +205,10 @@ public class Plugin : MelonMod
         TeammateLeaveDay = MainCategory.CreateEntry("TeammateLeaveDay", 30,description:"队友自动离队天数");
         PlayerMaxTagNum = MainCategory.CreateEntry("PlayerMaxTagNum", 9,description:"玩家天赋数量上限");
         NpcMaxTagNum = MainCategory.CreateEntry("NpcMaxTagNum", 9,description:"Npc天赋数量上限");
-        // KungFuMaxLimitTimes = MainCategory.CreateEntry("KungFuMaxLimitTimes", 1,description:"武学修炼限制倍数");
         SpecifiedSkinId = MainCategory.CreateEntry("SpecifiedSkinId", 99999,description:"指定的服装ID（99999为默认不修改）");
         NewSaveSliderMin = MainCategory.CreateEntry("NewSaveSliderMin", -5, description:"新档自定义难度滑块最小值");
         NewSaveSliderMax = MainCategory.CreateEntry("NewSaveSliderMax", 5, description:"新档自定义难度滑块最大值");
+        GameSpeed = MainCategory.CreateEntry("GameSpeed", 1f, description:"游戏速度");
         
         PoisonNumReduceFlag = MainCategory.CreateEntry("PoisonNumReduceFlag", false, description:"淬毒消耗开关");
         UpgradeDay1 = MainCategory.CreateEntry("upgrade1", false, description:"升级一天");
@@ -630,7 +630,6 @@ public class Plugin : MelonMod
             }, 60)
             .EndHorizontal()
             .Space(5)
-            // .AddAutoSaveRow("无前置天赋要求", AnyTagFlag, "武学修炼限制倍数", KungFuMaxLimitTimes, labelWidth:150)
             .AddAutoSave("无前置天赋要求", AnyTagFlag)
             .AddAutoSaveRow("在闭关/私宅快速移除天赋", FastRemoveTag, "有关系的Npc技能和装备管理", EnableNpcEquipAndSkill)
             .AddAutoSaveRow("私宅管理有关系的NPC天赋", EnablePrivateHouseNpcTag, "私宅抄书默写", BookWriterSelfFlag)
@@ -852,6 +851,8 @@ public class Plugin : MelonMod
             .AddAutoSaveRow("自动鉴宝",AutoJianBaoFlag, "斗酒一回胜利", DrinkOneWinFlag)
             .AddAutoSaveRow("喝酒自动倒满", DrinkUiAutoFillFlag, "藏宝阁价值容量1亿", ExternalStorageFlag)
             .AddAutoSaveRow("天气锁定晴天", WeatherLockSunnyFlag, "拍卖会自动出价", AuctionAutoOfferFlag)
+            
+            
             .BeginHorizontal()
            
             .AddButton("解锁成就", () =>
@@ -882,6 +883,7 @@ public class Plugin : MelonMod
                 WindowScaling.Value = 1;
                 _otherCategory.SaveToFile();
             })
+            .AddSlider("游戏速度", GameSpeed, 1f, 5f, MainCategory, labelWidth:100, sliderWidth:200, useFixedLayout:true)
             .EndFoldout();
         
         builder.BeginFoldout("难度相关").Space(10)

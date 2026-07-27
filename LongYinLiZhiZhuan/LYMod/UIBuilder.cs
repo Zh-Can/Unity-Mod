@@ -646,7 +646,6 @@ public class UIBuilder
         return this;
     }
     
-    
     #endregion
 }
 
