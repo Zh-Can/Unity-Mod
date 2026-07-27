@@ -33,7 +33,7 @@ namespace ZaoHuaBMod
         
         private bool[] _checkboxValues = { true, false, false };
         private static readonly string[] CheckboxOptions = { Loc.Get("爱好 A"), Loc.Get("爱好 B"), Loc.Get("爱好 C") };
-        private static readonly string[] ButtonRadioOptions = { Loc.Get("风格一"), Loc.Get("风格二"), Loc.Get("风格三"), Loc.Get("风格四") };
+        private static readonly string[] ButtonRadioOptions = { Loc.Get("风格一"), Loc.Get("喜好"), Loc.Get("风格三"), Loc.Get("风格四") };
         private int _buttonRadioIndex;
         
         private bool _foldoutExpanded;
@@ -334,21 +334,24 @@ namespace ZaoHuaBMod
             }).Draw();
             
             DarkSkin.Divider();
-            
-            UI.Label("多选按钮组").Title().Draw();
-            _checkboxValues = UI.CheckboxGroup
-                .Options(CheckboxOptions)
-                .Selected(_checkboxValues)
-                .Horizontal()
-                .Draw();
-            UI.Button("获取多选选中的值").Btn().OnClick(() =>
+            if (_buttonRadioIndex == 1)
             {
-                var selected = string.Join(", ",
-                    System.Linq.Enumerable.Range(0, CheckboxOptions.Length)
-                        .Where(i => _checkboxValues[i])
-                        .Select(i => CheckboxOptions[i]));
-                Log.Info(selected);
-            }).Draw();
+                UI.Label("多选按钮组").Title().Draw();
+                _checkboxValues = UI.CheckboxGroup
+                    .Options(CheckboxOptions)
+                    .Selected(_checkboxValues)
+                    .Horizontal()
+                    .Draw();
+                UI.Button("获取多选选中的值").Btn().OnClick(() =>
+                {
+                    var selected = string.Join(", ",
+                        System.Linq.Enumerable.Range(0, CheckboxOptions.Length)
+                            .Where(i => _checkboxValues[i])
+                            .Select(i => CheckboxOptions[i]));
+                    Log.Info(selected);
+                }).Draw();
+            }
+           
 
             DarkSkin.Divider();
             
