@@ -3,14 +3,15 @@ using System.Reflection;
 using MelonLoader;
 using MelonLoader.Utils;
 using UnityEngine;
+using ZaoHuaBMod;
 using ZaoHuaBMod.GuiFramework.Config;
 using ZaoHuaBMod.GuiFramework.Localization;
 using ZaoHuaBMod.GuiFramework.Logger;
 using ZaoHuaBMod.GuiFramework.Logger.Adapters;
 using ZaoHuaBMod.GuiFramework.Other;
 
-[assembly: MelonInfo(typeof(ZaoHuaBMod.Main), "ZaoHuaMod", "1.0.0", "Can")]
-[assembly: MelonGame("XiaMenLeiYun", "Zaohua")]
+[assembly: MelonInfo(typeof(ZaoHuaBMod.Main), ModInfo.Name, ModInfo.Version, ModInfo.Author)]
+[assembly: MelonGame(ModInfo.Developer, ModInfo.DeveloperName)]
 [assembly: MelonPlatformDomain(MelonPlatformDomainAttribute.CompatibleDomains.MONO)]
 namespace ZaoHuaBMod
 {
@@ -53,8 +54,6 @@ namespace ZaoHuaBMod
                 _uiObj.AddComponent<MainView>();
                 Log.Info("ModUI 已在场景加载后创建");
             }
-            
-            // 初始化
         }
 
         public MelonPreferences_Category MainCategory;

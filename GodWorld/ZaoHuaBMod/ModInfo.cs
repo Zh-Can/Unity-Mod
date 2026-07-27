@@ -10,6 +10,12 @@
         
         public const string Author = "Can";
         
-        public const string Description = "造化仙缘bepinex Mod";
+        public const string Description = "造化仙缘Mod";
+        
+        public const string Developer = "XiaMenLeiYun";
+        
+        public const string DeveloperName= "Zaohua";
+        
+        
     }
 }
