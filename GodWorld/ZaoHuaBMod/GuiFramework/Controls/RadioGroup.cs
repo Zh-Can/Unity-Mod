@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using ZaoHuaBMod.GuiFramework.Style;
 
@@ -20,6 +21,8 @@ namespace ZaoHuaBMod.GuiFramework.Controls
             private int _selectedIndex;
             private string[] _options = System.Array.Empty<string>();
             private bool _horizontal;
+            private Action _onChange;
+            private Action<int> _onChangeWithIndex;
 
             /// <summary>设置当前选中索引。</summary>
             public RadioGroupBuilder Selected(int index)
@@ -49,9 +52,25 @@ namespace ZaoHuaBMod.GuiFramework.Controls
                 return this;
             }
 
+            /// <summary>注册选中项变化时的回调（无参）。</summary>
+            public RadioGroupBuilder OnChange(Action onChange)
+            {
+                _onChange = onChange;
+                return this;
+            }
+
+            /// <summary>注册选中项变化时的回调（传递选中索引）。</summary>
+            public RadioGroupBuilder OnChange(Action<int> onChange)
+            {
+                _onChangeWithIndex = onChange;
+                return this;
+            }
+
             /// <summary>绘制单选按钮组。</summary>
             public int Draw()
             {
+                var prev = _selectedIndex;
+
                 if (_horizontal)
                 {
                     GUILayout.BeginHorizontal();
@@ -65,6 +84,12 @@ namespace ZaoHuaBMod.GuiFramework.Controls
                     for (var i = 0; i < _options.Length; i++)
                         if (RadioButton(_options[i], i == _selectedIndex))
                             _selectedIndex = i;
+                }
+
+                if (_selectedIndex != prev)
+                {
+                    _onChange?.Invoke();
+                    _onChangeWithIndex?.Invoke(_selectedIndex);
                 }
 
                 return _selectedIndex;

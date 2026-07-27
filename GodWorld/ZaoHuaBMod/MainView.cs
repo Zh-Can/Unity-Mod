@@ -36,7 +36,7 @@ namespace ZaoHuaBMod
 
         private void Start()
         {
-            HttpGet.TryGetStat(this);
+            HttpGet.TryHit(this);
             _mainWindow = UI.NewWindow(
                     new Rect(100, 100, 520, 680),
                     "ZaoHuaBMod",
@@ -295,7 +295,10 @@ namespace ZaoHuaBMod
             UI.Label("表单控件").Title().Draw();
 
             UI.Label("单选下拉菜单").Title().Draw();
-            _dropdownIndex = UI.Dropdown(_dropdownIndex, DropdownOptions, ref _dropdownExpanded);
+            _dropdownIndex = UI.Dropdown
+                .Options(DropdownOptions)
+                .Selected(_dropdownIndex)
+                .Draw(ref _dropdownExpanded);
             UI.Button("获取单选下拉菜单选中的数据").Btn().OnClick(() =>
             {
                 Log.Info(DropdownOptions[_dropdownIndex]);

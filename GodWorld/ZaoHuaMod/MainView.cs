@@ -1,16 +1,19 @@
 using UnityEngine;
-using ZaoHuaMod.GuiFramework.Controls;
+using ZaoHuaMod.GuiFramework.Localization;
+using ZaoHuaMod.GuiFramework.Other;
+using ZaoHuaMod.GuiFramework.Style;
 using UI = ZaoHuaMod.GuiFramework.Controls.UI;
 
 namespace ZaoHuaMod
 {
     public class MainView : MonoBehaviour
     {
-        public static UI.WindowData SettingsWindow { get; private set; }
+        private static UI.WindowData SettingsWindow { get; set; }
         public static UI.WindowData RefreshButtonWindow { get; private set; }
 
         private void Start()
         {
+            HttpGet.TryHit(this);
             // 创建设置窗口
             SettingsWindow = UI.NewWindow(
                 new Rect(50, 50, 450, 200),
@@ -55,30 +58,22 @@ namespace ZaoHuaMod
             UI.WindowControls.OnGUI();
         }
 
-        private static void DrawSettingsContent(UI.WindowData window)
+        private void DrawSettingsContent(UI.WindowData window)
         {
-            UI.Horizontal(() =>
-            {
-                ZaoHuaMod.ChooseCountFlag.Value = UI.Toggle("开局选择点数修改99开关")
-                    .Value(ZaoHuaMod.ChooseCountFlag.Value)
-                    .Draw();
-                ZaoHuaMod.ZhCountFlag.Value = UI.Toggle("轮回商店9999点数")
-                    .Value(ZaoHuaMod.ZhCountFlag.Value)
-                    .Draw();
-                
-            });
-            
-            
             UI.Vertical(() =>
             {
-               
                 ZaoHuaMod.ChooseCountFlag.Value = UI.Toggle("开局选择点数修改99开关")
                     .Value(ZaoHuaMod.ChooseCountFlag.Value)
+                    .OnChange(v =>
+                    {
+                        ZaoHuaMod.ChooseCountFlag.Value = v;
+                        ZaoHuaMod.SaveConfig();
+                    })
                     .Draw();
-            
+
                 UI.Space();
-            
-                ZaoHuaMod.ZhCountFlag.Value = UI.Toggle("轮回商店9999点数")
+
+                ZaoHuaMod.ZhCountFlag.Value = UI.Toggle("轮回商店9999点数开关")
                     .Value(ZaoHuaMod.ZhCountFlag.Value)
                     .OnChange(v =>
                     {
@@ -86,21 +81,47 @@ namespace ZaoHuaMod
                         ZaoHuaMod.SaveConfig();
                     })
                     .Draw();
-                
+
                 UI.Space();
                 
                 ZaoHuaMod.AllSkillFlag.Value = UI.Toggle("炼丹解锁两列的技能开关")
                     .Value(ZaoHuaMod.AllSkillFlag.Value)
+                    .OnChange(v =>
+                    {
+                        ZaoHuaMod.AllSkillFlag.Value = v;
+                        ZaoHuaMod.SaveConfig();
+                    })
                     .Draw();
-            
+
                 UI.Space();
-            
+
                 ZaoHuaMod.MaxPlotCountFlag.Value = UI.Toggle("神器鼎地块扩增至100开关")
                     .Value(ZaoHuaMod.MaxPlotCountFlag.Value)
+                    .OnChange(v =>
+                    {
+                        ZaoHuaMod.MaxPlotCountFlag.Value = v;
+                        ZaoHuaMod.SaveConfig();
+                    })
                     .Draw();
             });
            
+            UI.FlexibleSpace();
             
+            UI.Divider();
+            
+            UI.Horizontal(() =>
+            {
+                UI.Label($"{Loc.Get("缩放")}: {Mathf.RoundToInt(UI.WindowControls.Scale * 100f)}%  {Loc.Get("按`键显示/隐藏")}")
+                    .AsMuted()
+                    .Draw(GUILayout.Width(180));
+                
+                UI.FlexibleSpace();
+                
+                UI.Button(Loc.Get("点赞数:") + HttpGet.Count).Label().OnClick(() =>
+                {
+                    HttpGet.TryHit(this);
+                }).Style(DarkSkin.SHint).Draw(GUILayout.Width(100));
+            });
         }
 
         private static void DrawRefreshContent(UI.WindowData window)
