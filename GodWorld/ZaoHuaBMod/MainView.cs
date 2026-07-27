@@ -155,7 +155,13 @@ namespace ZaoHuaBMod
             UI.Label("开关与滑块").Text().Draw();
             _toggleValue = UI.Toggle("开关 Toggle").Value(_toggleValue).Draw();
             _toggleValue1 = UI.Toggle("带提示的开关 Toggle").Value(_toggleValue1).Tooltip(Loc.Get("一个开关")).Draw();
-
+            
+            UI.Horizontal(() =>
+            {
+                _toggleValue= UI.Toggle("开关 Toggle").Value(_toggleValue).Draw();
+                _toggleValue=UI.Toggle("开关 Toggle").Value(_toggleValue).Draw();
+            });
+            
 
             // 带新值
             var c = Main.Instance.TestFlag;

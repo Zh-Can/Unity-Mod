@@ -22,6 +22,9 @@ namespace ZaoHuaBMod.GuiFramework.Controls
         /// </summary>
         public class ToggleBuilder
         {
+            private static GUIStyle _labelStyle;
+            private static GUIStyle LabelStyle => _labelStyle ?? (_labelStyle = new GUIStyle(GUI.skin.label) { contentOffset = new Vector2(0, -2f) });
+
             private bool _value;
             private string _text;
             private string _tooltip;
@@ -70,10 +73,13 @@ namespace ZaoHuaBMod.GuiFramework.Controls
                 return this;
             }
 
-            /// <summary>绘制开关。</summary>
+            /// <summary>绘制开关（checkbox + 文字分开放置）。</summary>
             public bool Draw()
             {
-                var newValue = GUILayout.Toggle(_value, new GUIContent(_text, _tooltip), _style);
+                GUILayout.BeginHorizontal();
+                var newValue = GUILayout.Toggle(_value, GUIContent.none, _style, GUILayout.Width(16), GUILayout.Height(16));
+                GUILayout.Label(new GUIContent(_text, _tooltip), LabelStyle);
+                GUILayout.EndHorizontal();
                 if (newValue != _value)
                 {
                     _onChange?.Invoke();
