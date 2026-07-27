@@ -2,9 +2,9 @@ using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
-using ZaoHuaBMod.GuiFramework.Logger;
+using LunHuiShop.GuiFramework.Logger;
 
-namespace ZaoHuaBMod.GuiFramework.Other
+namespace LunHuiShop.GuiFramework.Other
 {
     public static class HttpGet
     {
@@ -29,7 +29,7 @@ namespace ZaoHuaBMod.GuiFramework.Other
         
         
         public static int Count = 0;
-        private static readonly string HitCountUrl = "https://api.counterapi.dev/v2/cans-team-4837/zaohuamod/up";
+        private static readonly string HitCountUrl = "https://api.counterapi.dev/v2/cans-team-4837/lymod/up";
         
         public static int TryHit(MonoBehaviour runner)
         {
@@ -38,7 +38,7 @@ namespace ZaoHuaBMod.GuiFramework.Other
                 Log.Info("无网络连接，跳过统计上报");
                 return Count++;
             }
-            runner.StartCoroutine(SimpleGet(HitCountUrl, text =>
+            MelonLoader.MelonCoroutines.Start(SimpleGet(HitCountUrl, text =>
                 {
                     const string key = "\"up_count\":";
                     var idx = text.IndexOf(key, StringComparison.Ordinal);
@@ -48,7 +48,7 @@ namespace ZaoHuaBMod.GuiFramework.Other
                         var end = text.IndexOf(',', start);
                         if (end < 0) end = text.IndexOf('}', start);
                         if (end < 0) end = text.Length;
-                        if (int.TryParse(text.Substring(start, end - start), out var count))
+                        if (int.TryParse(text[start..end], out var count))
                         {
                             Log.Info($"总访问量：{count}");
                             Count = count;

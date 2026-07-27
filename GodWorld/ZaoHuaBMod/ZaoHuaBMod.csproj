@@ -18,23 +18,15 @@
         <DebugSymbols>false</DebugSymbols>
         <DebugType>none</DebugType>
         <Optimize>false</Optimize>
-        <!-- <OutputPath>D:\Game\GodWorld\BepInEx\plugins</OutputPath> -->
-         <OutputPath>D:\Game\GodWorld\Mods</OutputPath>
+        <OutputPath>C:\Program Files (x86)\Steam\steamapps\common\GodWorld\Mods</OutputPath>
         <DefineConstants>DEBUG;TRACE</DefineConstants>
         <ErrorReport>prompt</ErrorReport>
         <WarningLevel>4</WarningLevel>
     </PropertyGroup>
-    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-        <PlatformTarget>AnyCPU</PlatformTarget>
-        <DebugType>pdbonly</DebugType>
-        <Optimize>true</Optimize>
-        <OutputPath>bin\Release\</OutputPath>
-        <DefineConstants>TRACE</DefineConstants>
-        <ErrorReport>prompt</ErrorReport>
-        <WarningLevel>4</WarningLevel>
-    </PropertyGroup>
+
     <ItemGroup>
         <Compile Include="GuiFramework\Controls\Buttton.cs" />
+        <Compile Include="GuiFramework\Controls\CheckboxGroup.cs" />
         <Compile Include="GuiFramework\Controls\Dropdown.cs" />
         <Compile Include="GuiFramework\Controls\Label.cs" />
         <Compile Include="GuiFramework\Controls\RadioGroup.cs" />
@@ -57,17 +49,23 @@
         <Compile Include="GuiFramework\Style\GuiSkin.cs" />
     </ItemGroup>
     <ItemGroup>
+      <Content Include="GuiFramework\Localization\GenerateTraditionalChinese.ps1" />
+      <Content Include="GuiFramework\Logger\Readme.md" />
+      <Content Include="GuiFramework\Readme.md" />
+      <Content Include="ZaoHuaBMod.sln" />
+    </ItemGroup>
+    <ItemGroup>
+      <Reference Include="System" />
       <Reference Include="0Harmony">
-        <HintPath>D:\Game\GodWorld\MelonLoader\net472\0Harmony.dll</HintPath>
+        <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\GodWorld\MelonLoader\net472\0Harmony.dll</HintPath>
+        <Private>False</Private>
+      </Reference>
+      <Reference Include="Assembly-CSharp">
+        <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\GodWorld\Zaohua_Data\Managed\Assembly-CSharp.dll</HintPath>
         <Private>False</Private>
       </Reference>
       <Reference Include="MelonLoader">
-        <HintPath>D:\Game\GodWorld\MelonLoader\net472\MelonLoader.dll</HintPath>
-        <Private>False</Private>
-      </Reference>
-      <Reference Include="System" />
-      <Reference Include="Assembly-CSharp">
-        <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\GodWorld\Zaohua_Data\Managed\Assembly-CSharp.dll</HintPath>
+        <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\GodWorld\MelonLoader\net472\MelonLoader.dll</HintPath>
         <Private>False</Private>
       </Reference>
       <Reference Include="UnityEngine">
@@ -95,15 +93,9 @@
         <Private>False</Private>
       </Reference>
       <Reference Include="UnityEngine.UnityWebRequestModule">
-        <HintPath>D:\Game\GodWorld\Zaohua_Data\Managed\UnityEngine.UnityWebRequestModule.dll</HintPath>
+        <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\GodWorld\Zaohua_Data\Managed\UnityEngine.UnityWebRequestModule.dll</HintPath>
         <Private>False</Private>
       </Reference>
-    </ItemGroup>
-    <ItemGroup>
-      <Content Include="GuiFramework\Localization\GenerateTraditionalChinese.ps1" />
-      <Content Include="GuiFramework\Logger\Readme.md" />
-      <Content Include="GuiFramework\Readme.md" />
-      <Content Include="ZaoHuaBMod.sln" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
 

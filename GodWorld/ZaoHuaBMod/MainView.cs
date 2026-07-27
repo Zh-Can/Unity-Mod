@@ -31,6 +31,11 @@ namespace ZaoHuaBMod
         
         private int _clickCount;
         
+        private bool[] _checkboxValues = { true, false, false };
+        private static readonly string[] CheckboxOptions = { Loc.Get("爱好 A"), Loc.Get("爱好 B"), Loc.Get("爱好 C") };
+        private static readonly string[] ButtonRadioOptions = { Loc.Get("风格一"), Loc.Get("风格二"), Loc.Get("风格三"), Loc.Get("风格四") };
+        private int _buttonRadioIndex;
+        
         private bool _foldoutExpanded;
        
 
@@ -313,6 +318,37 @@ namespace ZaoHuaBMod
                 UI.Label("折叠区内容一").Text().Draw();
                 UI.Label("折叠区内容二").AsMuted().Draw();
             });
+
+            DarkSkin.Divider();
+            
+            UI.Label("单选按钮组（按钮风格）").Title().Draw();
+            _buttonRadioIndex = UI.RadioButtonGroup
+                .Selected(_buttonRadioIndex)
+                .Options(ButtonRadioOptions)
+                .ButtonStyle()
+                .Horizontal()
+                .Draw();
+            UI.Button("获取单选按钮选中的值").Btn().OnClick(() =>
+            {
+                Log.Info(ButtonRadioOptions[_buttonRadioIndex]);
+            }).Draw();
+            
+            DarkSkin.Divider();
+            
+            UI.Label("多选按钮组").Title().Draw();
+            _checkboxValues = UI.CheckboxGroup
+                .Options(CheckboxOptions)
+                .Selected(_checkboxValues)
+                .Horizontal()
+                .Draw();
+            UI.Button("获取多选选中的值").Btn().OnClick(() =>
+            {
+                var selected = string.Join(", ",
+                    System.Linq.Enumerable.Range(0, CheckboxOptions.Length)
+                        .Where(i => _checkboxValues[i])
+                        .Select(i => CheckboxOptions[i]));
+                Log.Info(selected);
+            }).Draw();
 
             DarkSkin.Divider();
             

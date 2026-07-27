@@ -79,7 +79,7 @@
           <Private>False</Private>
         </Reference>
         <Reference Include="UnityEngine.UnityWebRequestModule">
-          <HintPath>D:\Game\GodWorld\Zaohua_Data\Managed\UnityEngine.UnityWebRequestModule.dll</HintPath>
+          <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\GodWorld\Zaohua_Data\Managed\UnityEngine.UnityWebRequestModule.dll</HintPath>
           <Private>False</Private>
         </Reference>
     </ItemGroup>
