@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Linq;
 using UnityEngine;
 using ZaoHuaMod.GuiFramework.Localization;
-using ZaoHuaMod.GuiFramework.Logger;
 using ZaoHuaMod.GuiFramework.Style;
 
 namespace ZaoHuaMod.GuiFramework.Controls
@@ -278,16 +276,6 @@ namespace ZaoHuaMod.GuiFramework.Controls
             return selectedRow;
         }
 
-        /// <summary>单选下拉框</summary>
-        /// <param name="selectedIndex">当前选中索引</param>
-        /// <param name="options">选项数组</param>
-        /// <param name="expanded">展开状态（ref）</param>
-        /// <returns>选中的索引</returns>
-        public static int Dropdown(int selectedIndex, string[] options, ref bool expanded)
-        {
-            return DarkSkin.Dropdown(selectedIndex, options, ref expanded);
-        }
-
         /// <summary>标签页组，水平排列芯片按钮，返回新的选中索引。</summary>
         public static int TabGroup(string[] labels, int active)
         {
@@ -305,16 +293,11 @@ namespace ZaoHuaMod.GuiFramework.Controls
         /// <summary>
         /// 滑动条
         /// </summary>
-        /// <param name="text"></param>
-        /// 文本
-        /// <param name="sliderValue"></param>
-        /// 值
-        /// <param name="min"></param>
-        /// 最小值
-        /// <param name="max"></param>
-        /// 最大值
-        /// <param name="decimals"></param>
-        /// 保留几位小数
+        /// <param name="text">文本</param>
+        /// <param name="sliderValue">值</param>
+        /// <param name="min">最小值</param>
+        /// <param name="max">最大值</param>
+        /// <param name="decimals">保留几位小数</param>
         /// <param name="topPadding"></param>
         /// <returns></returns>
         public static float Slider(string text, float sliderValue, float min = 0f, float max = 1f, int decimals = 2,

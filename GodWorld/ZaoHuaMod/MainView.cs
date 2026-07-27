@@ -103,6 +103,17 @@ namespace ZaoHuaMod
                         ZaoHuaMod.SaveConfig();
                     })
                     .Draw();
+                
+                UI.Space();
+                
+                ZaoHuaMod.BuildStoFlag.Value = UI.Toggle("神器鼎地块建筑范围全覆盖开关")
+                    .Value(ZaoHuaMod.BuildStoFlag.Value)
+                    .OnChange(v =>
+                    {
+                        ZaoHuaMod.BuildStoFlag.Value = v;
+                        ZaoHuaMod.SaveConfig();
+                    })
+                    .Draw();
             });
            
             UI.FlexibleSpace();
