@@ -30,6 +30,8 @@ namespace ZaoHuaMod
         internal static MelonPreferences_Entry<bool> AllSkillFlag;
         internal static MelonPreferences_Entry<bool> MaxPlotCountFlag;
         internal static MelonPreferences_Entry<bool> BuildStoFlag;
+        internal static MelonPreferences_Entry<bool> DrugResistLabelFlag;
+        internal static MelonPreferences_Entry<bool> DrugProfitLabelFlag;
         
         // 窗体对象
         private GameObject _uiObj;
@@ -42,6 +44,7 @@ namespace ZaoHuaMod
             
             var harmony = new HarmonyLib.Harmony("ZHMod");
             harmony.PatchAll(typeof(ZaoHuaMod));
+            harmony.PatchAll(typeof(CraftingDrugRecipeCellSetInfoPatch));
             
             BaseConfig.Load();
             BaseConfig.ApplyToManager();
@@ -64,6 +67,8 @@ namespace ZaoHuaMod
             AllSkillFlag = _mainCategory.CreateEntry("allSkillFlag", false,  description: "炼丹有能解锁两列的技能");
             MaxPlotCountFlag = _mainCategory.CreateEntry("maxPlotCountFlag", false,  description: "神器鼎地块扩增至100");
             BuildStoFlag = _mainCategory.CreateEntry("buildStoFlag", false,  description: "神器鼎地块建筑范围全覆盖开关");
+            DrugResistLabelFlag = _mainCategory.CreateEntry("drugResistLabelFlag", true, description: "丹药耐药性标注");
+            DrugProfitLabelFlag = _mainCategory.CreateEntry("drugProfitLabelFlag", true, description: "炼丹成本利润");
         }
         
         public static void SaveConfig()

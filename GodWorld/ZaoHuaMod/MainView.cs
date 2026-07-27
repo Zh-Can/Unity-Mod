@@ -114,6 +114,28 @@ namespace ZaoHuaMod
                         ZaoHuaMod.SaveConfig();
                     })
                     .Draw();
+
+                UI.Space();
+
+                ZaoHuaMod.DrugResistLabelFlag.Value = UI.Toggle("没吃满的丹药显示吃了多少丹药")
+                    .Value(ZaoHuaMod.DrugResistLabelFlag.Value)
+                    .OnChange(v =>
+                    {
+                        ZaoHuaMod.DrugResistLabelFlag.Value = v;
+                        ZaoHuaMod.SaveConfig();
+                    })
+                    .Draw();
+
+                UI.Space();
+
+                ZaoHuaMod.DrugProfitLabelFlag.Value = UI.Toggle("丹药详情展示丹药价格")
+                    .Value(ZaoHuaMod.DrugProfitLabelFlag.Value)
+                    .OnChange(v =>
+                    {
+                        ZaoHuaMod.DrugProfitLabelFlag.Value = v;
+                        ZaoHuaMod.SaveConfig();
+                    })
+                    .Draw();
             });
            
             UI.FlexibleSpace();

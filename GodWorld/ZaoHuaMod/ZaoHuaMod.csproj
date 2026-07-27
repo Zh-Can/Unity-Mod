@@ -84,6 +84,8 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="DrugLabelPatch.cs" />
+        <Compile Include="DrugProfitPatch.cs" />
         <Compile Include="GuiFramework\Config\BaseConfig.cs" />
         <Compile Include="GuiFramework\Controls\Buttton.cs" />
         <Compile Include="GuiFramework\Controls\Label.cs" />
