@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props"
+            Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')"/>
+    <PropertyGroup>
+        <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+        <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+        <ProjectGuid>{B46D9826-C18C-4AC0-9D65-8E97613F7521}</ProjectGuid>
+        <OutputType>Library</OutputType>
+        <AppDesignerFolder>Properties</AppDesignerFolder>
+        <RootNamespace>ZaoHuaMod</RootNamespace>
+        <AssemblyName>ZaoHuaMod</AssemblyName>
+        <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+        <FileAlignment>512</FileAlignment>
+    </PropertyGroup>
+     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+        <OutputPath>C:\Program Files (x86)\Steam\steamapps\common\GodWorld\Mods</OutputPath>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <!-- 关键：移除配置文件夹（Debug/Release） -->
+        <AppendConfigurationToOutputPath>false</AppendConfigurationToOutputPath>
+        <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+        <PlatformTarget>x64</PlatformTarget>
+        <!-- 👇 核心：禁用 PDB 调试符号文件 -->
+        <DebugType>None</DebugType>          <!-- 禁用调试类型，不生成 PDB -->
+        <DebugSymbols>false</DebugSymbols>   <!-- 显式关闭调试符号生成 -->
+        <!-- 👇 禁用生成 .json 编译配置文件 -->
+        <GenerateDependencyFile>false</GenerateDependencyFile>
+        <GenerateRuntimeConfigurationFiles>false</GenerateRuntimeConfigurationFiles>
+        <Optimize>true</Optimize>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+        <PlatformTarget>x64</PlatformTarget>
+        <DebugType>none</DebugType>
+        <Optimize>true</Optimize>
+        <OutputPath>bin\Release\</OutputPath>
+        <DefineConstants>TRACE</DefineConstants>
+        <ErrorReport>prompt</ErrorReport>
+        <WarningLevel>4</WarningLevel>
+    </PropertyGroup>
+    <ItemGroup>
+        <Reference Include="0Harmony">
+          <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\GodWorld\MelonLoader\net472\0Harmony.dll</HintPath>
+          <Private>False</Private>
+        </Reference>
+        <Reference Include="Assembly-CSharp">
+          <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\GodWorld\Zaohua_Data\Managed\Assembly-CSharp.dll</HintPath>
+          <Private>False</Private>
+        </Reference>
+        <Reference Include="MelonLoader">
+          <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\GodWorld\MelonLoader\net472\MelonLoader.dll</HintPath>
+          <Private>False</Private>
+        </Reference>
+        <Reference Include="System"/>
+        <Reference Include="System.Core"/>
+        <Reference Include="System.Data"/>
+        <Reference Include="System.Xml"/>
+        <Reference Include="UnityEngine">
+          <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\GodWorld\Zaohua_Data\Managed\UnityEngine.dll</HintPath>
+          <Private>False</Private>
+        </Reference>
+        <Reference Include="UnityEngine.CoreModule">
+          <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\GodWorld\Zaohua_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+          <Private>False</Private>
+        </Reference>
+        <Reference Include="UnityEngine.IMGUIModule">
+          <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\GodWorld\Zaohua_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+          <Private>False</Private>
+        </Reference>
+        <Reference Include="UnityEngine.InputLegacyModule">
+          <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\GodWorld\Zaohua_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
+          <Private>False</Private>
+        </Reference>
+        <Reference Include="UnityEngine.TextRenderingModule">
+          <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\GodWorld\Zaohua_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+          <Private>False</Private>
+        </Reference>
+        <Reference Include="UnityEngine.UI">
+          <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\GodWorld\Zaohua_Data\Managed\UnityEngine.UI.dll</HintPath>
+          <Private>False</Private>
+        </Reference>
+        <Reference Include="UnityEngine.UnityWebRequestModule">
+          <HintPath>D:\Game\GodWorld\Zaohua_Data\Managed\UnityEngine.UnityWebRequestModule.dll</HintPath>
+          <Private>False</Private>
+        </Reference>
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Include="GuiFramework\Config\BaseConfig.cs" />
+        <Compile Include="GuiFramework\Controls\Buttton.cs" />
+        <Compile Include="GuiFramework\Controls\Label.cs" />
+        <Compile Include="GuiFramework\Controls\RadioGroup.cs" />
+        <Compile Include="GuiFramework\Controls\Toggle.cs" />
+        <Compile Include="GuiFramework\Controls\UI.cs" />
+        <Compile Include="GuiFramework\Controls\UITooltip.cs" />
+        <Compile Include="GuiFramework\Controls\Window.cs" />
+        <Compile Include="GuiFramework\Localization\Loc.cs" />
+        <Compile Include="GuiFramework\Logger\Adapters\BepInExLogger.cs" />
+        <Compile Include="GuiFramework\Logger\Adapters\MelonLoggerAdapter.cs" />
+        <Compile Include="GuiFramework\Logger\ILogger.cs" />
+        <Compile Include="GuiFramework\Logger\Log.cs" />
+        <Compile Include="GuiFramework\Logger\UnityDebugLogger.cs" />
+        <Compile Include="GuiFramework\Other\HttpGet.cs" />
+        <Compile Include="GuiFramework\Style\GuiSkin.cs" />
+        <Compile Include="MainView.cs" />
+        <Compile Include="ModInfo.cs" />
+        <Compile Include="ZaoHuaMod.cs" />
+        <Compile Include="Properties\AssemblyInfo.cs"/>
+    </ItemGroup>
+    <ItemGroup>
+      <Content Include="GuiFramework\Localization\GenerateTraditionalChinese.ps1" />
+      <Content Include="GuiFramework\Logger\Readme.md" />
+      <Content Include="GuiFramework\Readme.md" />
+    </ItemGroup>
+    <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
+    <!-- 编译后自动生成繁体中文语言包 -->
+    <Target Name="GenerateTraditionalChinese" AfterTargets="Build">
+        <!-- 全扫描 -->
+        <Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\GuiFramework\Localization\GenerateTraditionalChinese.ps1&quot; -SourceDir &quot;$(MSBuildProjectDirectory)&quot; -OutputFile &quot;$(TargetDir)languages\繁中.cfg&quot;" />
+        <!-- 指定文件扫描 -->
+        <!-- <Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\GuiFramework\Localization\GenerateTraditionalChinese.ps1&quot; -SourceDir &quot;$(MSBuildProjectDirectory)&quot; -OutputFile &quot;$(TargetDir)languages\繁中.cfg&quot; -Files &quot;MainView.cs&quot;,&quot;GuiFramework\Controls\UI.cs&quot;" /> -->
+    </Target>
+
+</Project>
