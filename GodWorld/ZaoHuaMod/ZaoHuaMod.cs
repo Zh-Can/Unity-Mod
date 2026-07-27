@@ -1,9 +1,13 @@
 using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
 using HarmonyLib;
 using MelonLoader;
 using MelonLoader.Utils;
 using UnityEngine;
 using ZaoHuaMod;
+using ZaoHuaMod.GuiFramework.Config;
+using ZaoHuaMod.GuiFramework.Localization;
 using ZaoHuaMod.GuiFramework.Logger;
 using ZaoHuaMod.GuiFramework.Logger.Adapters;
 
@@ -39,9 +43,16 @@ namespace ZaoHuaMod
             var harmony = new HarmonyLib.Harmony("ZHMod");
             harmony.PatchAll(typeof(ZaoHuaMod));
             
+            BaseConfig.Load();
+            BaseConfig.ApplyToManager();
+            
+            // 初始化 Mod 目录与配置
+            var modDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            Loc.ModDirectory = modDir;
+            Loc.ScanLanguages();
+            Loc.TryApplyLanguage(BaseConfig.Language);
             Log.Initialize(new MelonLoggerAdapter());
             Log.Info("ZaoHuaMod 加载完成！~");
-            
         }
 
         private void InitConfig()
