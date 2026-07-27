@@ -25,6 +25,18 @@ public class GameDataControllerPatches
             Time.timeScale = Plugin.Instance.GameSpeed.Value;
         }
     }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(Time), nameof(Time.unscaledDeltaTime), MethodType.Getter)]
+    public static void Time_unscaledDeltaTime_Postfix(ref float __result)
+    {
+        if (Plugin.Instance.GameSpeed.Value > 1f)
+        {
+            __result = Plugin.Instance.GameSpeed.Value;
+        }
+    }
+
+
     
     [HarmonyPostfix]
     [HarmonyPatch(typeof(AuctionController), nameof(AuctionController.Update))]
