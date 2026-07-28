@@ -1,3 +1,4 @@
+using System;
 using System.Reflection;
 
 namespace ZaoHuaBMod.GuiFramework.Logger
@@ -15,6 +16,10 @@ namespace ZaoHuaBMod.GuiFramework.Logger
 
         private static string AutoDetectPrefix()
         {
+            // MelonLoader 的控制台已经会自动加上 [Mod名] 前缀，这里不再重复添加
+            if (Type.GetType("MelonLoader.MelonLogger, MelonLoader") != null)
+                return "";
+
             try
             {
                 var modInfoType = typeof(Log).Assembly.GetType("ZaoHuaBMod.ModInfo");

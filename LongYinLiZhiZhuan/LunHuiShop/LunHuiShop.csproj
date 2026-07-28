@@ -30,8 +30,7 @@
         <Private>False</Private>
       </Reference>
       <Reference Include="Assembly-CSharp">
-        <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\LongYinLiZhiZhuan\MelonLoader\Dependencies\Il2CppAssemblyGenerator\Cpp2IL\cpp2il_out\Assembly-CSharp.dll</HintPath>
-        <Private>False</Private>
+        <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\LongYinLiZhiZhuan\MelonLoader\Il2CppAssemblies\Assembly-CSharp.dll</HintPath>
       </Reference>
       <Reference Include="Il2CppInterop.Common">
         <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\LongYinLiZhiZhuan\MelonLoader\net6\Il2CppInterop.Common.dll</HintPath>

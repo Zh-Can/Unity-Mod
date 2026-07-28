@@ -1,4 +1,5 @@
 using System.Globalization;
+using Il2Cpp;
 using LunHuiShop.GuiFramework.Controls;
 using LunHuiShop.GuiFramework.Localization;
 using LunHuiShop.GuiFramework.Logger;
@@ -18,8 +19,6 @@ public class MainView : MonoBehaviour
     private void Awake()
     {
         HttpGet.TryHit(this);
-        
-        InitShopData();
         
         // 如果有表格， x个column * 120 + ScrollView 左右内边距 2+2=4 + 垂直滚动条宽度8
         _mainWindow = UI.NewWindow(
@@ -81,7 +80,7 @@ public class MainView : MonoBehaviour
     
     // 表格选中项
     private int _selectedTableRow;
-    private List<ShopItem> _shopItems = null!;
+    public static List<ShopItem> ShopItems = null!;
 
     private void DrawMainWindow()
     {
@@ -123,7 +122,7 @@ public class MainView : MonoBehaviour
         
         // 可选表格
         _selectedTableRow = UI.Table(
-            _shopItems,
+            ShopItems,
             item => new[] { item.Name, item.Type, item.Level, item.Quality, item.Price.ToString(), item.Fame.ToString(CultureInfo.InvariantCulture) },
             _selectedTableRow,
             new[] { Loc.Get("名称"), Loc.Get("类型"), Loc.Get("物品等级"), Loc.Get("物品品质"), Loc.Get("需要价格"), Loc.Get("需要声望") },
@@ -165,11 +164,15 @@ public class MainView : MonoBehaviour
     /// </summary>
     private void InitShopData()
     {
-        _shopItems = new List<ShopItem>();
+        ShopItems = new List<ShopItem>();
         // 示例数据：
-        _shopItems.Add(new ShopItem { Id = 3, Name = "示例物品1", Type = "装备", Level = "精良", Quality = "上品", Price = 1000, Fame = 500 });
-        _shopItems.Add(new ShopItem { Id = 2, Name = "示例物品2", Type = "装备", Level = "精良", Quality = "上品", Price = 1000, Fame = 500 });
-        
+        ShopItems.Add(new ShopItem { Id = 3, Name = "示例物品1", Type = "装备", Level = "精良", Quality = "上品", Price = 1000, Fame = 500 });
+        ShopItems.Add(new ShopItem { Id = 2, Name = "示例物品2", Type = "装备", Level = "精良", Quality = "上品", Price = 1000, Fame = 500 });
+        var gdc = GameDataController.Instance;
+        foreach (var armor in gdc.armorDataBase.Values)
+        {
+            Log.Info(armor.Name());
+        }
         
     }
     /// <summary>
@@ -178,11 +181,11 @@ public class MainView : MonoBehaviour
     /// </summary>
     private void Buy()
     {
-        if (_selectedTableRow < 0 || _selectedTableRow >= _shopItems.Count || 
+        if (_selectedTableRow < 0 || _selectedTableRow >= ShopItems.Count || 
             !LyHelper.TryReadPlayer(out var player))
             return;
 
-        var selectedItem = _shopItems[_selectedTableRow];
+        var selectedItem = ShopItems[_selectedTableRow];
         
         if (player.fame < selectedItem.Fame)
         {

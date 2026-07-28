@@ -33,6 +33,7 @@ public class LunHuiShop : MelonMod
         InitConfig();
         var harmony = new HarmonyLib.Harmony("LunHuiShop");
         harmony.PatchAll(typeof(UIPatches));
+        harmony.PatchAll(typeof(GamePatches));
 
         // 手工注册运行时补丁（运行时类型查找，避免 TypeLoadException）
         RegisterBuildQuickButtonPatch(harmony);
