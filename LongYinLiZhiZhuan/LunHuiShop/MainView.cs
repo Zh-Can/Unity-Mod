@@ -1,6 +1,5 @@
 using LunHuiShop.GuiFramework.Controls;
 using LunHuiShop.GuiFramework.Localization;
-using LunHuiShop.GuiFramework.Logger;
 using LunHuiShop.GuiFramework.Other;
 using LunHuiShop.GuiFramework.Style;
 using MelonLoader;
@@ -13,7 +12,7 @@ public class MainView : MonoBehaviour
 {
     private UI.WindowData _mainWindow;
     
-    private void Start()
+    private void Awake()
     {
         HttpGet.TryHit(this);
         
@@ -28,13 +27,13 @@ public class MainView : MonoBehaviour
     }
     
     // 物品分类
-    private static readonly string[] ButtonRadioOptions =
+    private static readonly string[] ItemTypeRadioOptions =
     {
         Loc.Get("全部"), Loc.Get("装备"), Loc.Get("丹药"), Loc.Get("饮食"),
         Loc.Get("秘籍"),Loc.Get("珍宝"), Loc.Get("材料"), Loc.Get("马匹")
     };
-    private int _buttonRadioIndex = 0;
-    // 物品等级多选
+    private int _itemTypeRadioIndex;
+    // 物品等级
     private static readonly string[] ItemLevelOptions =
     {
         $"<color=#df2c45>{Loc.Get("绝世")}</color>",
@@ -44,60 +43,116 @@ public class MainView : MonoBehaviour
         $"<color=#7ec00b>{Loc.Get("普通")}</color>",
         $"<color=#949494>{Loc.Get("劣质")}</color>" 
     };
-    private bool[] _itemLevelChecks = { true, false, false, false, false, false };
-    // 装备类型多选
+    private int _itemLevelRadioIndex;
+    // 物品品质
+    private static readonly string[] ItemQualityOptions =
+    {
+        $"<color=#df2c45>{Loc.Get("极品")}</color>",
+        $"<color=#e08d07>{Loc.Get("珍品")}</color>",
+        $"<color=#9c7fe0>{Loc.Get("上品")}</color>",
+        $"<color=#307ede>{Loc.Get("中品")}</color>",
+        $"<color=#7ec00b>{Loc.Get("下品")}</color>",
+        $"<color=#949494>{Loc.Get("残品")}</color>" 
+    };
+    private int _itemQualityRadioIndex;
+    // 秘籍品质
+    private static readonly string[] BookQualityOptions =
+    {
+        $"<color=#df2c45>{Loc.Get("完本")}</color>",
+        $"<color=#e08d07>{Loc.Get("珍本")}</color>",
+        $"<color=#9c7fe0>{Loc.Get("古本")}</color>",
+        $"<color=#307ede>{Loc.Get("善本")}</color>",
+        $"<color=#7ec00b>{Loc.Get("仿本")}</color>",
+        $"<color=#949494>{Loc.Get("残本")}</color>" 
+    };
+    private int _bookQualityRadioIndex;
+    // 装备类型
     private static readonly string[] EquipmentOptions =
     {
         Loc.Get("武器"), Loc.Get("护甲"), Loc.Get("头盔"), Loc.Get("足履"),Loc.Get("饰品")
     };
-    private bool[] _equipmentChecks = { true, false, false, false, false};
-    // 秘籍类型多选
+    private int _equipmentRadioIndex;
+    // 秘籍类型
     private static readonly string[] BookOptions =
     {
         Loc.Get("内功"), Loc.Get("轻功"), Loc.Get("绝技"), Loc.Get("拳掌"),Loc.Get("剑法")
         ,Loc.Get("刀法"),Loc.Get("长兵"),Loc.Get("奇门"),Loc.Get("射术")
     };
-    private bool[] _bookChecks = { true, false, false, false, false, false, false, false, false};
+    private int _bookRadioIndex;
     
+    // 表格选中项
+    private int _selectedTableRow;
     private void DrawMainWindow(UI.WindowData window)
     {
         // 物品分类单选
-        _buttonRadioIndex = UI.RadioButtonGroup
-            .Selected(_buttonRadioIndex)
-            .Options(ButtonRadioOptions)
+        _itemTypeRadioIndex = UI.RadioButtonGroup
+            .Selected(_itemTypeRadioIndex)
+            .Options(ItemTypeRadioOptions)
             .ButtonStyle()
             .Horizontal()
             .Draw();
         UI.Space(5);
         // 物品等级多选
-        _itemLevelChecks = UI.CheckboxGroup
+        _itemLevelRadioIndex = UI.RadioButtonGroup
             .Options(ItemLevelOptions)
-            .Selected(_itemLevelChecks)
+            .Selected(_itemLevelRadioIndex)
+            .ButtonStyle()
             .Horizontal()
             .Draw();
         UI.Space(5);
-        // 装备类型多选
-        if (_buttonRadioIndex == 1)
+        // 物品品质多选
+        if (_itemTypeRadioIndex != 4)
         {
-            _equipmentChecks = UI.CheckboxGroup
+            _itemQualityRadioIndex = UI.RadioButtonGroup
+                .Options(ItemQualityOptions)
+                .Selected(_itemQualityRadioIndex)
+                .ButtonStyle()
+                .Horizontal()
+                .Draw();
+        }
+        UI.Space(5);
+        // 装备类型多选
+        if (_itemTypeRadioIndex == 1)
+        {
+            _equipmentRadioIndex = UI.RadioButtonGroup
                 .Options(EquipmentOptions)
-                .Selected(_equipmentChecks)
+                .Selected(_equipmentRadioIndex)
+                .ButtonStyle()
                 .Horizontal()
                 .Draw();
         }
         UI.Space(5);
         // 秘籍多选
-        if (_buttonRadioIndex == 4)
+        if (_itemTypeRadioIndex == 4)
         {
-            _bookChecks = UI.CheckboxGroup
-                .Options(BookOptions)
-                .Selected(_bookChecks)
+            _bookQualityRadioIndex = UI.RadioButtonGroup
+                .Options(BookQualityOptions)
+                .Selected(_bookQualityRadioIndex)
+                .ButtonStyle()
                 .Horizontal()
                 .Draw();
+            UI.Space(5);
+            _bookRadioIndex = UI.RadioButtonGroup
+                .Options(BookOptions)
+                .Selected(_bookRadioIndex)
+                .ButtonStyle()
+                .Horizontal()
+                .Draw();
+            UI.Space(5);
         }
-        UI.Space(5);
         
         
+        UI.Horizontal(() =>
+        {
+            UI.FlexibleSpace();
+            UI.Button("购买").Add().OnClick(Buy).Draw(GUILayout.Width(80));
+        });
+        
+        UI.Divider();
+        
+        // 可选表格
+        _selectedTableRow = UI.Table(TableData(), _selectedTableRow);
+            
         UI.Divider();
             
         UI.Horizontal(() =>
@@ -130,5 +185,27 @@ public class MainView : MonoBehaviour
         UI.WindowControls.OnGUI();
     }
 
-   
+    /// <summary>
+    /// 生成table
+    /// </summary>
+    private string[,] TableData()
+    {
+        string[,] tableData =
+        {
+            {Loc.Get("名称"), Loc.Get("类型"), Loc.Get("物品等级"), Loc.Get("物品品质"), Loc.Get("需要价格"), Loc.Get("需要声望")}
+            
+        };
+        
+        
+        return tableData;
+    }
+    /// <summary>
+    /// 购买
+    /// 1.先检查玩家的钱和声望
+    /// 
+    /// </summary>
+    private void Buy()
+    {
+        
+    }
 }

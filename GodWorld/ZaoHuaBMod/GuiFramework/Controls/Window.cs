@@ -25,6 +25,88 @@ namespace ZaoHuaBMod.GuiFramework.Controls
             private static Vector2 _resizeStartSize;
             private static WindowData _resizingWindow;
 
+            // ---- 防点穿状态（通用，任何 Unity 游戏可用） ----
+            private static bool _isCapturingPointer;
+            private static Vector2 _lastGuiMousePos;
+            private static bool _blockGameInputEnabled = true;
+            
+            /// <summary>
+            ///     判断当前是否应阻止游戏接收鼠标输入（给 Harmony Patch 调用）。
+            ///     无可见窗口时自动清除捕获状态。
+            /// </summary>
+            public static bool ShouldBlockGamePointerInput()
+            {
+                if (!_blockGameInputEnabled)
+                    return false;
+                if (!_windows.Values.Any(w => w.Visible))
+                {
+                    _isCapturingPointer = false;
+                    return false;
+                }
+                if (_isCapturingPointer)
+                    return true;
+                if (IsPointerOverAnyWindow(_lastGuiMousePos))
+                {
+                    _isCapturingPointer = true;
+                    return true;
+                }
+                return false;
+            }
+
+            /// <summary>
+            ///     被 WindowData.Visible setter 调用：窗口变为可见时立即启用指针捕获。
+            /// </summary>
+            internal static void NotifyWindowBecameVisible()
+            {
+                _isCapturingPointer = true;
+            }
+
+            /// <summary>
+            ///     判断鼠标是否在任意可见 IMGUI 窗口的区域内（已考虑缩放）。
+            /// </summary>
+            private static bool IsPointerOverAnyWindow(Vector2 guiMousePos)
+            {
+                foreach (var w in _windows.Values)
+                {
+                    if (!w.Visible) continue;
+                    var scaledRect = new Rect(w.Rect.x, w.Rect.y, w.Rect.width * Scale, w.Rect.height * Scale);
+                    if (scaledRect.Contains(guiMousePos)) return true;
+                }
+                return false;
+            }
+
+            /// <summary>
+            ///     根据当前 IMGUI 事件更新指针捕获状态。
+            /// </summary>
+            private static void UpdatePointerCapture(Event currentEvent)
+            {
+                if (currentEvent == null)
+                {
+                    _isCapturingPointer = false;
+                    return;
+                }
+
+                var isInsideAnyWindow = IsPointerOverAnyWindow(currentEvent.mousePosition);
+
+                switch (currentEvent.type)
+                {
+                    case EventType.MouseDown:
+                        _isCapturingPointer = isInsideAnyWindow;
+                        break;
+                    case EventType.MouseDrag:
+                    case EventType.MouseMove:
+                    case EventType.ScrollWheel:
+                        _isCapturingPointer = _isCapturingPointer || isInsideAnyWindow;
+                        break;
+                    case EventType.MouseUp:
+                        _isCapturingPointer = false;
+                        break;
+                    case EventType.ContextClick:
+                        _isCapturingPointer = _isCapturingPointer || isInsideAnyWindow;
+                        break;
+                }
+            }
+
             /// <summary>
             ///     全局缩放比例，范围 0.8 ~ 2.5。
             /// </summary>
@@ -116,6 +198,10 @@ namespace ZaoHuaBMod.GuiFramework.Controls
                     var previousSkin = GUI.skin;
                     GUI.skin = DarkSkin.Skin;
                     var matrixOld = GUI.matrix;
+
+                    // 缓存当前帧鼠标位置，供 ShouldBlockGamePointerInput() 在游戏 Update/LateUpdate 阶段判断
+                    if (Event.current != null)
+                        _lastGuiMousePos = Event.current.mousePosition;
                     
                     var sortedWindows = _windows.Values
                         .Where(w => w.Visible)
@@ -131,6 +217,13 @@ namespace ZaoHuaBMod.GuiFramework.Controls
                     
                     GUI.matrix = matrixOld;
                     HandleDragAndResize();
+
+                    // ---- 防点穿：更新指针捕获状态（供 Harmony Patch 使用） ----
+                    if (_blockGameInputEnabled)
+                    {
+                        var currentEvent = Event.current;
+                        UpdatePointerCapture(currentEvent);
+                    }
 
                     GUI.skin = previousSkin;
                 
@@ -391,7 +484,19 @@ namespace ZaoHuaBMod.GuiFramework.Controls
             // 标题栏配置
             public TitleBarConfig TitleBar;
 
-            public bool Visible = true;
+            private bool _visible = true;
+            public bool Visible
+            {
+                get { return _visible; }
+                set
+                {
+                    if (_visible == value) return;
+                    _visible = value;
+                    // 窗口变为可见时立即启用指针捕获（解决第一帧穿透问题）
+                    if (value)
+                        UI.WindowControls.NotifyWindowBecameVisible();
+                }
+            }
 
             public WindowData(
                 int id,

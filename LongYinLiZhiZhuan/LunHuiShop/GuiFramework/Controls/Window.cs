@@ -27,7 +27,17 @@ namespace LunHuiShop.GuiFramework.Controls
 
             // ---- 防点穿状态 ----
             private static bool _isCapturingPointer; // MouseDown 在窗口内按下后直到 MouseUp 都 true
+            private static Vector2 _lastGuiMousePos; // 上一帧 OnGUI 的鼠标位置（用于游戏 Update/LateUpdate 提前读取时判断）
             private static bool _blockGameInputEnabled = true;
+
+            /// <summary>
+            ///     被 WindowData.Visible setter 调用：窗口变为可见时立即启用指针捕获。
+            ///     解决第一帧时 _isCapturingPointer 尚未更新导致的穿透问题。
+            /// </summary>
+            internal static void NotifyWindowBecameVisible()
+            {
+                _isCapturingPointer = true;
+            }
 
             /// <summary>
             ///     设置是否启用防点穿（默认 true）。关闭后鼠标事件会穿透到游戏。
@@ -40,10 +50,32 @@ namespace LunHuiShop.GuiFramework.Controls
 
             /// <summary>
             ///     被 Harmony Patch 调用：判断当前是否应阻止游戏接收鼠标输入。
+            ///     Update/LateUpdate 阶段可能早于 OnGUI，用 _lastGuiMousePos 弥补
+            ///     状态滞后问题。
             /// </summary>
             public static bool ShouldBlockGamePointerInput()
             {
-                return _blockGameInputEnabled && _isCapturingPointer;
+                if (!_blockGameInputEnabled)
+                    return false;
+
+                // 没有任何窗口可见时，立即清除捕获状态并返回 false，
+                // 防止窗口隐藏后捕获状态残留导致游戏输入被持续阻塞。
+                if (!_windows.Values.Any(w => w.Visible))
+                {
+                    _isCapturingPointer = false;
+                    return false;
+                }
+
+                if (_isCapturingPointer)
+                    return true;
+                // 检查上一帧 OnGUI 的鼠标位置是否在窗口内
+                // （游戏在 LateUpdate/Update 中读取输入时，_isCapturingPointer 可能还没更新）
+                if (IsPointerOverAnyWindow(_lastGuiMousePos))
+                {
+                    _isCapturingPointer = true;
+                    return true;
+                }
+                return false;
             }
 
             /// <summary>
@@ -137,7 +169,11 @@ namespace LunHuiShop.GuiFramework.Controls
                     var previousSkin = GUI.skin;
                     GUI.skin = DarkSkin.Skin;
                     var matrixOld = GUI.matrix;
-                    
+
+                    // 缓存当前帧鼠标位置，供 ShouldBlockGamePointerInput() 在游戏 Update/LateUpdate 阶段判断
+                    if (Event.current != null)
+                        _lastGuiMousePos = Event.current.mousePosition;
+
                     var sortedWindows = _windows.Values
                         .Where(w => w.Visible)
                         .OrderBy(w => w.Layer)
@@ -469,7 +505,21 @@ namespace LunHuiShop.GuiFramework.Controls
             // 标题栏配置
             public TitleBarConfig TitleBar;
 
-            public bool Visible = true;
+            private bool _visible = true;
+            public bool Visible
+            {
+                get => _visible;
+                set
+                {
+                    if (_visible == value) return;
+                    _visible = value;
+                    // 窗口从隐藏变为可见时，立即启用指针捕获。
+                    // 解决第一帧时 _isCapturingPointer / _lastGuiMousePos 尚未更新
+                    // 导致 ShouldBlockGamePointerInput() 返回 false 的穿透问题。
+                    if (value)
+                        WindowControls.NotifyWindowBecameVisible();
+                }
+            }
 
             public WindowData(
                 int id,

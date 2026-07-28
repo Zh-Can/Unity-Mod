@@ -28,6 +28,7 @@
         <Compile Include="GuiFramework\Controls\Buttton.cs" />
         <Compile Include="GuiFramework\Controls\CheckboxGroup.cs" />
         <Compile Include="GuiFramework\Controls\Dropdown.cs" />
+        <Compile Include="GuiFramework\Controls\GameInputBlocker.cs" />
         <Compile Include="GuiFramework\Controls\Label.cs" />
         <Compile Include="GuiFramework\Controls\RadioGroup.cs" />
         <Compile Include="GuiFramework\Controls\Toggle.cs" />
