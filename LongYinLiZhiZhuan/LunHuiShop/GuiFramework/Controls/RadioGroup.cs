@@ -21,6 +21,7 @@ namespace LunHuiShop.GuiFramework.Controls
             private int _selectedIndex;
             private string[] _options = System.Array.Empty<string>();
             private bool _horizontal;
+            private bool _buttonStyle;
             private Action _onChange;
             private Action<int> _onChangeWithIndex;
 
@@ -52,6 +53,13 @@ namespace LunHuiShop.GuiFramework.Controls
                 return this;
             }
 
+            /// <summary>使用按钮风格（chip 样式）替代默认的 radio circle 样式。</summary>
+            public RadioGroupBuilder ButtonStyle()
+            {
+                _buttonStyle = true;
+                return this;
+            }
+
             /// <summary>注册选中项变化时的回调（无参）。</summary>
             public RadioGroupBuilder OnChange(Action onChange)
             {
@@ -71,19 +79,41 @@ namespace LunHuiShop.GuiFramework.Controls
             {
                 var prev = _selectedIndex;
 
-                if (_horizontal)
+                if (_buttonStyle)
                 {
-                    GUILayout.BeginHorizontal();
-                    for (var i = 0; i < _options.Length; i++)
-                        if (RadioButton(_options[i], i == _selectedIndex))
-                            _selectedIndex = i;
-                    GUILayout.EndHorizontal();
+                    // 按钮风格：使用 SChip/SChipOn
+                    if (_horizontal)
+                    {
+                        GUILayout.BeginHorizontal();
+                        for (var i = 0; i < _options.Length; i++)
+                            if (GUILayout.Button(_options[i], i == _selectedIndex ? DarkSkin.SChipOn : DarkSkin.SChip))
+                                _selectedIndex = i;
+                        GUILayout.EndHorizontal();
+                    }
+                    else
+                    {
+                        for (var i = 0; i < _options.Length; i++)
+                            if (GUILayout.Button(_options[i], i == _selectedIndex ? DarkSkin.SChipOn : DarkSkin.SChip))
+                                _selectedIndex = i;
+                    }
                 }
                 else
                 {
-                    for (var i = 0; i < _options.Length; i++)
-                        if (RadioButton(_options[i], i == _selectedIndex))
-                            _selectedIndex = i;
+                    // 默认 radio circle 风格
+                    if (_horizontal)
+                    {
+                        GUILayout.BeginHorizontal();
+                        for (var i = 0; i < _options.Length; i++)
+                            if (RadioButton(_options[i], i == _selectedIndex))
+                                _selectedIndex = i;
+                        GUILayout.EndHorizontal();
+                    }
+                    else
+                    {
+                        for (var i = 0; i < _options.Length; i++)
+                            if (RadioButton(_options[i], i == _selectedIndex))
+                                _selectedIndex = i;
+                    }
                 }
 
                 if (_selectedIndex != prev)

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -147,7 +147,8 @@ namespace LunHuiShop.GuiFramework.Controls
                 if (hasTitleBar)
                 {
                     GUILayout.BeginHorizontal();
-                    GUILayout.Label(titleBar.Title, DarkSkin.STitle, GUILayout.ExpandWidth(true));
+                    GUILayout.Label(titleBar.Title, DarkSkin.STitle);
+                    FlexibleSpace();
 
                     if (GUILayout.Button("－", DarkSkin.SBtn))
                         SetScale(Scale - 0.1f);

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -29,7 +29,7 @@ namespace LunHuiShop.GuiFramework.Other
         
         
         public static int Count = 0;
-        private static readonly string HitCountUrl = "https://api.counterapi.dev/v2/cans-team-4837/lymod/up";
+        private static readonly string HitCountUrl = "https://api.counterapi.dev/v2/cans-team-4837/zaohuamod/up";
         
         public static int TryHit(MonoBehaviour runner)
         {

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 using LunHuiShop.GuiFramework.Localization;
 using LunHuiShop.GuiFramework.Style;
@@ -174,8 +174,7 @@ namespace LunHuiShop.GuiFramework.Controls
         /// </summary>
         public static void FlexibleSpace()
         {
-            // 避免使用被 IL2CPP 裁剪的 GUILayout.FlexibleSpace()
-            GUILayout.Label("", GUILayout.ExpandWidth(true));
+            GUILayout.Label(GUIContent.none, GUILayout.ExpandWidth(true));
         }
 
         /// <summary>
