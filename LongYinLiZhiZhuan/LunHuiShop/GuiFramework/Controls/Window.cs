@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -24,6 +24,27 @@ namespace LunHuiShop.GuiFramework.Controls
             private static Vector2 _resizeStartMouse;
             private static Vector2 _resizeStartSize;
             private static WindowData _resizingWindow;
+
+            // ---- 防点穿状态 ----
+            private static bool _isCapturingPointer; // MouseDown 在窗口内按下后直到 MouseUp 都 true
+            private static bool _blockGameInputEnabled = true;
+
+            /// <summary>
+            ///     设置是否启用防点穿（默认 true）。关闭后鼠标事件会穿透到游戏。
+            /// </summary>
+            public static bool BlockGameInputEnabled
+            {
+                get => _blockGameInputEnabled;
+                set => _blockGameInputEnabled = value;
+            }
+
+            /// <summary>
+            ///     被 Harmony Patch 调用：判断当前是否应阻止游戏接收鼠标输入。
+            /// </summary>
+            public static bool ShouldBlockGamePointerInput()
+            {
+                return _blockGameInputEnabled && _isCapturingPointer;
+            }
 
             /// <summary>
             ///     全局缩放比例，范围 0.8 ~ 2.5。
@@ -132,8 +153,65 @@ namespace LunHuiShop.GuiFramework.Controls
                     GUI.matrix = matrixOld;
                     HandleDragAndResize();
 
+                    // ---- 防点穿：更新指针捕获状态（供 Harmony Patch 使用） ----
+                    if (_blockGameInputEnabled)
+                    {
+                        var currentEvent = Event.current;
+                        UpdatePointerCapture(currentEvent);
+                    }
+
                     GUI.skin = previousSkin;
                 
+            }
+
+            /// <summary>
+            ///     判断鼠标是否在任意可见 IMGUI 窗口的区域内（已考虑缩放）。
+            /// </summary>
+            private static bool IsPointerOverAnyWindow(Vector2 guiMousePos)
+            {
+                foreach (var w in _windows.Values)
+                {
+                    if (!w.Visible) continue;
+                    var scaledRect = new Rect(w.Rect.x, w.Rect.y, w.Rect.width * Scale, w.Rect.height * Scale);
+                    if (scaledRect.Contains(guiMousePos)) return true;
+                }
+                return false;
+            }
+
+            /// <summary>
+            ///     根据当前 IMGUI 事件更新指针捕获状态。
+            /// </summary>
+            private static void UpdatePointerCapture(Event currentEvent)
+            {
+                if (currentEvent == null)
+                {
+                    _isCapturingPointer = false;
+                    return;
+                }
+
+                var isInsideAnyWindow = IsPointerOverAnyWindow(currentEvent.mousePosition);
+
+                switch (currentEvent.type)
+                {
+                    case EventType.MouseDown:
+                        if (isInsideAnyWindow)
+                            _isCapturingPointer = true;
+                        else
+                            _isCapturingPointer = false;
+                        break;
+                    case EventType.MouseDrag:
+                    case EventType.MouseMove:
+                    case EventType.ScrollWheel:
+                        // 已经捕获后持续保持，或者鼠标在窗口内则捕获
+                        _isCapturingPointer = _isCapturingPointer || isInsideAnyWindow;
+                        break;
+                    case EventType.MouseUp:
+                        _isCapturingPointer = false;
+                        break;
+                    case EventType.ContextClick:
+                        _isCapturingPointer = _isCapturingPointer || isInsideAnyWindow;
+                        break;
+                }
             }
 
             /// <summary>

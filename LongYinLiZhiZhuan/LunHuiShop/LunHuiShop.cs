@@ -1,4 +1,4 @@
-﻿using LunHuiShop;
+using LunHuiShop;
 using Il2CppInterop.Runtime;
 using LunHuiShop.GuiFramework.Config;
 using LunHuiShop.GuiFramework.Localization;
@@ -27,14 +27,13 @@ public class LunHuiShop : MelonMod
 
         InitConfig();
         var harmony = new HarmonyLib.Harmony("LunHuiShop");
-        harmony.PatchAll(typeof(LunHuiShop));
+        harmony.PatchAll();
 
         BaseConfig.Load();
         BaseConfig.ApplyToManager();
 
         // 初始化 Mod 目录与配置
-        var modDir = Path.GetDirectoryName(MelonAssembly.Assembly.Location);
-        Loc.ModDirectory = modDir;
+        Loc.ModDirectory = Path.GetDirectoryName(MelonAssembly.Assembly.Location);
         Loc.ScanLanguages();
         Loc.TryApplyLanguage(BaseConfig.Language);
         Log.Initialize(new MelonLoggerAdapter());
