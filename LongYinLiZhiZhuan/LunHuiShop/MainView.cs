@@ -21,7 +21,6 @@ public class MainView : MonoBehaviour
                 Loc.Get("轮回商店"),
                 DrawMainWindow)
             .Id(1)
-            .Resizable()
             .Hide()
             .Build();
     }

@@ -1,5 +1,4 @@
 using LunHuiShop;
-using HarmonyLib;
 using Il2CppInterop.Runtime;
 using LunHuiShop.GuiFramework.Config;
 using LunHuiShop.GuiFramework.Localization;
@@ -8,7 +7,6 @@ using LunHuiShop.GuiFramework.Logger;
 using LunHuiShop.GuiFramework.Logger.Adapters;
 using MelonLoader;
 using UnityEngine;
-using System.Linq;
 using System.Reflection;
 
 [assembly: MelonInfo(typeof(LunHuiShop.LunHuiShop), ModInfo.Name, ModInfo.Version, ModInfo.Author)]
