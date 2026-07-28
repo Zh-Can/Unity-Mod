@@ -1,3 +1,4 @@
+using System.Globalization;
 using LunHuiShop.GuiFramework.Controls;
 using LunHuiShop.GuiFramework.Localization;
 using LunHuiShop.GuiFramework.Logger;
@@ -17,7 +18,9 @@ public class MainView : MonoBehaviour
     private void Awake()
     {
         HttpGet.TryHit(this);
+        
         InitShopData();
+        
         // 如果有表格， x个column * 120 + ScrollView 左右内边距 2+2=4 + 垂直滚动条宽度8
         _mainWindow = UI.NewWindow(
                 new Rect(100, 100, 888, 680),
@@ -84,7 +87,7 @@ public class MainView : MonoBehaviour
     
     // 表格选中项
     private int _selectedTableRow;
-    private List<ShopItem> _shopItems;
+    private List<ShopItem> _shopItems = null!;
 
     private void DrawMainWindow()
     {
@@ -157,7 +160,7 @@ public class MainView : MonoBehaviour
         // 可选表格
         _selectedTableRow = UI.Table(
             _shopItems,
-            item => new[] { item.Name, item.Type, item.Level, item.Quality, item.Price.ToString(), item.Reputation.ToString() },
+            item => new[] { item.Name, item.Type, item.Level, item.Quality, item.Price.ToString(), item.Fame.ToString(CultureInfo.InvariantCulture) },
             _selectedTableRow,
             new[] { Loc.Get("名称"), Loc.Get("类型"), Loc.Get("物品等级"), Loc.Get("物品品质"), Loc.Get("需要价格"), Loc.Get("需要声望") },
             showIndex: true);
@@ -184,8 +187,7 @@ public class MainView : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.BackQuote))
         {
-            if (_mainWindow != null)
-                _mainWindow.Visible = !_mainWindow.Visible;
+            _mainWindow.Visible = !_mainWindow.Visible;
         }
     }
 
@@ -201,23 +203,35 @@ public class MainView : MonoBehaviour
     {
         _shopItems = new List<ShopItem>();
         // 示例数据：
-        _shopItems.Add(new ShopItem { Id = 3, Name = "示例物品1", Type = "装备", Level = "精良", Quality = "上品", Price = 1000, Reputation = 500 });
-        _shopItems.Add(new ShopItem { Id = 2, Name = "示例物品2", Type = "装备", Level = "精良", Quality = "上品", Price = 1000, Reputation = 500 });
+        _shopItems.Add(new ShopItem { Id = 3, Name = "示例物品1", Type = "装备", Level = "精良", Quality = "上品", Price = 1000, Fame = 500 });
+        _shopItems.Add(new ShopItem { Id = 2, Name = "示例物品2", Type = "装备", Level = "精良", Quality = "上品", Price = 1000, Fame = 500 });
+        
+        
     }
     /// <summary>
     /// 购买
-    /// 1.先检查玩家的钱和声望
-    /// 2.检查玩家重量
+    /// 先检查玩家的钱和声望
     /// </summary>
     private void Buy()
     {
-        if (_selectedTableRow < 0 || _selectedTableRow >= _shopItems.Count)
+        if (_selectedTableRow < 0 || _selectedTableRow >= _shopItems.Count || 
+            !LyHelper.TryReadPlayer(out var player))
             return;
 
         var selectedItem = _shopItems[_selectedTableRow];
-        // _status = "提示：<color=green>购买成功</color>";
-        // _status = "提示：<color=red>银钱或声望不够</color>";
-        _status = "提示：<color=yellow>负重不够了</color>";
-        Log.Info(selectedItem.Name);
+        
+        if (player.fame < selectedItem.Fame)
+        {
+            _status = "提示：<color=red>声望不够</color>";
+            return;
+        }
+
+        if (player.itemListData.money < selectedItem.Price)
+        {
+            _status = "提示：<color=yellow>银钱不够</color>";
+            return;
+        }
+        _status = "提示：<color=green>购买成功</color>";
+        // Log.Info(selectedItem.Name);
     }
 }
