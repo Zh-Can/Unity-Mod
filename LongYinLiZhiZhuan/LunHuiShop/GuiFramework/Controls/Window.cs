@@ -100,7 +100,7 @@ namespace LunHuiShop.GuiFramework.Controls
                 int id,
                 Rect rect,
                 WindowData.TitleBarConfig titleBar,
-                Action<WindowData> content)
+                Action content)
             {
                 if (_windows.ContainsKey(id))
                     throw new InvalidOperationException($"窗口 Id {id} 已存在，请为每个窗口指定唯一 Id。");
@@ -293,7 +293,7 @@ namespace LunHuiShop.GuiFramework.Controls
                 window.ContentScrollPos = GUILayout.BeginScrollView(window.ContentScrollPos);
                 try
                 {
-                    window.Content?.Invoke(window);
+                    window.Content?.Invoke();
                 }
                 catch (Exception e)
                 {
@@ -461,123 +461,124 @@ namespace LunHuiShop.GuiFramework.Controls
             }
         }
 
-        /// <summary>
-        ///     窗体数据
-        /// </summary>
-        public class WindowData
+    }
+
+    /// <summary>
+    ///     窗体数据
+    /// </summary>
+    public class WindowData
+    {
+        public enum DragMode
         {
-            public enum DragMode
-            {
-                // 仅标题栏可拖拽
-                TitleBarOnly,
+            // 仅标题栏可拖拽
+            TitleBarOnly,
 
-                // 整个窗体都可拖拽
-                WholeWindow
+            // 整个窗体都可拖拽
+            WholeWindow
+        }
+
+        // 内容绘制
+        public Action Content;
+
+        // 内容区滚动位置（GUILayout.BeginScrollView 需要）
+        internal Vector2 ContentScrollPos;
+
+        // 拖拽模式
+        public DragMode DragArea = DragMode.TitleBarOnly;
+
+        // 是否可拖拽
+        public bool Draggable = true;
+        public int Id;
+
+        // 窗口层级，越大越在上层
+        public int Layer = 0;
+
+        // 最小尺寸
+        public Vector2 MinSize = new Vector2(200f, 100f);
+
+        // 关闭回调
+        public Action OnClose;
+
+        public Rect Rect;
+
+        // 是否可调整大小
+        public bool Resizable = false;
+
+        // 标题栏配置
+        public TitleBarConfig TitleBar;
+
+        private bool _visible = true;
+        public bool Visible
+        {
+            get => _visible;
+            set
+            {
+                if (_visible == value) return;
+                _visible = value;
+                // 窗口从隐藏变为可见时，立即启用指针捕获。
+                // 解决第一帧时 _isCapturingPointer / _lastGuiMousePos 尚未更新
+                // 导致 ShouldBlockGamePointerInput() 返回 false 的穿透问题。
+                if (value)
+                    UI.WindowControls.NotifyWindowBecameVisible();
             }
+        }
 
-            // 内容绘制
-            public Action<WindowData> Content;
+        public WindowData(
+            int id,
+            Rect rect,
+            TitleBarConfig titleBar,
+            Action content)
+        {
+            Id = id;
+            Rect = rect;
+            TitleBar = titleBar;
+            Content = content;
+        }
 
-            // 内容区滚动位置（GUILayout.BeginScrollView 需要）
-            internal Vector2 ContentScrollPos;
+        /// <summary>
+        ///     显示窗体
+        /// </summary>
+        public void Show()
+        {
+            Visible = true;
+        }
 
-            // 拖拽模式
-            public DragMode DragArea = DragMode.TitleBarOnly;
+        /// <summary>
+        ///     隐藏窗体
+        /// </summary>
+        public void Hide()
+        {
+            Visible = false;
+        }
 
-            // 是否可拖拽
-            public bool Draggable = true;
-            public int Id;
+        /// <summary>
+        ///     销毁窗体
+        /// </summary>
+        public void Destroy()
+        {
+            UI.WindowControls.DestroyWindow(Id);
+        }
 
-            // 窗口层级，越大越在上层
-            public int Layer = 0;
+        /// <summary>
+        ///     标题栏配置
+        /// </summary>
+        public class TitleBarConfig
+        {
+            public string CloseText = "✕";
 
-            // 最小尺寸
-            public Vector2 MinSize = new Vector2(200f, 100f);
+            // 字体大小
+            public int FontSize = 18;
 
-            // 关闭回调
-            public Action OnClose;
+            // 高度
+            public float Height = 36f;
 
-            public Rect Rect;
+            // 显示关闭按钮
+            public bool ShowCloseButton = true;
+            public string Title;
 
-            // 是否可调整大小
-            public bool Resizable = false;
-
-            // 标题栏配置
-            public TitleBarConfig TitleBar;
-
-            private bool _visible = true;
-            public bool Visible
+            public TitleBarConfig(string title)
             {
-                get => _visible;
-                set
-                {
-                    if (_visible == value) return;
-                    _visible = value;
-                    // 窗口从隐藏变为可见时，立即启用指针捕获。
-                    // 解决第一帧时 _isCapturingPointer / _lastGuiMousePos 尚未更新
-                    // 导致 ShouldBlockGamePointerInput() 返回 false 的穿透问题。
-                    if (value)
-                        WindowControls.NotifyWindowBecameVisible();
-                }
-            }
-
-            public WindowData(
-                int id,
-                Rect rect,
-                TitleBarConfig titleBar,
-                Action<WindowData> content)
-            {
-                Id = id;
-                Rect = rect;
-                TitleBar = titleBar;
-                Content = content;
-            }
-
-            /// <summary>
-            ///     显示窗体
-            /// </summary>
-            public void Show()
-            {
-                Visible = true;
-            }
-
-            /// <summary>
-            ///     隐藏窗体
-            /// </summary>
-            public void Hide()
-            {
-                Visible = false;
-            }
-
-            /// <summary>
-            ///     销毁窗体
-            /// </summary>
-            public void Destroy()
-            {
-                Controls.UI.WindowControls.DestroyWindow(Id);
-            }
-
-            /// <summary>
-            ///     标题栏配置
-            /// </summary>
-            public class TitleBarConfig
-            {
-                public string CloseText = "✕";
-
-                // 字体大小
-                public int FontSize = 18;
-
-                // 高度
-                public float Height = 36f;
-
-                // 显示关闭按钮
-                public bool ShowCloseButton = true;
-                public string Title;
-
-                public TitleBarConfig(string title)
-                {
-                    Title = title;
-                }
+                Title = title;
             }
         }
     }

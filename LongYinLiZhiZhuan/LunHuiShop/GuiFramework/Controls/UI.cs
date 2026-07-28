@@ -17,7 +17,7 @@ namespace LunHuiShop.GuiFramework.Controls
         /// <param name="title">窗口标题。</param>
         /// <param name="content">窗口内容绘制回调。</param>
         /// <returns>窗体构造器，可继续链式配置。</returns>
-        public static WindowBuilder NewWindow(Rect rect, string title, Action<WindowData> content)
+        public static WindowBuilder NewWindow(Rect rect, string title, Action content)
         {
             return new WindowBuilder(rect, new WindowData.TitleBarConfig(title), content);
         }
@@ -29,7 +29,7 @@ namespace LunHuiShop.GuiFramework.Controls
         /// <param name="titleBar">标题栏配置。</param>
         /// <param name="content">窗口内容绘制回调。</param>
         /// <returns>窗体构造器，可继续链式配置。</returns>
-        public static WindowBuilder NewWindow(Rect rect, WindowData.TitleBarConfig titleBar, Action<WindowData> content)
+        public static WindowBuilder NewWindow(Rect rect, WindowData.TitleBarConfig titleBar, Action content)
         {
             return new WindowBuilder(rect, titleBar, content);
         }
@@ -357,18 +357,18 @@ namespace LunHuiShop.GuiFramework.Controls
     public class WindowBuilder
     {
         private readonly Rect _rect;
-        private readonly UI.WindowData.TitleBarConfig _titleBar;
-        private readonly Action<UI.WindowData> _content;
+        private readonly WindowData.TitleBarConfig _titleBar;
+        private readonly Action _content;
         private int _id = 1000;
         private bool _visible = true;
         private bool _draggable = true;
-        private UI.WindowData.DragMode _dragMode = UI.WindowData.DragMode.TitleBarOnly;
+        private WindowData.DragMode _dragMode = WindowData.DragMode.TitleBarOnly;
         private bool _resizable;
         private int _layer;
         private Vector2 _minSize = new Vector2(200f, 100f);
         private Action _onClose;
 
-        public WindowBuilder(Rect rect, UI.WindowData.TitleBarConfig titleBar, Action<UI.WindowData> content)
+        public WindowBuilder(Rect rect, WindowData.TitleBarConfig titleBar, Action content)
         {
             _rect = rect;
             _titleBar = titleBar ?? throw new ArgumentNullException(nameof(titleBar));
@@ -404,7 +404,7 @@ namespace LunHuiShop.GuiFramework.Controls
         }
 
         /// <summary>设置拖拽模式。</summary>
-        public WindowBuilder DragBy(UI.WindowData.DragMode mode)
+        public WindowBuilder DragBy(WindowData.DragMode mode)
         {
             _dragMode = mode;
             return this;
@@ -439,7 +439,7 @@ namespace LunHuiShop.GuiFramework.Controls
         }
 
         /// <summary>获取最终窗体数据。</summary>
-        public UI.WindowData Build()
+        public WindowData Build()
         {
             var window = UI.WindowControls.CreateWindow(_id, _rect, _titleBar, _content);
             window.Visible = _visible;

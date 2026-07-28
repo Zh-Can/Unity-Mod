@@ -10,7 +10,7 @@ namespace LunHuiShop;
 [RegisterTypeInIl2Cpp]
 public class MainView : MonoBehaviour
 {
-    private UI.WindowData _mainWindow;
+    private WindowData _mainWindow;
     
     private void Awake()
     {
@@ -81,7 +81,7 @@ public class MainView : MonoBehaviour
     
     // 表格选中项
     private int _selectedTableRow;
-    private void DrawMainWindow(UI.WindowData window)
+    private void DrawMainWindow()
     {
         // 物品分类单选
         _itemTypeRadioIndex = UI.RadioButtonGroup
