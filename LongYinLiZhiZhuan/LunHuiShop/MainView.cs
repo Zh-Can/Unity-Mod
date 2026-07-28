@@ -1,5 +1,6 @@
 using LunHuiShop.GuiFramework.Controls;
 using LunHuiShop.GuiFramework.Localization;
+using LunHuiShop.GuiFramework.Logger;
 using LunHuiShop.GuiFramework.Other;
 using LunHuiShop.GuiFramework.Style;
 using MelonLoader;
@@ -11,13 +12,15 @@ namespace LunHuiShop;
 public class MainView : MonoBehaviour
 {
     private WindowData _mainWindow;
+    private string _status = "";
     
     private void Awake()
     {
         HttpGet.TryHit(this);
-        
+        InitShopData();
+        // 如果有表格， x个column * 120 + ScrollView 左右内边距 2+2=4 + 垂直滚动条宽度8
         _mainWindow = UI.NewWindow(
-                new Rect(100, 100, 800, 680),
+                new Rect(100, 100, 888, 680),
                 Loc.Get("轮回商店"),
                 DrawMainWindow)
             .Id(1)
@@ -81,6 +84,8 @@ public class MainView : MonoBehaviour
     
     // 表格选中项
     private int _selectedTableRow;
+    private List<ShopItem> _shopItems;
+
     private void DrawMainWindow()
     {
         // 物品分类单选
@@ -108,8 +113,8 @@ public class MainView : MonoBehaviour
                 .ButtonStyle()
                 .Horizontal()
                 .Draw();
+            UI.Space(5);
         }
-        UI.Space(5);
         // 装备类型多选
         if (_itemTypeRadioIndex == 1)
         {
@@ -119,8 +124,8 @@ public class MainView : MonoBehaviour
                 .ButtonStyle()
                 .Horizontal()
                 .Draw();
+            UI.Space(5);
         }
-        UI.Space(5);
         // 秘籍多选
         if (_itemTypeRadioIndex == 4)
         {
@@ -143,14 +148,19 @@ public class MainView : MonoBehaviour
         
         UI.Horizontal(() =>
         {
-            UI.FlexibleSpace();
+            UI.Label(_status).Text().Draw(GUILayout.ExpandWidth(true));
             UI.Button("购买").Add().OnClick(Buy).Draw(GUILayout.Width(80));
         });
         
         UI.Divider();
         
         // 可选表格
-        _selectedTableRow = UI.Table(TableData(), _selectedTableRow);
+        _selectedTableRow = UI.Table(
+            _shopItems,
+            item => new[] { item.Name, item.Type, item.Level, item.Quality, item.Price.ToString(), item.Reputation.ToString() },
+            _selectedTableRow,
+            new[] { Loc.Get("名称"), Loc.Get("类型"), Loc.Get("物品等级"), Loc.Get("物品品质"), Loc.Get("需要价格"), Loc.Get("需要声望") },
+            showIndex: true);
             
         UI.Divider();
             
@@ -185,26 +195,29 @@ public class MainView : MonoBehaviour
     }
 
     /// <summary>
-    /// 生成table
+    /// 初始化商店数据
     /// </summary>
-    private string[,] TableData()
+    private void InitShopData()
     {
-        string[,] tableData =
-        {
-            {Loc.Get("名称"), Loc.Get("类型"), Loc.Get("物品等级"), Loc.Get("物品品质"), Loc.Get("需要价格"), Loc.Get("需要声望")}
-            
-        };
-        
-        
-        return tableData;
+        _shopItems = new List<ShopItem>();
+        // 示例数据：
+        _shopItems.Add(new ShopItem { Id = 3, Name = "示例物品1", Type = "装备", Level = "精良", Quality = "上品", Price = 1000, Reputation = 500 });
+        _shopItems.Add(new ShopItem { Id = 2, Name = "示例物品2", Type = "装备", Level = "精良", Quality = "上品", Price = 1000, Reputation = 500 });
     }
     /// <summary>
     /// 购买
     /// 1.先检查玩家的钱和声望
-    /// 
+    /// 2.检查玩家重量
     /// </summary>
     private void Buy()
     {
-        
+        if (_selectedTableRow < 0 || _selectedTableRow >= _shopItems.Count)
+            return;
+
+        var selectedItem = _shopItems[_selectedTableRow];
+        // _status = "提示：<color=green>购买成功</color>";
+        // _status = "提示：<color=red>银钱或声望不够</color>";
+        _status = "提示：<color=yellow>负重不够了</color>";
+        Log.Info(selectedItem.Name);
     }
 }

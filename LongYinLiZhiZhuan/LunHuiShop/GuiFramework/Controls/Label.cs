@@ -80,6 +80,7 @@ namespace LunHuiShop.GuiFramework.Controls
             {
                 _tooltip = null;
                 _style = DarkSkin.SLabel;
+                
                 return this;
             }
             /// <summary>功能名称 样式。</summary>

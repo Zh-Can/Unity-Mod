@@ -1,6 +1,7 @@
-﻿using System;
+﻿﻿using System;
 using UnityEngine;
 using LunHuiShop.GuiFramework.Localization;
+using LunHuiShop.GuiFramework.Logger;
 using LunHuiShop.GuiFramework.Style;
 
 namespace LunHuiShop.GuiFramework.Controls
@@ -230,49 +231,120 @@ namespace LunHuiShop.GuiFramework.Controls
             return newExpanded;
         }
 
+        private static float _lastLoggedTableWidth = -1f;
+
         /// <summary>
-        ///     表格（首行为表头，支持点击选中行）
+        ///     泛型表格（支持点击选中行、序号列、自适应列宽）
         /// </summary>
-        /// <param name="data">二维数组，第 0 行为表头</param>
-        /// <param name="selectedRow">当前选中行索引</param>
-        /// <param name="colWidth">列宽（所有列统一）</param>
+        /// <typeparam name="T">数据项类型</typeparam>
+        /// <param name="data">数据列表</param>
+        /// <param name="rowMapper">将数据项映射为显示字符串数组</param>
+        /// <param name="headers">表头文本数组</param>
+        /// <param name="selectedRow">当前选中行索引（0-based data index）</param>
+        /// <param name="colWidth">列宽（availableWidth 为 null 时生效）</param>
         /// <param name="selectable">是否可以选中</param>
-        /// <returns>新的选中行索引</returns>
-        public static int Table(string[,] data, int selectedRow, float colWidth = 120, bool selectable = true)
+        /// <param name="showIndex">是否显示序号列</param>
+        /// <param name="availableWidth">可用总宽度，传入时自动均分列宽</param>
+        /// <returns>新的选中行索引（0-based data index）</returns>
+        public static int Table<T>(
+            List<T> data,
+            Func<T, string[]> rowMapper,
+            int selectedRow,
+            string[] headers,
+            float colWidth = 120,
+            bool selectable = true,
+            bool showIndex = false,
+            float? availableWidth = null)
         {
-            var cols = data.GetLength(1);
+            var colCount = headers.Length;
+            if (showIndex)
+                colCount++;
+
+            float totalWidth;
+            float[] colWidths = new float[colCount];
+            if (availableWidth.HasValue)
+            {
+                totalWidth = availableWidth.Value - 20f;
+                var w = totalWidth / colCount;
+                for (int i = 0; i < colCount; i++)
+                    colWidths[i] = w;
+            }
+            else
+            {
+                totalWidth = colCount * colWidth;
+                for (int i = 0; i < colCount; i++)
+                    colWidths[i] = colWidth;
+            }
+
+            if (Mathf.Abs(totalWidth - _lastLoggedTableWidth) > 0.01f)
+            {
+                _lastLoggedTableWidth = totalWidth;
+                Log.Info($"UI.Table totalWidth: {totalWidth}");
+            }
+
+            const float rowHeight = 30f;
 
             // 表头
-            Horizontal(() =>
+            var headerRect = GUILayoutUtility.GetRect(totalWidth, rowHeight, DarkSkin.SDetailHead,
+                GUILayout.Width(totalWidth), GUILayout.Height(rowHeight));
             {
-                for (int c = 0; c < cols; c++)
-                    GUILayout.Label(data[0, c], DarkSkin.SDetailHead, GUILayout.Width(colWidth));
-            });
-
-            // 数据行
-            for (int r = 1; r < data.GetLength(0); r++)
-            {
-                var row = r;
-                var rowStyle = selectable && row == selectedRow
-                    ? DarkSkin.SRowSelected
-                    : (row % 2 == 0 ? DarkSkin.SRow : DarkSkin.SRowAlt);
-
-                Horizontal(() =>
+                float x = headerRect.x;
+                int ci = 0;
+                if (showIndex)
                 {
-                    for (int c = 0; c < cols; c++)
-                        UI.Label(data[row, c]).Text().Draw(GUILayout.Width(colWidth));
-                }, rowStyle);
-
-                if (selectable)
+                    GUI.Label(new Rect(x, headerRect.y, colWidths[ci], headerRect.height),
+                        Loc.Get("序号"), DarkSkin.SDetailHead);
+                    x += colWidths[ci];
+                    ci++;
+                }
+                for (int h = 0; h < headers.Length; h++, ci++)
                 {
-                    var rowRect = GUILayoutUtility.GetLastRect();
-                    if (Event.current.type == EventType.MouseDown && rowRect.Contains(Event.current.mousePosition))
-                    {
-                        selectedRow = row;
-                        Event.current.Use();
-                    }
+                    GUI.Label(new Rect(x, headerRect.y, colWidths[ci], headerRect.height),
+                        headers[h], DarkSkin.SDetailHead);
+                    x += colWidths[ci];
                 }
             }
+
+            // 数据行
+            for (int r = 0; r < data.Count; r++)
+            {
+                var values = rowMapper(data[r]);
+                var rowStyle = selectable && r == selectedRow
+                    ? DarkSkin.SRowSelected
+                    : (r % 2 == 0 ? DarkSkin.SRow : DarkSkin.SRowAlt);
+
+                var rowRect = GUILayoutUtility.GetRect(totalWidth, rowHeight, rowStyle,
+                    GUILayout.Width(totalWidth), GUILayout.Height(rowHeight));
+
+                // 绘制行背景
+                GUI.Label(rowRect, GUIContent.none, rowStyle);
+
+                float x = rowRect.x;
+                int ci = 0;
+                if (showIndex)
+                {
+                    GUI.Label(new Rect(x, rowRect.y, colWidths[ci], rowRect.height),
+                        (r + 1).ToString(), DarkSkin.SLabel);
+                    x += colWidths[ci];
+                    ci++;
+                }
+                for (int c = 0; c < values.Length; c++, ci++)
+                {
+                    GUI.Label(new Rect(x, rowRect.y, colWidths[ci], rowRect.height),
+                        values[c], DarkSkin.SLabel);
+                    x += colWidths[ci];
+                }
+
+                // 仅判断 y，确保点击行任意位置都能选中
+                if (selectable && Event.current.type == EventType.MouseDown
+                    && Event.current.mousePosition.y >= rowRect.y
+                    && Event.current.mousePosition.y < rowRect.yMax)
+                {
+                    selectedRow = r;
+                    Event.current.Use();
+                }
+            }
+
             return selectedRow;
         }
 
