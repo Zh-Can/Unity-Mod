@@ -64,6 +64,7 @@ namespace LunHuiShop.GuiFramework.Style
         public static GUIStyle SMuted { get; private set; }
         public static GUIStyle SCount { get; private set; }
         public static GUIStyle SField { get; private set; }
+        public static GUIStyle SFieldPlaceholder { get; private set; }
         public static GUIStyle SPanel { get; private set; }
         public static GUIStyle SBtn { get; private set; }
         public static GUIStyle SBtnAdd { get; private set; }
@@ -176,6 +177,11 @@ namespace LunHuiShop.GuiFramework.Style
                     wordWrap = false
                 };
                 SkinR(SField, InputBg, TextBright, 5, null, null, BorderDim);
+
+                SFieldPlaceholder = new GUIStyle(SField)
+                {
+                    normal = { textColor = TextDim }
+                };
 
                 SPanel = new GUIStyle(GUI.skin.box);
                 SkinR(SPanel, PanelBg, TextNormal, 7, null, null, BorderDim);

@@ -34,42 +34,36 @@ public class MainView : MonoBehaviour
     // 物品分类
     private static readonly string[] ItemTypeRadioOptions =
     {
-        Loc.Get("全部"), Loc.Get("装备"), Loc.Get("丹药"), Loc.Get("饮食"),
-        Loc.Get("秘籍"),Loc.Get("珍宝"), Loc.Get("材料"), Loc.Get("马匹")
+        Loc.Get("全部"), Loc.Get("装备"), Loc.Get("丹药"), Loc.Get("饮食"), Loc.Get("秘籍"),
+        Loc.Get("珍宝"), Loc.Get("材料"), Loc.Get("马匹")
     };
     private int _itemTypeRadioIndex;
-    // 物品等级
-    private static readonly string[] ItemLevelOptions =
-    {
-        $"<color=#df2c45>{Loc.Get("绝世")}</color>",
-        $"<color=#e08d07>{Loc.Get("完美")}</color>",
-        $"<color=#9c7fe0>{Loc.Get("精良")}</color>",
-        $"<color=#307ede>{Loc.Get("优质")}</color>",
-        $"<color=#7ec00b>{Loc.Get("普通")}</color>",
-        $"<color=#949494>{Loc.Get("劣质")}</color>" 
-    };
+    
+        // $"<color=#df2c45>{Loc.Get("绝世")}</color>",
+        // $"<color=#e08d07>{Loc.Get("完美")}</color>",
+        // $"<color=#9c7fe0>{Loc.Get("精良")}</color>",
+        // $"<color=#307ede>{Loc.Get("优质")}</color>",
+        // $"<color=#7ec00b>{Loc.Get("普通")}</color>",
+        // $"<color=#949494>{Loc.Get("劣质")}</color>" 
+    // 
     private int _itemLevelRadioIndex;
-    // 物品品质
-    private static readonly string[] ItemQualityOptions =
-    {
-        $"<color=#df2c45>{Loc.Get("极品")}</color>",
-        $"<color=#e08d07>{Loc.Get("珍品")}</color>",
-        $"<color=#9c7fe0>{Loc.Get("上品")}</color>",
-        $"<color=#307ede>{Loc.Get("中品")}</color>",
-        $"<color=#7ec00b>{Loc.Get("下品")}</color>",
-        $"<color=#949494>{Loc.Get("残品")}</color>" 
-    };
+    
+        // $"<color=#df2c45>{Loc.Get("极品")}</color>",
+        // $"<color=#e08d07>{Loc.Get("珍品")}</color>",
+        // $"<color=#9c7fe0>{Loc.Get("上品")}</color>",
+        // $"<color=#307ede>{Loc.Get("中品")}</color>",
+        // $"<color=#7ec00b>{Loc.Get("下品")}</color>",
+        // $"<color=#949494>{Loc.Get("残品")}</color>" 
+   
     private int _itemQualityRadioIndex;
-    // 秘籍品质
-    private static readonly string[] BookQualityOptions =
-    {
-        $"<color=#df2c45>{Loc.Get("完本")}</color>",
-        $"<color=#e08d07>{Loc.Get("珍本")}</color>",
-        $"<color=#9c7fe0>{Loc.Get("古本")}</color>",
-        $"<color=#307ede>{Loc.Get("善本")}</color>",
-        $"<color=#7ec00b>{Loc.Get("仿本")}</color>",
-        $"<color=#949494>{Loc.Get("残本")}</color>" 
-    };
+    
+        // $"<color=#df2c45>{Loc.Get("完本")}</color>",
+        // $"<color=#e08d07>{Loc.Get("珍本")}</color>",
+        // $"<color=#9c7fe0>{Loc.Get("古本")}</color>",
+        // $"<color=#307ede>{Loc.Get("善本")}</color>",
+        // $"<color=#7ec00b>{Loc.Get("仿本")}</color>",
+        // $"<color=#949494>{Loc.Get("残本")}</color>" 
+    
     private int _bookQualityRadioIndex;
     // 装备类型
     private static readonly string[] EquipmentOptions =
@@ -80,8 +74,8 @@ public class MainView : MonoBehaviour
     // 秘籍类型
     private static readonly string[] BookOptions =
     {
-        Loc.Get("内功"), Loc.Get("轻功"), Loc.Get("绝技"), Loc.Get("拳掌"),Loc.Get("剑法")
-        ,Loc.Get("刀法"),Loc.Get("长兵"),Loc.Get("奇门"),Loc.Get("射术")
+        Loc.Get("内功"), Loc.Get("轻功"), Loc.Get("绝技"), Loc.Get("拳掌"),Loc.Get("剑法"),
+        Loc.Get("刀法"),Loc.Get("长兵"),Loc.Get("奇门"),Loc.Get("射术")
     };
     private int _bookRadioIndex;
     
@@ -91,7 +85,7 @@ public class MainView : MonoBehaviour
 
     private void DrawMainWindow()
     {
-        // 物品分类单选
+        // 物品分类
         _itemTypeRadioIndex = UI.RadioButtonGroup
             .Selected(_itemTypeRadioIndex)
             .Options(ItemTypeRadioOptions)
@@ -99,26 +93,8 @@ public class MainView : MonoBehaviour
             .Horizontal()
             .Draw();
         UI.Space(5);
-        // 物品等级多选
-        _itemLevelRadioIndex = UI.RadioButtonGroup
-            .Options(ItemLevelOptions)
-            .Selected(_itemLevelRadioIndex)
-            .ButtonStyle()
-            .Horizontal()
-            .Draw();
-        UI.Space(5);
-        // 物品品质多选
-        if (_itemTypeRadioIndex != 4)
-        {
-            _itemQualityRadioIndex = UI.RadioButtonGroup
-                .Options(ItemQualityOptions)
-                .Selected(_itemQualityRadioIndex)
-                .ButtonStyle()
-                .Horizontal()
-                .Draw();
-            UI.Space(5);
-        }
-        // 装备类型多选
+        
+        // 装备类型
         if (_itemTypeRadioIndex == 1)
         {
             _equipmentRadioIndex = UI.RadioButtonGroup
@@ -129,29 +105,17 @@ public class MainView : MonoBehaviour
                 .Draw();
             UI.Space(5);
         }
-        // 秘籍多选
+        // 秘籍
         if (_itemTypeRadioIndex == 4)
         {
-            _bookQualityRadioIndex = UI.RadioButtonGroup
-                .Options(BookQualityOptions)
-                .Selected(_bookQualityRadioIndex)
-                .ButtonStyle()
-                .Horizontal()
-                .Draw();
-            UI.Space(5);
-            _bookRadioIndex = UI.RadioButtonGroup
-                .Options(BookOptions)
-                .Selected(_bookRadioIndex)
-                .ButtonStyle()
-                .Horizontal()
-                .Draw();
-            UI.Space(5);
+           
         }
         
         
         UI.Horizontal(() =>
         {
             UI.Label(_status).Text().Draw(GUILayout.ExpandWidth(true));
+            UI.TextFiled("", placeholder: "搜索", options: GUILayout.Width(150));
             UI.Button("购买").Add().OnClick(Buy).Draw(GUILayout.Width(80));
         });
         
