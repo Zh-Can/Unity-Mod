@@ -26,50 +26,40 @@ public class MainView : MonoBehaviour
             .Hide()
             .Build();
     }
-
-    private static string[,] data = new string[,]
-    {
-        {},
-    };
-    private static readonly string[] DropdownOptions =
+    
+    // 单选按钮
+    private static readonly string[] ButtonRadioOptions =
     {
         Loc.Get("全部"), Loc.Get("装备"), Loc.Get("丹药"), Loc.Get("饮食"),
         Loc.Get("秘籍"),Loc.Get("珍宝"), Loc.Get("材料"), Loc.Get("马匹")
     };
-    private int _dropdownIndex = 0;
-    private bool _dropdownExpanded = false;
-    private bool _visibleEquipment = false;
+    private int _buttonRadioIndex = 0;
+    // 多选按钮
     private static readonly string[] EquipmentOptions =
     {
-        Loc.Get("全部"), Loc.Get("武器"), Loc.Get("护甲"), Loc.Get("头盔"),
-        Loc.Get("足履"),Loc.Get("饰品")
+        Loc.Get("武器"), Loc.Get("护甲"), Loc.Get("头盔"), Loc.Get("足履"),Loc.Get("饰品")
     };
-     
+    private bool[] _checkboxValues = { true, false, false, false, false};
+    
     
     private void DrawMainWindow(UI.WindowData window)
     {
-        _dropdownIndex = UI.Dropdown.Options(EquipmentOptions)
-            .Selected(_dropdownIndex)
-            .OnChange(v =>
-        {
-            if (v == 1)
-            {
-                _visibleEquipment = true;
-            }
-        }).Draw(ref _dropdownExpanded);
+        _buttonRadioIndex = UI.RadioButtonGroup
+            .Selected(_buttonRadioIndex)
+            .Options(ButtonRadioOptions)
+            .ButtonStyle()
+            .Horizontal()
+            .Draw();
 
-        if (_visibleEquipment)
+        if (_buttonRadioIndex == 1)
         {
-            UI.Dropdown.Options(DropdownOptions)
-                .Selected(_dropdownIndex)
-                .OnChange(v =>
-                {
-                    if (v == 1)
-                    {
-                        _visibleEquipment = true;
-                    }
-                }).Draw(ref _dropdownExpanded);
+            _checkboxValues = UI.CheckboxGroup
+                .Options(EquipmentOptions)
+                .Selected(_checkboxValues)
+                .Horizontal()
+                .Draw();
         }
+        
         
         
         UI.Divider();

@@ -150,10 +150,10 @@ namespace LunHuiShop.GuiFramework.Controls
                     GUILayout.Label(titleBar.Title, DarkSkin.STitle);
                     FlexibleSpace();
 
-                    if (GUILayout.Button("－", DarkSkin.SBtn))
+                    if (GUILayout.Button("－", DarkSkin.SBtn, GUILayout.Width(50)))
                         SetScale(Scale - 0.1f);
 
-                    if (GUILayout.Button("＋", DarkSkin.SBtn))
+                    if (GUILayout.Button("＋", DarkSkin.SBtn, GUILayout.Width(50)))
                         SetScale(Scale + 0.1f);
 
                     GUILayout.Space(10f);
@@ -162,14 +162,14 @@ namespace LunHuiShop.GuiFramework.Controls
                     {
                         var btnLabel = Loc.CurrentLanguage;
 
-                        if (GUILayout.Button(btnLabel, DarkSkin.SBtn) && Loc.AvailableLanguages.Count > 1)
+                        if (GUILayout.Button(btnLabel, DarkSkin.SBtn, GUILayout.Width(80)) && Loc.AvailableLanguages.Count > 1)
                             Loc.CycleLanguage();
 
                         GUILayout.Space(10f);
                     }
 
                     if (titleBar.ShowCloseButton)
-                        if (GUILayout.Button(titleBar.CloseText, DarkSkin.SBtnDel))
+                        if (GUILayout.Button(titleBar.CloseText, DarkSkin.SBtnDel, GUILayout.Width(50)))
                             window.Hide();
 
                     GUILayout.EndHorizontal();
