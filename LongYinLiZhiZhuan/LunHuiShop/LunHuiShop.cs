@@ -17,11 +17,11 @@ namespace LunHuiShop;
 
 public class LunHuiShop : MelonMod
 {
-    public static LunHuiShop Instance;
+    public static LunHuiShop Instance = null!;
     // 窗体对象
-    private GameObject _uiObj;
+    private GameObject _uiObj = null!;
 
-    private static MelonPreferences_Category _mainCategory;
+    private static readonly MelonPreferences_Category MainCategory = null!;
 
     public override void OnInitializeMelon()
     {
@@ -43,11 +43,52 @@ public class LunHuiShop : MelonMod
         BaseConfig.ApplyToManager();
 
         // 初始化 Mod 目录与配置
-        Loc.ModDirectory = Path.GetDirectoryName(MelonAssembly.Assembly.Location);
+        Loc.ModDirectory = Path.GetDirectoryName(MelonAssembly.Assembly.Location)!;
         Loc.ScanLanguages();
         Loc.TryApplyLanguage(BaseConfig.Language);
-        Log.Info("轮回商店 加载完成！~");
+        
+        // 初始化
+        
+        Log.Info("加载完成！~");
     }
+
+    
+    private void InitConfig()
+    {
+        
+    }
+
+    public static void SaveConfig()
+    {
+        MainCategory.SaveToFile();
+    }
+
+    public override void OnSceneWasLoaded(int buildIndex, string sceneName)
+    {
+        if (_uiObj == null)
+        {
+            _uiObj = new GameObject("LunHuiShopUI");
+            UnityEngine.Object.DontDestroyOnLoad(_uiObj);
+            _uiObj.AddComponent(Il2CppType.Of<MainView>());
+            Log.Info("LunHuiShopUI 已在场景加载后创建");
+        }
+    }
+
+    /// <summary>
+    ///     每帧清理 MouseController 实例的 hoveredObject 状态。
+    ///     注意：不清理 UICamera.hoveredObject（清理它会导致 MouseController.ProcessEvents
+    ///     调用 ProcessMouse，适得其反）。
+    /// </summary>
+    public override void OnUpdate()
+    {
+        if (UI.WindowControls.ShouldBlockGamePointerInput())
+        {
+            UIPatches.ClearHoveredState();
+        }
+    }
+
+
+    #region 防止点击穿透处理
 
     private static void RegisterBuildQuickButtonPatch(HarmonyLib.Harmony harmony)
     {
@@ -198,37 +239,5 @@ public class LunHuiShop : MelonMod
         }
     }
 
-    private void InitConfig()
-    {
-        
-    }
-
-    public static void SaveConfig()
-    {
-        _mainCategory.SaveToFile();
-    }
-
-    public override void OnSceneWasLoaded(int buildIndex, string sceneName)
-    {
-        if (_uiObj == null)
-        {
-            _uiObj = new GameObject("LunHuiShopUI");
-            UnityEngine.Object.DontDestroyOnLoad(_uiObj);
-            _uiObj.AddComponent(Il2CppType.Of<MainView>());
-            Log.Info("LunHuiShopUI 已在场景加载后创建");
-        }
-    }
-
-    /// <summary>
-    ///     每帧清理 MouseController 实例的 hoveredObject 状态。
-    ///     注意：不清理 UICamera.hoveredObject（清理它会导致 MouseController.ProcessEvents
-    ///     调用 ProcessMouse，适得其反）。
-    /// </summary>
-    public override void OnUpdate()
-    {
-        if (UI.WindowControls.ShouldBlockGamePointerInput())
-        {
-            UIPatches.ClearHoveredState();
-        }
-    }
+    #endregion
 }
