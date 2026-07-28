@@ -68,14 +68,14 @@ public class MainView : MonoBehaviour
             .ButtonStyle()
             .Horizontal()
             .Draw();
-        UI.Space();
+        UI.Space(5);
         // 物品等级多选
         _itemLevelChecks = UI.CheckboxGroup
             .Options(ItemLevelOptions)
             .Selected(_itemLevelChecks)
             .Horizontal()
             .Draw();
-        UI.Space();
+        UI.Space(5);
         // 装备类型多选
         if (_buttonRadioIndex == 1)
         {
@@ -85,7 +85,7 @@ public class MainView : MonoBehaviour
                 .Horizontal()
                 .Draw();
         }
-        UI.Space();
+        UI.Space(5);
         // 秘籍多选
         if (_buttonRadioIndex == 4)
         {
@@ -95,7 +95,7 @@ public class MainView : MonoBehaviour
                 .Horizontal()
                 .Draw();
         }
-        UI.Space();
+        UI.Space(5);
         
         
         UI.Divider();
