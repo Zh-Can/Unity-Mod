@@ -245,6 +245,7 @@ namespace LunHuiShop.GuiFramework.Controls
         /// <param name="selectable">是否可以选中</param>
         /// <param name="showIndex">是否显示序号列</param>
         /// <param name="availableWidth">可用总宽度，传入时自动均分列宽</param>
+        /// <param name="onDrawFirstCell">自定义绘制第一列的回调（参数：单元格矩形、数据项、文本），可为 null</param>
         /// <returns>新的选中行索引（0-based data index）</returns>
         public static int Table<T>(
             List<T> data,
@@ -254,7 +255,8 @@ namespace LunHuiShop.GuiFramework.Controls
             float colWidth = 120,
             bool selectable = true,
             bool showIndex = false,
-            float? availableWidth = null)
+            float? availableWidth = null,
+            Action<Rect, T, string>? onDrawFirstCell = null)
         {
             var colCount = headers.Length;
             if (showIndex)
@@ -330,8 +332,11 @@ namespace LunHuiShop.GuiFramework.Controls
                 }
                 for (int c = 0; c < values.Length; c++, ci++)
                 {
-                    GUI.Label(new Rect(x, rowRect.y, colWidths[ci], rowRect.height),
-                        values[c], DarkSkin.SLabel);
+                    var cellRect = new Rect(x, rowRect.y, colWidths[ci], rowRect.height);
+                    if (c == 0 && onDrawFirstCell != null)
+                        onDrawFirstCell(cellRect, data[r], values[c]);
+                    else
+                        GUI.Label(cellRect, values[c], DarkSkin.SLabel);
                     x += colWidths[ci];
                 }
 

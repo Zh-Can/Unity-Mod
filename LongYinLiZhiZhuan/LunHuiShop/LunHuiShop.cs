@@ -8,6 +8,7 @@ using LunHuiShop.GuiFramework.Logger.Adapters;
 using MelonLoader;
 using UnityEngine;
 using System.Reflection;
+using Il2Cpp;
 
 [assembly: MelonInfo(typeof(LunHuiShop.LunHuiShop), ModInfo.Name, ModInfo.Version, ModInfo.Author)]
 [assembly: MelonGame(ModInfo.Developer, ModInfo.DeveloperName)]
@@ -85,6 +86,17 @@ public class LunHuiShop : MelonMod
         if (UI.WindowControls.ShouldBlockGamePointerInput())
         {
             UIPatches.ClearHoveredState();
+        }
+
+        if (Input.GetKeyDown(KeyCode.Keypad0))
+        {
+            if (LyHelper.TryReadPlayer(out var player))
+            {
+                foreach (var item in player.itemListData.allItem)
+                {
+                    Log.Info(item.name + " - " +item.GetItemIconName());
+                }
+            }
         }
     }
 

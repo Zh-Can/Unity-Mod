@@ -20,4 +20,6 @@ public class ShopItem
     public int Price { get; set; }
     // 需要声望值
     public float Fame { get; set; }
+    // 图标名（对应 UIAtlas 中的 sprite 名）
+    public string? IconName { get; set; }
 }

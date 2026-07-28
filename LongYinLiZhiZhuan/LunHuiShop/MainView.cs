@@ -110,7 +110,6 @@ public class MainView : MonoBehaviour
            
         }
         
-        
         UI.Horizontal(() =>
         {
             UI.Label(_status).Text().Draw(GUILayout.ExpandWidth(true));
@@ -126,7 +125,8 @@ public class MainView : MonoBehaviour
             item => new[] { item.Name, item.Type, item.Level, item.Quality, item.Price.ToString(), item.Fame.ToString(CultureInfo.InvariantCulture) },
             _selectedTableRow,
             new[] { Loc.Get("名称"), Loc.Get("类型"), Loc.Get("物品等级"), Loc.Get("物品品质"), Loc.Get("需要价格"), Loc.Get("需要声望") },
-            showIndex: true);
+            showIndex: true,
+            onDrawFirstCell: (rect, data, text) => IconHelper.DrawCellWithIcon(rect, data.IconName, text));
             
         UI.Divider();
             
@@ -164,16 +164,10 @@ public class MainView : MonoBehaviour
     /// </summary>
     private void InitShopData()
     {
-        ShopItems = new List<ShopItem>();
-        // 示例数据：
-        ShopItems.Add(new ShopItem { Id = 3, Name = "示例物品1", Type = "装备", Level = "精良", Quality = "上品", Price = 1000, Fame = 500 });
-        ShopItems.Add(new ShopItem { Id = 2, Name = "示例物品2", Type = "装备", Level = "精良", Quality = "上品", Price = 1000, Fame = 500 });
-        var gdc = GameDataController.Instance;
-        foreach (var armor in gdc.armorDataBase.Values)
-        {
-            Log.Info(armor.Name());
-        }
-        
+        // ShopItems 由 GamePatches.GameDataController_Awake_Postfix 填充
+        // 如果 Patch 还没执行，先放空列表
+        if (ShopItems == null)
+            ShopItems = new List<ShopItem>();
     }
     /// <summary>
     /// 购买
@@ -200,5 +194,6 @@ public class MainView : MonoBehaviour
         }
         _status = "提示：<color=green>购买成功</color>";
         // Log.Info(selectedItem.Name);
+        
     }
 }
