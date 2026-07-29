@@ -15,6 +15,7 @@ public static class IconHelper
     private static Dictionary<string, Texture2D>? _textureCache;
     private static SpriteAtlas? _atlas;
     private static bool _initAttempted;
+    private static readonly HashSet<string> _missingIconNames = new();
 
     public static void EnsureInit()
     {
@@ -47,10 +48,20 @@ public static class IconHelper
         try
         {
             var sprite = _atlas.GetSprite(iconName);
-            if (sprite == null) return;
+            if (sprite == null)
+            {
+                if (_missingIconNames.Add(iconName))
+                    Log.Warning($"IconHelper: 图集中找不到图标 '{iconName}'");
+                return;
+            }
 
             var srcTex = sprite.texture;
-            if (srcTex == null) return;
+            if (srcTex == null)
+            {
+                if (_missingIconNames.Add(iconName))
+                    Log.Warning($"IconHelper: 图标 '{iconName}' 的 texture 为 null");
+                return;
+            }
 
             var r = sprite.textureRect;
             var w = (int)r.width;

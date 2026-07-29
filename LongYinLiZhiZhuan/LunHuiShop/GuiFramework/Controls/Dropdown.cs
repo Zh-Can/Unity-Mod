@@ -42,12 +42,15 @@ namespace LunHuiShop.GuiFramework.Controls
 
             /// <summary>绘制下拉框。</summary>
             /// <param name="expanded">展开状态（需外部持久化）</param>
-            public int Draw(ref bool expanded)
+            /// <param name="options">GUILayout 选项，例如 GUILayout.Width(120)</param>
+            public int Draw(ref bool expanded, params GUILayoutOption[] options)
             {
                 var prev = _selectedIndex;
 
+                GUILayout.BeginVertical(options);
+
                 var content = new GUIContent(_options[_selectedIndex] + "  ▼");
-                if (GUILayout.Button(content, DarkSkin.SPopup))
+                if (GUILayout.Button(content, DarkSkin.SPopup, GUILayout.ExpandWidth(true)))
                     expanded = !expanded;
 
                 if (expanded)
@@ -62,6 +65,8 @@ namespace LunHuiShop.GuiFramework.Controls
 
                     GUILayout.EndVertical();
                 }
+
+                GUILayout.EndVertical();
 
                 if (_selectedIndex != prev)
                     _onChange?.Invoke(_selectedIndex);

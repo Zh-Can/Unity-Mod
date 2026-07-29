@@ -17,7 +17,11 @@ public class GamePatches
         { 4, $"<color=#e08d07>{Loc.Get("完美")}</color>" },
         { 5, $"<color=#df2c45>{Loc.Get("绝世")}</color>" }
     };
-    
+    private static readonly string[] BookTypes =
+    {
+        Loc.Get("内功"), Loc.Get("轻功"), Loc.Get("绝技"), Loc.Get("拳掌"),Loc.Get("剑法"),
+        Loc.Get("刀法"),Loc.Get("长兵"),Loc.Get("奇门"),Loc.Get("射术")
+    };
 
     [HarmonyPostfix]
     [HarmonyPatch(typeof(GameController), nameof(GameController.Start))]
@@ -36,6 +40,7 @@ public class GamePatches
             {
                 Id = item.itemID,
                 Name = item.Name(true),
+                ItemLevel = ItemLevelStrings[item.itemLv],
                 Type = "饰品",
                 SortType = "饰品",
                 Price = item.value,
@@ -56,6 +61,7 @@ public class GamePatches
             {
                 Id = item.itemID,
                 Name = item.Name(true),
+                ItemLevel = ItemLevelStrings[item.itemLv],
                 Type = "珍宝",
                 SortType = "珍宝",
                 Price = item.value,
@@ -75,6 +81,7 @@ public class GamePatches
             {
                 Id = item.itemID,
                 Name = item.Name(true),
+                ItemLevel = ItemLevelStrings[item.itemLv],
                 Type = "材料",
                 SortType = "材料",
                 Price = item.value,
@@ -84,7 +91,8 @@ public class GamePatches
         }
 
         MainView.ShopItems = list;
-        Log.Info("饰品，秘籍，珍宝，材料初始化数据完成");
+        ShopDataSaver.Save(list);
+        Log.Info("饰品，秘籍，珍宝，材料初始化数据完成并已写入 LunhuiShop.cfg");
     }
 
     /// <summary>
@@ -94,6 +102,7 @@ public class GamePatches
     [HarmonyPatch(typeof(GameDataController), nameof(GameDataController.Start))]
     public static void GameDataController_Start_Postfix(GameDataController __instance)
     {
+        //MainView.ShopItems = ShopDataSaver.Load();
         var list = new List<ShopItem>();
 
         // 武器
@@ -226,8 +235,22 @@ public class GamePatches
         // 秘籍
         ItemData book;
         foreach (var skill in __instance.kungfuSkillDataBase.Values)
+        {
             book = new ItemData(ItemType.Book).SetBookData(skill.skillID, 5);
-
+            book.CountValueAndWeight();
+            list.Add(new ShopItem
+            {
+                Id = book.itemID,
+                ItemLevel = ItemLevelStrings[book.itemLv],
+                Name = book.Name(true),
+                Type = "秘籍",
+                SortType = BookTypes[book.bookData.DataBase().type],
+                Price = book.value,
+                Fame = book.value / 10f,
+                IconName = book.GetItemIconName()
+            });
+        }
+        
         MainView.ShopItems = list;
 
         Log.Info("武器，头盔，护甲，鞋履，丹药，饮食，马匹初始化数据完成");

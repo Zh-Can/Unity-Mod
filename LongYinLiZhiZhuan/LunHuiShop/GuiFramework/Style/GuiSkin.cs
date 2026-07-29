@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using LunHuiShop.GuiFramework.Logger;
 
@@ -352,7 +352,8 @@ namespace LunHuiShop.GuiFramework.Style
                 SPopup = new GUIStyle(SField)
                 {
                     alignment = TextAnchor.MiddleLeft,
-                    padding = new RectOffset(10, 24, 8, 8)
+                    padding = new RectOffset(10, 24, 8, 8),
+                    richText = true
                 };
                 var popupHover = new Color(InputBg.r + 0.03f, InputBg.g + 0.03f, InputBg.b + 0.03f);
                 SkinR(SPopup, InputBg, TextBright, 5, popupHover, InputBg, BorderDim);
@@ -596,10 +597,12 @@ namespace LunHuiShop.GuiFramework.Style
         }
 
         /// <summary>绘制自定义单选下拉菜单。返回新选中的索引。</summary>
-        public static int Dropdown(int selectedIndex, string[] options, ref bool expanded)
+        public static int Dropdown(int selectedIndex, string[] options, ref bool expanded, params GUILayoutOption[] optionsLayout)
         {
+            GUILayout.BeginVertical(optionsLayout);
+
             var content = new GUIContent(options[selectedIndex] + "  ▼");
-            if (GUILayout.Button(content, SPopup))
+            if (GUILayout.Button(content, SPopup, GUILayout.ExpandWidth(true)))
                 expanded = !expanded;
 
             if (expanded)
@@ -614,6 +617,8 @@ namespace LunHuiShop.GuiFramework.Style
 
                 GUILayout.EndVertical();
             }
+
+            GUILayout.EndVertical();
 
             return selectedIndex;
         }
