@@ -1,10 +1,7 @@
-using System;
 using System.Globalization;
 using System.Text;
-using Il2Cpp;
 using LunHuiShop.GuiFramework.Controls;
 using LunHuiShop.GuiFramework.Localization;
-using LunHuiShop.GuiFramework.Logger;
 using LunHuiShop.GuiFramework.Other;
 using LunHuiShop.GuiFramework.Style;
 using MelonLoader;
@@ -15,7 +12,7 @@ namespace LunHuiShop;
 [RegisterTypeInIl2Cpp]
 public class MainView : MonoBehaviour
 {
-    private WindowData _mainWindow;
+    private WindowData _mainWindow = null!;
     private string _status = "";
     private Vector2 _tableScrollPos;
     
@@ -58,25 +55,6 @@ public class MainView : MonoBehaviour
     };
     private int _itemLevelRadioIndex;
     
-    private static readonly string[] ItemQualityOptions =
-    {
-        $"品质：<color=#df2c45>{Loc.Get("极品")}</color>",
-        $"品质：<color=#e08d07>{Loc.Get("珍品")}</color>",
-        $"品质：<color=#9c7fe0>{Loc.Get("上品")}</color>",
-        $"品质：<color=#307ede>{Loc.Get("中品")}</color>",
-        $"品质：<color=#7ec00b>{Loc.Get("下品")}</color>",
-        $"品质：<color=#949494>{Loc.Get("残品")}</color>" 
-    };
-    private static readonly string[] BookQualityOptions =
-    {
-        $"完整度<color=#df2c45>{Loc.Get("完本")}</color>",
-        $"完整度<color=#e08d07>{Loc.Get("珍本")}</color>",
-        $"完整度<color=#9c7fe0>{Loc.Get("古本")}</color>",
-        $"完整度<color=#307ede>{Loc.Get("善本")}</color>",
-        $"完整度<color=#7ec00b>{Loc.Get("仿本")}</color>",
-        $"完整度<color=#949494>{Loc.Get("残本")}</color>" 
-    };
-    
     // 装备类型
     private static readonly string[] EquipmentOptions =
     {
@@ -90,10 +68,7 @@ public class MainView : MonoBehaviour
         Loc.Get("刀法"),Loc.Get("长兵"),Loc.Get("奇门"),Loc.Get("射术")
     };
     private int _bookTypeIndex;
-
     
-    private int _itemQualitySelectedIndex;
-    private bool _dropdownExpanded;
     // 表格选中项
     private int _selectedTableRow;
     public static List<ShopItem> ShopItems = null!;
@@ -164,11 +139,10 @@ public class MainView : MonoBehaviour
 
         UI.Horizontal(() =>
         {
-            _itemQualitySelectedIndex = UI.Dropdown
-                .Options(_itemTypeRadioIndex == 3 ? BookQualityOptions : ItemQualityOptions)
-                .Selected(_itemQualitySelectedIndex)
-                .Draw(ref _dropdownExpanded, GUILayout.Width(150));
-
+            UI.Horizontal(() =>
+            {
+                UI.Label(_status).Text().Draw(GUILayout.ExpandWidth(true));
+            });
             var prevSearch = _searchText;
             _searchText = UI.TextFiled(_searchText, placeholder: "搜索名称", options: GUILayout.Width(150));
             if (_searchText != prevSearch)
@@ -176,14 +150,6 @@ public class MainView : MonoBehaviour
 
             UI.Button("购买").Add().OnClick(Buy).Draw(GUILayout.Width(80));
         });
-        
-        if (!string.IsNullOrEmpty(_status))
-        {
-            UI.Horizontal(() =>
-            {
-                UI.Label(_status).Text().Draw(GUILayout.ExpandWidth(true));
-            });
-        }
         
         UI.Divider();
         
@@ -246,7 +212,6 @@ public class MainView : MonoBehaviour
 
         var selectedType = ItemTypeRadioOptions[_itemTypeRadioIndex];
         var selectedLevel = ItemLevelOptions[_itemLevelRadioIndex];
-        var search = _searchText ?? string.Empty;
 
         _displayItems = new List<ShopItem>(ShopItems.Count);
         foreach (var item in ShopItems)
@@ -289,8 +254,8 @@ public class MainView : MonoBehaviour
                 continue;
 
             // 名称搜索
-            if (!string.IsNullOrEmpty(search) &&
-                !StripColorTags(item.Name).Contains(search, StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(_searchText) &&
+                !StripColorTags(item.Name).Contains(_searchText, StringComparison.OrdinalIgnoreCase))
                 continue;
 
             _displayItems.Add(item);

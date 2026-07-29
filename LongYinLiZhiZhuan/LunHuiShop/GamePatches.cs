@@ -23,77 +23,77 @@ public class GamePatches
         Loc.Get("刀法"),Loc.Get("长兵"),Loc.Get("奇门"),Loc.Get("射术")
     };
 
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(GameController), nameof(GameController.Start))]
-    public static void GameController_Start_Postfix(GameController __instance)
-    {
-        var list = MainView.ShopItems;
-        ItemData item;
-        // 饰品
-        var decorations = GlobalData.DecorationTypeName;
-        for (var i = 0; i < decorations.Count; i++)
-        for (var j = 0; j < ItemLevelStrings.Count; j++)
-        {
-            item = __instance.GenerateDecoration(j, i, 0);
-            item.CountValueAndWeight();
-            list.Add(new ShopItem
-            {
-                Id = item.itemID,
-                Name = item.Name(true),
-                ItemLevel = ItemLevelStrings[item.itemLv],
-                Type = "饰品",
-                SortType = "饰品",
-                Price = item.value,
-                Fame = item.value / 10f,
-                IconName = item.GetItemIconName()
-            });
-        }
-
-        // 珍宝
-        var treasureTypeName = GlobalData.TreasureTypeName;
-
-        for (var j = 0; j < ItemLevelStrings.Count; j++)
-        for (var i = 0; i < treasureTypeName.Count; i++)
-        {
-            item = __instance.GenerateTreasure(i, j, 0);
-            item.CountValueAndWeight();
-            list.Add(new ShopItem
-            {
-                Id = item.itemID,
-                Name = item.Name(true),
-                ItemLevel = ItemLevelStrings[item.itemLv],
-                Type = "珍宝",
-                SortType = "珍宝",
-                Price = item.value,
-                Fame = item.value / 10f,
-                IconName = item.GetItemIconName()
-            });
-        }
-
-        // 材料
-        var materialTypeName = GlobalData.MaterialTypeName;
-        for (var j = 0; j < ItemLevelStrings.Count; j++)
-        for (var i = 0; i < materialTypeName.Count; i++)
-        {
-            item = __instance.GenerateMaterial(i, j, 0);
-            item.CountValueAndWeight();
-            list.Add(new ShopItem
-            {
-                Id = item.itemID,
-                Name = item.Name(true),
-                ItemLevel = ItemLevelStrings[item.itemLv],
-                Type = "材料",
-                SortType = "材料",
-                Price = item.value,
-                Fame = item.value / 10f,
-                IconName = item.GetItemIconName()
-            });
-        }
-
-        MainView.ShopItems = list;
-        ShopDataSaver.Save(list);
-        Log.Info("饰品，秘籍，珍宝，材料初始化数据完成并已写入 LunhuiShop.cfg");
-    }
+    // [HarmonyPostfix]
+    // [HarmonyPatch(typeof(GameController), nameof(GameController.Start))]
+    // public static void GameController_Start_Postfix(GameController __instance)
+    // {
+    //     var list = MainView.ShopItems;
+    //     ItemData item;
+    //     // 饰品
+    //     var decorations = GlobalData.DecorationTypeName;
+    //     for (var i = 0; i < decorations.Count; i++)
+    //     for (var j = 0; j < ItemLevelStrings.Count; j++)
+    //     {
+    //         item = __instance.GenerateDecoration(j, i, 0);
+    //         item.CountValueAndWeight();
+    //         list.Add(new ShopItem
+    //         {
+    //             Id = item.itemID,
+    //             Name = item.Name(true),
+    //             ItemLevel = ItemLevelStrings[item.itemLv],
+    //             Type = "饰品",
+    //             SortType = "饰品",
+    //             Price = item.value,
+    //             Fame = item.value / 10f,
+    //             IconName = item.GetItemIconName()
+    //         });
+    //     }
+    //
+    //     // 珍宝
+    //     var treasureTypeName = GlobalData.TreasureTypeName;
+    //
+    //     for (var j = 0; j < ItemLevelStrings.Count; j++)
+    //     for (var i = 0; i < treasureTypeName.Count; i++)
+    //     {
+    //         item = __instance.GenerateTreasure(i, j, 0);
+    //         item.CountValueAndWeight();
+    //         list.Add(new ShopItem
+    //         {
+    //             Id = item.itemID,
+    //             Name = item.Name(true),
+    //             ItemLevel = ItemLevelStrings[item.itemLv],
+    //             Type = "珍宝",
+    //             SortType = "珍宝",
+    //             Price = item.value,
+    //             Fame = item.value / 10f,
+    //             IconName = item.GetItemIconName()
+    //         });
+    //     }
+    //
+    //     // 材料
+    //     var materialTypeName = GlobalData.MaterialTypeName;
+    //     for (var j = 0; j < ItemLevelStrings.Count; j++)
+    //     for (var i = 0; i < materialTypeName.Count; i++)
+    //     {
+    //         item = __instance.GenerateMaterial(i, j, 0);
+    //         item.CountValueAndWeight();
+    //         list.Add(new ShopItem
+    //         {
+    //             Id = item.itemID,
+    //             Name = item.Name(true),
+    //             ItemLevel = ItemLevelStrings[item.itemLv],
+    //             Type = "材料",
+    //             SortType = "材料",
+    //             Price = item.value,
+    //             Fame = item.value / 10f,
+    //             IconName = item.GetItemIconName()
+    //         });
+    //     }
+    //
+    //     MainView.ShopItems = list;
+    //     ShopDataSaver.Save(list);
+    //     Log.Info("饰品，秘籍，珍宝，材料初始化数据完成并已写入 LunhuiShop.cfg");
+    // }
 
     /// <summary>
     ///     GameDataController 初始化完成后填充 ShopItems
@@ -102,9 +102,10 @@ public class GamePatches
     [HarmonyPatch(typeof(GameDataController), nameof(GameDataController.Start))]
     public static void GameDataController_Start_Postfix(GameDataController __instance)
     {
-        //MainView.ShopItems = ShopDataSaver.Load();
+        // MainView.ShopItems = ShopDataSaver.Load();
+        
         var list = new List<ShopItem>();
-
+        
         // 武器
         foreach (var weapon in __instance.weaponDataBase.Values)
             for (var i = 0; i < ItemLevelStrings.Count; i++)
@@ -123,136 +124,136 @@ public class GamePatches
                     IconName = weapon.GetItemIconName()
                 });
             }
-
-        // 头盔
-        foreach (var helmet in __instance.helmetDataBase.Values)
-            for (var i = 0; i < ItemLevelStrings.Count; i++)
-            {
-                helmet.itemLv = i;
-                helmet.CountValueAndWeight();
-                list.Add(new ShopItem
-                {
-                    Id = helmet.itemID,
-                    Name = ItemLevelStrings[helmet.itemLv] + helmet.Name(true),
-                    ItemLevel = ItemLevelStrings[helmet.itemLv],
-                    Type = "装备",
-                    SortType = "头盔",
-                    Price = helmet.value,
-                    Fame = helmet.value / 10f,
-                    IconName = helmet.GetItemIconName()
-                });
-            }
-
-        // 护甲
-        foreach (var armor in __instance.armorDataBase.Values)
-            for (var i = 0; i < ItemLevelStrings.Count; i++)
-            {
-                armor.itemLv = i;
-                armor.CountValueAndWeight();
-                list.Add(new ShopItem
-                {
-                    Id = armor.itemID,
-                    Name = ItemLevelStrings[armor.itemLv] + armor.Name(true),
-                    ItemLevel = ItemLevelStrings[armor.itemLv],
-                    Type = "装备",
-                    SortType = "护甲",
-                    Price = armor.value,
-                    Fame = armor.value / 10f,
-                    IconName = armor.GetItemIconName()
-                });
-            }
-
-        // 鞋履
-        foreach (var shoes in __instance.shoesDataBase.Values)
-            for (var i = 0; i < ItemLevelStrings.Count; i++)
-            {
-                shoes.itemLv = i;
-                shoes.CountValueAndWeight();
-                list.Add(new ShopItem
-                {
-                    Id = shoes.itemID,
-                    Name = ItemLevelStrings[shoes.itemLv] + shoes.Name(true),
-                    ItemLevel = ItemLevelStrings[shoes.itemLv],
-                    Type = "装备",
-                    SortType = "鞋履",
-                    Price = shoes.value,
-                    Fame = shoes.value / 10f,
-                    IconName = shoes.GetItemIconName()
-                });
-            }
-
-        // 丹药
-        foreach (var med in __instance.medDataBase.Values)
-        {
-            med.CountValueAndWeight();
-            list.Add(new ShopItem
-            {
-                Id = med.itemID,
-                ItemLevel = ItemLevelStrings[med.itemLv],
-                Name = med.Name(true),
-                Type = "丹药",
-                SortType = "丹药",
-                Price = med.value,
-                Fame = med.value / 10f,
-                IconName = med.GetItemIconName()
-            });
-        }
-
-        // 饮食
-        foreach (var food in __instance.foodDataBase.Values)
-        {
-            food.CountValueAndWeight();
-            list.Add(new ShopItem
-            {
-                Id = food.itemID,
-                ItemLevel = ItemLevelStrings[food.itemLv],
-                Name = ItemLevelStrings[food.itemLv]+food.Name(true),
-                Type = "饮食",
-                SortType = food.subType == 0 ? "佳肴" : "美酒",
-                Price = food.value,
-                Fame = food.value / 10f,
-                IconName = food.GetItemIconName()
-            });
-        }
-
-        // 马匹
-        foreach (var horse in __instance.horseDataBase.Values)
-        {
-            horse.CountValueAndWeight();
-            list.Add(new ShopItem
-            {
-                Id = horse.itemID,
-                ItemLevel = ItemLevelStrings[horse.itemLv],
-                Name = horse.Name(true),
-                Type = "马匹",
-                SortType = "马匹",
-                Price = horse.value,
-                Fame = horse.value / 10f,
-                IconName = horse.GetItemIconName()
-            });
-        }
-
-        // 秘籍
-        ItemData book;
-        foreach (var skill in __instance.kungfuSkillDataBase.Values)
-        {
-            book = new ItemData(ItemType.Book).SetBookData(skill.skillID, 5);
-            book.CountValueAndWeight();
-            list.Add(new ShopItem
-            {
-                Id = book.itemID,
-                ItemLevel = ItemLevelStrings[book.itemLv],
-                Name = book.Name(true),
-                Type = "秘籍",
-                SortType = BookTypes[book.bookData.DataBase().type],
-                Price = book.value,
-                Fame = book.value / 10f,
-                IconName = book.GetItemIconName()
-            });
-        }
+        
+        // // 头盔
+        // foreach (var helmet in __instance.helmetDataBase.Values)
+        //     for (var i = 0; i < ItemLevelStrings.Count; i++)
+        //     {
+        //         helmet.itemLv = i;
+        //         helmet.CountValueAndWeight();
+        //         list.Add(new ShopItem
+        //         {
+        //             Id = helmet.itemID,
+        //             Name = ItemLevelStrings[helmet.itemLv] + helmet.Name(true),
+        //             ItemLevel = ItemLevelStrings[helmet.itemLv],
+        //             Type = "装备",
+        //             SortType = "头盔",
+        //             Price = helmet.value,
+        //             Fame = helmet.value / 10f,
+        //             IconName = helmet.GetItemIconName()
+        //         });
+        //     }
+        //
+        // // 护甲
+        // foreach (var armor in __instance.armorDataBase.Values)
+        //     for (var i = 0; i < ItemLevelStrings.Count; i++)
+        //     {
+        //         armor.itemLv = i;
+        //         armor.CountValueAndWeight();
+        //         list.Add(new ShopItem
+        //         {
+        //             Id = armor.itemID,
+        //             Name = ItemLevelStrings[armor.itemLv] + armor.Name(true),
+        //             ItemLevel = ItemLevelStrings[armor.itemLv],
+        //             Type = "装备",
+        //             SortType = "护甲",
+        //             Price = armor.value,
+        //             Fame = armor.value / 10f,
+        //             IconName = armor.GetItemIconName()
+        //         });
+        //     }
+        //
+        // // 鞋履
+        // foreach (var shoes in __instance.shoesDataBase.Values)
+        //     for (var i = 0; i < ItemLevelStrings.Count; i++)
+        //     {
+        //         shoes.itemLv = i;
+        //         shoes.CountValueAndWeight();
+        //         list.Add(new ShopItem
+        //         {
+        //             Id = shoes.itemID,
+        //             Name = ItemLevelStrings[shoes.itemLv] + shoes.Name(true),
+        //             ItemLevel = ItemLevelStrings[shoes.itemLv],
+        //             Type = "装备",
+        //             SortType = "鞋履",
+        //             Price = shoes.value,
+        //             Fame = shoes.value / 10f,
+        //             IconName = shoes.GetItemIconName()
+        //         });
+        //     }
+        //
+        // // 丹药
+        // foreach (var med in __instance.medDataBase.Values)
+        // {
+        //     med.CountValueAndWeight();
+        //     list.Add(new ShopItem
+        //     {
+        //         Id = med.itemID,
+        //         ItemLevel = ItemLevelStrings[med.itemLv],
+        //         Name = med.Name(true),
+        //         Type = "丹药",
+        //         SortType = "丹药",
+        //         Price = med.value,
+        //         Fame = med.value / 10f,
+        //         IconName = med.GetItemIconName()
+        //     });
+        // }
+        //
+        // // 饮食
+        // foreach (var food in __instance.foodDataBase.Values)
+        // {
+        //     food.CountValueAndWeight();
+        //     list.Add(new ShopItem
+        //     {
+        //         Id = food.itemID,
+        //         ItemLevel = ItemLevelStrings[food.itemLv],
+        //         Name = ItemLevelStrings[food.itemLv]+food.Name(true),
+        //         Type = "饮食",
+        //         SortType = food.subType == 0 ? "佳肴" : "美酒",
+        //         Price = food.value,
+        //         Fame = food.value / 10f,
+        //         IconName = food.GetItemIconName()
+        //     });
+        // }
+        //
+        // // 马匹
+        // foreach (var horse in __instance.horseDataBase.Values)
+        // {
+        //     horse.CountValueAndWeight();
+        //     list.Add(new ShopItem
+        //     {
+        //         Id = horse.itemID,
+        //         ItemLevel = ItemLevelStrings[horse.itemLv],
+        //         Name = horse.Name(true),
+        //         Type = "马匹",
+        //         SortType = "马匹",
+        //         Price = horse.value,
+        //         Fame = horse.value / 10f,
+        //         IconName = horse.GetItemIconName()
+        //     });
+        // }
+        //
+        // // 秘籍
+        // ItemData book;
+        // foreach (var skill in __instance.kungfuSkillDataBase.Values)
+        // {
+        //     book = new ItemData(ItemType.Book).SetBookData(skill.skillID, 5);
+        //     book.CountValueAndWeight();
+        //     list.Add(new ShopItem
+        //     {
+        //         Id = book.itemID,
+        //         ItemLevel = ItemLevelStrings[book.itemLv],
+        //         Name = book.Name(true),
+        //         Type = "秘籍",
+        //         SortType = BookTypes[book.bookData.DataBase().type],
+        //         Price = book.value,
+        //         Fame = book.value / 10f,
+        //         IconName = book.GetItemIconName()
+        //     });
+        // }
         
         MainView.ShopItems = list;
-
+        
         Log.Info("武器，头盔，护甲，鞋履，丹药，饮食，马匹初始化数据完成");
     }
 }
