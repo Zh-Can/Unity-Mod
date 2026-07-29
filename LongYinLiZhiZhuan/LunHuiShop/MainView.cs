@@ -21,9 +21,9 @@ public class MainView : MonoBehaviour
     {
         HttpGet.TryHit(this);
         
-        // 如果有表格， 5个column * 120 + 50
+        // 如果有表格， 7个column * 120 + 50
         _mainWindow = UI.NewWindow(
-                new Rect(100, 100, 650, 700),
+                new Rect(100, 100, 770, 700),
                 Loc.Get("轮回商店"),
                 DrawMainWindow)
             .Id(1)
@@ -35,8 +35,8 @@ public class MainView : MonoBehaviour
     // 物品分类
     private static readonly string[] ItemTypeRadioOptions =
     {
-        Loc.Get("全部"), Loc.Get("装备"), Loc.Get("丹药"), Loc.Get("饮食"), Loc.Get("秘籍"), 
-        Loc.Get("珍宝"), Loc.Get("材料"), Loc.Get("马匹")
+        Loc.Get("装备"), Loc.Get("丹药"), Loc.Get("饮食"), Loc.Get("秘籍"), Loc.Get("珍宝"), 
+        Loc.Get("材料"), Loc.Get("马匹")
     };
     private int _itemTypeRadioIndex;
     
@@ -120,9 +120,9 @@ public class MainView : MonoBehaviour
         // 可选表格
         _selectedTableRow = UI.Table(
             ShopItems,
-            item => new[] { item.Name, item.Type, item.Price.ToString(), item.Fame.ToString(CultureInfo.InvariantCulture) },
+            item => new[] { item.Name, item.SortType, item.ItemLevel, item.Price.ToString(), item.Fame.ToString(CultureInfo.InvariantCulture) },
             _selectedTableRow,
-            new[] { Loc.Get("名称"), Loc.Get("类型"), Loc.Get("需要银两"), Loc.Get("需要声望") },
+            new[] { Loc.Get("名称"), Loc.Get("类型"), Loc.Get("物品等级"), Loc.Get("需要银两"), Loc.Get("需要声望") },
             showIndex: true,
             onDrawFirstCell: (rect, data, text) => IconHelper.DrawCellWithIcon(rect, data.IconName, text),
             scrollPosition: ref _tableScrollPos,
@@ -131,6 +131,7 @@ public class MainView : MonoBehaviour
 
     private void DrawStatusBar()
     {
+        UI.Divider(5);
         UI.Horizontal(() =>
         {
             UI.Label($"{Loc.Get("缩放")}: {Mathf.RoundToInt(UI.WindowControls.Scale * 100f)}%  {Loc.Get("按`键显示/隐藏")}")

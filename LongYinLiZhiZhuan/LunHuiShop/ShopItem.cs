@@ -7,14 +7,13 @@ public class ShopItem
 {
     /// <summary>唯一标识（隐藏字段，不显示在表格）</summary>
     public int Id { get; set; }
-
     // 名称
     public string Name { get; set; }
-    // 类型
+    // 物品等级
+    public string ItemLevel { get; set; }
+    // 筛选大类
     public string Type { get; set; }
-    // 品质
-    private int Quantity { get; set; }
-    // 筛选分类
+    // 筛选小类
     public string SortType { get; set; }
     // 需要银两值
     public int Price { get; set; }

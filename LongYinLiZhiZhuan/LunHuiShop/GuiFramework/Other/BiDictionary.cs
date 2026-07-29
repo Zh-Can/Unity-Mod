@@ -192,3 +192,42 @@ public sealed class BiDictionary<TKey, TValue> : IReadOnlyDictionary<TKey, TValu
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
+
+//
+// // 使用默认配置
+// var dict = new BiDictionary<string, int>();
+//
+// // 指定容量（优化大量数据）
+// var dict2 = new BiDictionary<string, int>(1000);
+//
+// // 使用自定义比较器（忽略键大小写，值区分大小写）
+// var dict3 = new BiDictionary<string, string>(
+//     StringComparer.OrdinalIgnoreCase,
+//     EqualityComparer<string>.Default
+// );
+//
+// // 同时指定容量和比较器
+// var dict4 = new BiDictionary<string, string>(
+//     500,
+//     StringComparer.OrdinalIgnoreCase,
+//     StringComparer.OrdinalIgnoreCase
+// );
+//
+// // 基本操作
+// dict.Add("one", 1);
+// dict.AddOrReplace("two", 2);
+// dict.TryAdd("three", 3);
+//
+// bool hasKey = dict.ContainsKey("one");
+// bool hasValue = dict.ContainsValue(2);
+//
+// int val = dict["one"];        // 1
+// string key = dict.GetKeyByValue(2); // "two"
+//
+// // 遍历
+// foreach (var kv in dict)
+//     Console.WriteLine($"{kv.Key} -> {kv.Value}");
+//
+// // 删除
+// dict.Remove("one");
+// dict.RemoveByValue(3);
