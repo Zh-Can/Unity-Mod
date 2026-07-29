@@ -90,12 +90,9 @@ public class LunHuiShop : MelonMod
 
         if (Input.GetKeyDown(KeyCode.Keypad0))
         {
-            if (LyHelper.TryReadPlayer(out var player))
+            foreach (var a in GlobalData.DecorationTypeName)
             {
-                foreach (var item in player.itemListData.allItem)
-                {
-                    Log.Info(item.name + " - " +item.GetItemIconName());
-                }
+                Log.Info(a);
             }
         }
     }

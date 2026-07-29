@@ -100,7 +100,8 @@ namespace LunHuiShop.GuiFramework.Controls
                 int id,
                 Rect rect,
                 WindowData.TitleBarConfig titleBar,
-                Action content)
+                Action content,
+                bool resizable = false)
             {
                 if (_windows.ContainsKey(id))
                     throw new InvalidOperationException($"窗口 Id {id} 已存在，请为每个窗口指定唯一 Id。");
@@ -108,12 +109,27 @@ namespace LunHuiShop.GuiFramework.Controls
                 var window = new WindowData(id, rect, titleBar, content);
 
                 // 读取并应用上次保存的位置/尺寸
-                var savedRect = BaseConfig.LoadWindowRect(id);
-                if (savedRect.HasValue)
-                    window.Rect = savedRect.Value;
+                if (resizable)
+                {
+                    var savedRect = BaseConfig.LoadWindowRect(id);
+                    if (savedRect.HasValue)
+                        window.Rect = savedRect.Value;
+                }
+                else
+                {
+                    var savedPos = BaseConfig.LoadWindowPosition(id);
+                    if (savedPos.HasValue)
+                        window.Rect = new Rect(savedPos.Value.x, savedPos.Value.y, rect.width, rect.height);
+                }
 
-                // 窗口关闭时保存位置/尺寸
-                window.OnClose += () => BaseConfig.SaveWindowRect(id, window.Rect);
+                // 窗口关闭时保存
+                window.OnClose += () =>
+                {
+                    if (window.Resizable)
+                        BaseConfig.SaveWindowRect(id, window.Rect);
+                    else
+                        BaseConfig.SaveWindowPosition(id, window.Rect.position);
+                };
 
                 _windows[id] = window;
                 return window;
@@ -303,6 +319,8 @@ namespace LunHuiShop.GuiFramework.Controls
                 {
                     GUILayout.EndScrollView();
                 }
+
+                window.Footer?.Invoke();
                 
                 DrawWindowTooltip();
             }
@@ -423,7 +441,12 @@ namespace LunHuiShop.GuiFramework.Controls
 
                     case EventType.MouseUp:
                         if (_draggingWindow != null)
-                            BaseConfig.SaveWindowRect(_draggingWindow.Id, _draggingWindow.Rect);
+                        {
+                            if (_draggingWindow.Resizable)
+                                BaseConfig.SaveWindowRect(_draggingWindow.Id, _draggingWindow.Rect);
+                            else
+                                BaseConfig.SaveWindowPosition(_draggingWindow.Id, _draggingWindow.Rect.position);
+                        }
                         if (_resizingWindow != null)
                             BaseConfig.SaveWindowRect(_resizingWindow.Id, _resizingWindow.Rect);
 
@@ -479,6 +502,9 @@ namespace LunHuiShop.GuiFramework.Controls
 
         // 内容绘制
         public Action Content;
+
+        // 底部栏（在滚动视图外，始终固定在窗口底部）
+        public Action Footer;
 
         // 内容区滚动位置（GUILayout.BeginScrollView 需要）
         internal Vector2 ContentScrollPos;

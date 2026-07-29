@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿﻿﻿﻿using System;
 using UnityEngine;
 using LunHuiShop.GuiFramework.Localization;
 using LunHuiShop.GuiFramework.Logger;
@@ -258,6 +258,56 @@ namespace LunHuiShop.GuiFramework.Controls
             float? availableWidth = null,
             Action<Rect, T, string>? onDrawFirstCell = null)
         {
+            var (totalWidth, colWidths) = CalcTableWidths(headers, colWidth, showIndex, availableWidth);
+            DrawTableHeader(headers, colWidths, showIndex, totalWidth);
+            DrawRows(data, rowMapper, ref selectedRow, showIndex, colWidths, totalWidth, selectable, onDrawFirstCell);
+            return selectedRow;
+        }
+
+        /// <summary>带滚动区域的表格（表头固定，数据行滚动）。</summary>
+        public static int Table<T>(
+            List<T> data,
+            Func<T, string[]> rowMapper,
+            int selectedRow,
+            string[] headers,
+            ref Vector2 scrollPosition,
+            float scrollHeight,
+            float colWidth = 120,
+            bool selectable = true,
+            bool showIndex = false,
+            float? availableWidth = null,
+            Action<Rect, T, string>? onDrawFirstCell = null)
+        {
+            var (totalWidth, colWidths) = CalcTableWidths(headers, colWidth, showIndex, availableWidth);
+            DrawTableHeader(headers, colWidths, showIndex, totalWidth);
+
+            // 仿 FeatureEditor: 直接修改 GUI.skin 的滚动条样式使 BeginScrollView 生效
+            var skin = GUI.skin;
+            var origVScroll = skin.verticalScrollbar;
+            var origVThumb = skin.verticalScrollbarThumb;
+            var origVUp = skin.verticalScrollbarUpButton;
+            var origVDown = skin.verticalScrollbarDownButton;
+            var origHScroll = skin.horizontalScrollbar;
+            skin.verticalScrollbar = DarkSkin.SScroll;
+            skin.verticalScrollbarThumb = DarkSkin.SScrollThumb;
+            skin.verticalScrollbarUpButton = GUIStyle.none;
+            skin.verticalScrollbarDownButton = GUIStyle.none;
+            skin.horizontalScrollbar = GUIStyle.none;
+
+            scrollPosition = GUILayout.BeginScrollView(scrollPosition, GUILayout.Height(scrollHeight));
+            DrawRows(data, rowMapper, ref selectedRow, showIndex, colWidths, totalWidth, selectable, onDrawFirstCell);
+            GUILayout.EndScrollView();
+
+            skin.verticalScrollbar = origVScroll;
+            skin.verticalScrollbarThumb = origVThumb;
+            skin.verticalScrollbarUpButton = origVUp;
+            skin.verticalScrollbarDownButton = origVDown;
+            skin.horizontalScrollbar = origHScroll;
+            return selectedRow;
+        }
+
+        private static (float totalWidth, float[] colWidths) CalcTableWidths(string[] headers, float colWidth, bool showIndex, float? availableWidth)
+        {
             var colCount = headers.Length;
             if (showIndex)
                 colCount++;
@@ -284,30 +334,44 @@ namespace LunHuiShop.GuiFramework.Controls
                 Log.Info($"UI.Table totalWidth: {totalWidth}");
             }
 
-            const float rowHeight = 30f;
+            return (totalWidth, colWidths);
+        }
 
-            // 表头
+        private static void DrawTableHeader(string[] headers, float[] colWidths, bool showIndex, float totalWidth)
+        {
+            const float rowHeight = 30f;
             var headerRect = GUILayoutUtility.GetRect(totalWidth, rowHeight, DarkSkin.SDetailHead,
                 GUILayout.Width(totalWidth), GUILayout.Height(rowHeight));
-            {
-                float x = headerRect.x;
-                int ci = 0;
-                if (showIndex)
-                {
-                    GUI.Label(new Rect(x, headerRect.y, colWidths[ci], headerRect.height),
-                        Loc.Get("序号"), DarkSkin.SDetailHead);
-                    x += colWidths[ci];
-                    ci++;
-                }
-                for (int h = 0; h < headers.Length; h++, ci++)
-                {
-                    GUI.Label(new Rect(x, headerRect.y, colWidths[ci], headerRect.height),
-                        headers[h], DarkSkin.SDetailHead);
-                    x += colWidths[ci];
-                }
-            }
 
-            // 数据行
+            float x = headerRect.x;
+            int ci = 0;
+            if (showIndex)
+            {
+                GUI.Label(new Rect(x, headerRect.y, colWidths[ci], headerRect.height),
+                    Loc.Get("序号"), DarkSkin.SDetailHead);
+                x += colWidths[ci];
+                ci++;
+            }
+            for (int h = 0; h < headers.Length; h++, ci++)
+            {
+                GUI.Label(new Rect(x, headerRect.y, colWidths[ci], headerRect.height),
+                    headers[h], DarkSkin.SDetailHead);
+                x += colWidths[ci];
+            }
+        }
+
+        private static void DrawRows<T>(
+            List<T> data,
+            Func<T, string[]> rowMapper,
+            ref int selectedRow,
+            bool showIndex,
+            float[] colWidths,
+            float totalWidth,
+            bool selectable,
+            Action<Rect, T, string>? onDrawFirstCell)
+        {
+            const float rowHeight = 30f;
+
             for (int r = 0; r < data.Count; r++)
             {
                 var values = rowMapper(data[r]);
@@ -349,8 +413,6 @@ namespace LunHuiShop.GuiFramework.Controls
                     Event.current.Use();
                 }
             }
-
-            return selectedRow;
         }
 
         /// <summary>标签页组，水平排列芯片按钮，返回新的选中索引。</summary>
@@ -455,6 +517,7 @@ namespace LunHuiShop.GuiFramework.Controls
         private int _layer;
         private Vector2 _minSize = new Vector2(200f, 100f);
         private Action _onClose;
+        private Action _footer;
 
         public WindowBuilder(Rect rect, WindowData.TitleBarConfig titleBar, Action content)
         {
@@ -526,16 +589,24 @@ namespace LunHuiShop.GuiFramework.Controls
             return this;
         }
 
+        /// <summary>设置底部栏（在滚动视图外，始终固定在窗口底部）。</summary>
+        public WindowBuilder Footer(Action callback)
+        {
+            _footer = callback;
+            return this;
+        }
+
         /// <summary>获取最终窗体数据。</summary>
         public WindowData Build()
         {
-            var window = UI.WindowControls.CreateWindow(_id, _rect, _titleBar, _content);
+            var window = UI.WindowControls.CreateWindow(_id, _rect, _titleBar, _content, _resizable);
             window.Visible = _visible;
             window.Draggable = _draggable;
             window.DragArea = _dragMode;
             window.Resizable = _resizable;
             window.Layer = _layer;
             window.MinSize = _minSize;
+            window.Footer = _footer;
             if (_onClose != null) window.OnClose += _onClose;
             return window;
         }

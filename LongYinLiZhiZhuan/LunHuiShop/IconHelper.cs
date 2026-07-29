@@ -1,6 +1,4 @@
-﻿﻿using System;
-using System.Collections.Generic;
-using HarmonyLib;
+﻿﻿﻿﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.U2D;
 using LunHuiShop.GuiFramework.Logger;
@@ -18,18 +16,6 @@ public static class IconHelper
     private static SpriteAtlas? _atlas;
     private static bool _initAttempted;
 
-    private static readonly string[] CommonIconNames =
-    {
-        "1_0_0", "1_1_0", "1_2_0", "1_3_0", "1_4_0", "1_5_0",
-        "2_1_0", "2_2_0", "2_3_0", "2_4_0", "2_5_0",
-        "3_1_0", "3_2_0", "3_3_0", "3_4_0", "3_5_0",
-        "4_1_0", "4_2_0", "4_3_0", "4_4_0", "4_5_0",
-        "0_1_1_5", "0_2_4_5", "0_3_0_5",
-        "2_1_4", "2_2_2",
-        "3_1_5", "3_2_5", "3_5_5",
-        "4_3_5", "4_4_5"
-    };
-
     public static void EnsureInit()
     {
         if (_textureCache != null || _initAttempted) return;
@@ -45,11 +31,6 @@ public static class IconHelper
             }
 
             _textureCache = new Dictionary<string, Texture2D>();
-
-            foreach (var name in CommonIconNames)
-                CacheSprite(name);
-
-            Log.Info($"IconHelper: 初始化成功, 已缓存 {_textureCache.Count} 个图标");
         }
         catch (Exception ex)
         {

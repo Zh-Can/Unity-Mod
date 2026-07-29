@@ -12,10 +12,10 @@ public class ShopItem
     public string Name { get; set; }
     // 类型
     public string Type { get; set; }
-    // 物品等级
-    public string Level { get; set; }
-    // 物品品质
-    public string Quality { get; set; }
+    // 品质
+    private int Quantity { get; set; }
+    // 筛选分类
+    public string SortType { get; set; }
     // 需要银两值
     public int Price { get; set; }
     // 需要声望值

@@ -62,5 +62,24 @@ namespace LunHuiShop.GuiFramework.Config
             PlayerPrefs.SetFloat(WindowKey(id, "H"), rect.height);
             PlayerPrefs.Save();
         }
+
+        /// <summary>仅保存窗口位置（不保存尺寸）</summary>
+        public static void SaveWindowPosition(int id, Vector2 pos)
+        {
+            PlayerPrefs.SetFloat(WindowKey(id, "X"), pos.x);
+            PlayerPrefs.SetFloat(WindowKey(id, "Y"), pos.y);
+            PlayerPrefs.Save();
+        }
+
+        /// <summary>仅加载窗口位置（返回 null 表示无保存记录）</summary>
+        public static Vector2? LoadWindowPosition(int id)
+        {
+            var xKey = WindowKey(id, "X");
+            if (!PlayerPrefs.HasKey(xKey)) return null;
+            return new Vector2(
+                PlayerPrefs.GetFloat(WindowKey(id, "X"), 100f),
+                PlayerPrefs.GetFloat(WindowKey(id, "Y"), 100f)
+            );
+        }
     }
 }

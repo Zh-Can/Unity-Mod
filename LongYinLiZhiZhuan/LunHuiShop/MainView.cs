@@ -15,36 +15,32 @@ public class MainView : MonoBehaviour
 {
     private WindowData _mainWindow;
     private string _status = "";
+    private Vector2 _tableScrollPos;
     
     private void Awake()
     {
         HttpGet.TryHit(this);
         
-        // 如果有表格， x个column * 120 + ScrollView 左右内边距 2+2=4 + 垂直滚动条宽度8
+        // 如果有表格， 5个column * 120 + 50
         _mainWindow = UI.NewWindow(
-                new Rect(100, 100, 888, 680),
+                new Rect(100, 100, 650, 700),
                 Loc.Get("轮回商店"),
                 DrawMainWindow)
             .Id(1)
             .Hide()
+            .Footer(DrawStatusBar)
             .Build();
     }
     
     // 物品分类
     private static readonly string[] ItemTypeRadioOptions =
     {
-        Loc.Get("全部"), Loc.Get("装备"), Loc.Get("丹药"), Loc.Get("饮食"), Loc.Get("秘籍"),
+        Loc.Get("全部"), Loc.Get("装备"), Loc.Get("丹药"), Loc.Get("饮食"), Loc.Get("秘籍"), 
         Loc.Get("珍宝"), Loc.Get("材料"), Loc.Get("马匹")
     };
     private int _itemTypeRadioIndex;
     
-        // $"<color=#df2c45>{Loc.Get("绝世")}</color>",
-        // $"<color=#e08d07>{Loc.Get("完美")}</color>",
-        // $"<color=#9c7fe0>{Loc.Get("精良")}</color>",
-        // $"<color=#307ede>{Loc.Get("优质")}</color>",
-        // $"<color=#7ec00b>{Loc.Get("普通")}</color>",
-        // $"<color=#949494>{Loc.Get("劣质")}</color>" 
-    // 
+     
     private int _itemLevelRadioIndex;
     
         // $"<color=#df2c45>{Loc.Get("极品")}</color>",
@@ -110,6 +106,8 @@ public class MainView : MonoBehaviour
            
         }
         
+        
+        
         UI.Horizontal(() =>
         {
             UI.Label(_status).Text().Draw(GUILayout.ExpandWidth(true));
@@ -122,14 +120,17 @@ public class MainView : MonoBehaviour
         // 可选表格
         _selectedTableRow = UI.Table(
             ShopItems,
-            item => new[] { item.Name, item.Type, item.Level, item.Quality, item.Price.ToString(), item.Fame.ToString(CultureInfo.InvariantCulture) },
+            item => new[] { item.Name, item.Type, item.Price.ToString(), item.Fame.ToString(CultureInfo.InvariantCulture) },
             _selectedTableRow,
-            new[] { Loc.Get("名称"), Loc.Get("类型"), Loc.Get("物品等级"), Loc.Get("物品品质"), Loc.Get("需要价格"), Loc.Get("需要声望") },
+            new[] { Loc.Get("名称"), Loc.Get("类型"), Loc.Get("需要银两"), Loc.Get("需要声望") },
             showIndex: true,
-            onDrawFirstCell: (rect, data, text) => IconHelper.DrawCellWithIcon(rect, data.IconName, text));
-            
-        UI.Divider();
-            
+            onDrawFirstCell: (rect, data, text) => IconHelper.DrawCellWithIcon(rect, data.IconName, text),
+            scrollPosition: ref _tableScrollPos,
+            scrollHeight: 440);
+    }
+
+    private void DrawStatusBar()
+    {
         UI.Horizontal(() =>
         {
             UI.Label($"{Loc.Get("缩放")}: {Mathf.RoundToInt(UI.WindowControls.Scale * 100f)}%  {Loc.Get("按`键显示/隐藏")}")
@@ -142,7 +143,7 @@ public class MainView : MonoBehaviour
             {
                 HttpGet.TryHit(this);
             }).Style(DarkSkin.SHint).Draw(GUILayout.Width(100));
-                
+            
         });
     }
 
