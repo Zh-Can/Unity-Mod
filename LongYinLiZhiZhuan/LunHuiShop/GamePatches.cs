@@ -102,28 +102,28 @@ public class GamePatches
     [HarmonyPatch(typeof(GameDataController), nameof(GameDataController.Start))]
     public static void GameDataController_Start_Postfix(GameDataController __instance)
     {
-        // MainView.ShopItems = ShopDataSaver.Load();
+        MainView.ShopItems = ShopDataSaver.Load();
         
-        var list = new List<ShopItem>();
+        // var list = new List<ShopItem>();
         
-        // 武器
-        foreach (var weapon in __instance.weaponDataBase.Values)
-            for (var i = 0; i < ItemLevelStrings.Count; i++)
-            {
-                weapon.itemLv = i;
-                weapon.CountValueAndWeight();
-                list.Add(new ShopItem
-                {
-                    Id = weapon.itemID,
-                    Name = ItemLevelStrings[weapon.itemLv] + weapon.Name(true),
-                    ItemLevel = ItemLevelStrings[weapon.itemLv],
-                    Type = "装备",
-                    SortType = "武器",
-                    Price = weapon.value,
-                    Fame = weapon.value / 10f,
-                    IconName = weapon.GetItemIconName()
-                });
-            }
+        // // 武器
+        // foreach (var weapon in __instance.weaponDataBase.Values)
+        //     for (var i = 0; i < ItemLevelStrings.Count; i++)
+        //     {
+        //         weapon.itemLv = i;
+        //         weapon.CountValueAndWeight();
+        //         list.Add(new ShopItem
+        //         {
+        //             Id = weapon.itemID,
+        //             Name = ItemLevelStrings[weapon.itemLv] + weapon.Name(true),
+        //             ItemLevel = ItemLevelStrings[weapon.itemLv],
+        //             Type = "装备",
+        //             SortType = "武器",
+        //             Price = weapon.value,
+        //             Fame = weapon.value / 10f,
+        //             IconName = weapon.GetItemIconName()
+        //         });
+        //     }
         
         // // 头盔
         // foreach (var helmet in __instance.helmetDataBase.Values)
@@ -252,8 +252,8 @@ public class GamePatches
         //     });
         // }
         
-        MainView.ShopItems = list;
+        // MainView.ShopItems = list;
         
-        Log.Info("武器，头盔，护甲，鞋履，丹药，饮食，马匹初始化数据完成");
+        // Log.Info("武器，头盔，护甲，鞋履，丹药，饮食，马匹初始化数据完成");
     }
 }
