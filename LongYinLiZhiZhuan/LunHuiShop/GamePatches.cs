@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+using System.Linq;
+using HarmonyLib;
 using Il2Cpp;
 using LunHuiShop.GuiFramework.Localization;
 using LunHuiShop.GuiFramework.Logger;
@@ -23,96 +24,96 @@ public class GamePatches
         Loc.Get("刀法"),Loc.Get("长兵"),Loc.Get("奇门"),Loc.Get("射术")
     };
 
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(GameController), nameof(GameController.Start))]
-    public static void GameController_Start_Postfix(GameController __instance)
-    {
-        var list = MainView.ShopItems;
-        ItemData item;
-        // 饰品
-        var decorations = GlobalData.DecorationTypeName;
-        for (var i = 0; i < decorations.Count; i++)
-        for (var j = 0; j < ItemLevelStrings.Count; j++)
-        {
-            item = __instance.GenerateDecoration(j, i, 0);
-            item.CountValueAndWeight();
-            list.Add(new ShopItem
-            {
-                Id = i,
-                Name = item.Name(true),
-                ItemLevel = ItemLevelStrings[item.itemLv],
-                Type = "饰品",
-                SortType = "饰品",
-                Price = item.value,
-                Fame = item.value / 10f,
-                IconName = item.GetItemIconName()
-            });
-        }
-    
-        // 珍宝
-        var treasureTypeName = GlobalData.TreasureTypeName;
-    
-        for (var j = 0; j < ItemLevelStrings.Count; j++)
-        for (var i = 0; i < treasureTypeName.Count; i++)
-        {
-            item = __instance.GenerateTreasure(i, j, 0);
-            item.CountValueAndWeight();
-            list.Add(new ShopItem
-            {
-                Id = i,
-                Name = item.Name(true),
-                ItemLevel = ItemLevelStrings[item.itemLv],
-                Type = "珍宝",
-                SortType = "珍宝",
-                Price = item.value,
-                Fame = item.value / 10f,
-                IconName = item.GetItemIconName()
-            });
-        }
-    
-        // 材料
-        var materialTypeName = GlobalData.MaterialTypeName;
-        for (var j = 0; j < ItemLevelStrings.Count; j++)
-        for (var i = 0; i < materialTypeName.Count; i++)
-        {
-            item = __instance.GenerateMaterial(i, j, 0);
-            item.CountValueAndWeight();
-            list.Add(new ShopItem
-            {
-                Id = i,
-                Name = item.Name(true),
-                ItemLevel = ItemLevelStrings[item.itemLv],
-                Type = "材料",
-                SortType = "材料",
-                Price = item.value,
-                Fame = item.value / 10f,
-                IconName = item.GetItemIconName()
-            });
-        }
-
-        // 马鞍
-        for (var j = 0; j < ItemLevelStrings.Count; j++)
-        {
-            item = __instance.GenerateHorseArmorData(j, 55);
-            item.CountValueAndWeight();
-            list.Add(new ShopItem
-            {
-                Id = j,
-                Name = item.Name(true),
-                ItemLevel = ItemLevelStrings[item.itemLv],
-                Type = "马匹",
-                SortType = "马鞍",
-                Price = item.value,
-                Fame = item.value / 10f,
-                IconName = item.GetItemIconName()
-            });
-        }
-        
-    
-        MainView.ShopItems = list;
-        ShopDataSaver.Save(list);
-        Log.Info("饰品，秘籍，珍宝，材料初始化数据完成并已写入 LunhuiShop.cfg");
-    }
+    // [HarmonyPostfix]
+    // [HarmonyPatch(typeof(GameController), nameof(GameController.Start))]
+    // public static void GameController_Start_Postfix(GameController __instance)
+    // {
+    //     var list = MainView.ShopItems;
+    //     ItemData item;
+    //     // 饰品
+    //     var decorations = GlobalData.DecorationTypeName;
+    //     for (var i = 0; i < decorations.Count; i++)
+    //     for (var j = 0; j < ItemLevelStrings.Count; j++)
+    //     {
+    //         item = __instance.GenerateDecoration(j, i, 0);
+    //         item.CountValueAndWeight();
+    //         list.Add(new ShopItem
+    //         {
+    //             Id = i,
+    //             Name = item.Name(true),
+    //             ItemLevel = ItemLevelStrings[item.itemLv],
+    //             Type = "饰品",
+    //             SortType = "饰品",
+    //             Price = item.value,
+    //             Fame = item.value / 10f,
+    //             IconName = item.GetItemIconName()
+    //         });
+    //     }
+    //
+    //     // 珍宝
+    //     var treasureTypeName = GlobalData.TreasureTypeName;
+    //
+    //     for (var j = 0; j < ItemLevelStrings.Count; j++)
+    //     for (var i = 0; i < treasureTypeName.Count; i++)
+    //     {
+    //         item = __instance.GenerateTreasure(i, j, 0);
+    //         item.CountValueAndWeight();
+    //         list.Add(new ShopItem
+    //         {
+    //             Id = i,
+    //             Name = item.Name(true),
+    //             ItemLevel = ItemLevelStrings[item.itemLv],
+    //             Type = "珍宝",
+    //             SortType = "珍宝",
+    //             Price = item.value,
+    //             Fame = item.value / 10f,
+    //             IconName = item.GetItemIconName()
+    //         });
+    //     }
+    //
+    //     // 材料
+    //     var materialTypeName = GlobalData.MaterialTypeName;
+    //     for (var j = 0; j < ItemLevelStrings.Count; j++)
+    //     for (var i = 0; i < materialTypeName.Count; i++)
+    //     {
+    //         item = __instance.GenerateMaterial(i, j, 0);
+    //         item.CountValueAndWeight();
+    //         list.Add(new ShopItem
+    //         {
+    //             Id = i,
+    //             Name = item.Name(true),
+    //             ItemLevel = ItemLevelStrings[item.itemLv],
+    //             Type = "材料",
+    //             SortType = "材料",
+    //             Price = item.value,
+    //             Fame = item.value / 10f,
+    //             IconName = item.GetItemIconName()
+    //         });
+    //     }
+    //
+    //     // 马鞍
+    //     for (var j = 0; j < ItemLevelStrings.Count; j++)
+    //     {
+    //         item = __instance.GenerateHorseArmorData(j, 55);
+    //         item.CountValueAndWeight();
+    //         list.Add(new ShopItem
+    //         {
+    //             Id = j,
+    //             Name = item.Name(true),
+    //             ItemLevel = ItemLevelStrings[item.itemLv],
+    //             Type = "马匹",
+    //             SortType = "马鞍",
+    //             Price = item.value,
+    //             Fame = item.value / 10f,
+    //             IconName = item.GetItemIconName()
+    //         });
+    //     }
+    //     
+    //
+    //     MainView.ShopItems = list;
+    //     ShopDataSaver.Save(list);
+    //     Log.Info("饰品，秘籍，珍宝，材料初始化数据完成并已写入 LunhuiShop.cfg");
+    // }
 
     /// <summary>
     ///     GameDataController 初始化完成后填充 ShopItems
@@ -124,7 +125,7 @@ public class GamePatches
         MainView.ShopItems = ShopDataSaver.Load();
         
         // var list = new List<ShopItem>();
-        
+        //
         // // 武器
         // foreach (var weapon in __instance.weaponDataBase.Values)
         //     for (var i = 0; i < ItemLevelStrings.Count; i++)
@@ -143,7 +144,7 @@ public class GamePatches
         //             IconName = weapon.GetItemIconName()
         //         });
         //     }
-        
+        //
         // // 头盔
         // foreach (var helmet in __instance.helmetDataBase.Values)
         //     for (var i = 0; i < ItemLevelStrings.Count; i++)
@@ -260,7 +261,7 @@ public class GamePatches
         //     book.CountValueAndWeight();
         //     list.Add(new ShopItem
         //     {
-        //         Id = book.itemID,
+        //         Id = skill.skillID,
         //         ItemLevel = ItemLevelStrings[book.itemLv],
         //         Name = book.Name(true),
         //         Type = "秘籍",
@@ -270,8 +271,10 @@ public class GamePatches
         //         IconName = book.GetItemIconName()
         //     });
         // }
-        
+        //
         // MainView.ShopItems = list;
+        
+        IconHelper.PreloadAll(MainView.ShopItems.Select(item => item.IconName));
         
         // Log.Info("武器，头盔，护甲，鞋履，丹药，饮食，马匹初始化数据完成");
     }

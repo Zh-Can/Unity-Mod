@@ -1,4 +1,4 @@
-﻿﻿﻿﻿using System.Collections.Generic;
+﻿﻿﻿﻿﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.U2D;
 using LunHuiShop.GuiFramework.Logger;
@@ -92,6 +92,22 @@ public static class IconHelper
         catch
         {
             // 忽略单个图标加载失败
+        }
+    }
+
+    /// <summary>
+    ///     预缓存所有图标，避免表格滚动时逐个按需加载卡顿。
+    /// </summary>
+    public static void PreloadAll(IEnumerable<string?> iconNames)
+    {
+        EnsureInit();
+        if (_atlas == null || _textureCache == null) return;
+
+        foreach (var name in iconNames)
+        {
+            if (string.IsNullOrEmpty(name)) continue;
+            if (!_textureCache.ContainsKey(name))
+                CacheSprite(name);
         }
     }
 

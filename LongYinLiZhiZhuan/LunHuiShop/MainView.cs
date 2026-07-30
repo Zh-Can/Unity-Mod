@@ -3,6 +3,7 @@ using System.Text;
 using Il2Cpp;
 using LunHuiShop.GuiFramework.Controls;
 using LunHuiShop.GuiFramework.Localization;
+using LunHuiShop.GuiFramework.Logger;
 using LunHuiShop.GuiFramework.Other;
 using LunHuiShop.GuiFramework.Style;
 using MelonLoader;
@@ -145,7 +146,7 @@ public class MainView : MonoBehaviour
                 UI.Label(_status).Text().Draw(GUILayout.ExpandWidth(true));
             });
             var prevSearch = _searchText;
-            _searchText = UI.TextFiled(_searchText, placeholder: "搜索名称", options: GUILayout.Width(150));
+            _searchText = UI.TextFiled(_searchText, placeholder: Loc.Get("搜索名称"), options: GUILayout.Width(150));
             if (_searchText != prevSearch)
                 RefreshShopData();
 
@@ -313,32 +314,93 @@ public class MainView : MonoBehaviour
             _status = "提示：<color=yellow>银钱不够</color>";
             return;
         }
-        _status = "提示：<color=green>购买成功</color>";
-
+        
         
         ItemData item = null!;
         GamePatches.ItemLevelStrings.TryGetKey(selectedItem.ItemLevel, out var lv);
-        if (selectedItem.SortType == "武器")
-        {
-            item = gc.GenerateWeapon(lv, selectedItem.Id, 0);
-        }
-        if (selectedItem.SortType == "护甲")
-        {
-            item = gc.GenerateArmor(lv, selectedItem.Id, 0);
-        }
-        if (selectedItem.SortType == "头盔")
-        {
-            item = gc.GenerateArmor(lv, selectedItem.Id, 0);
-        }
-        if (selectedItem.SortType == "鞋履")
-        {
-            item = gc.GenerateShoes(lv, selectedItem.Id, 0);
-        }
-        if (selectedItem.SortType == "饰品")
-        {
-            item = gc.GenerateDecoration(lv, selectedItem.Id, 0);
-        }
-        player.GetItem(item, true);
         
+        switch (selectedItem.SortType)
+        {
+            case "武器":
+                item = gc.GenerateWeapon(lv, selectedItem.Id, 100);
+                break;
+            case "护甲":
+                item = gc.GenerateArmor(lv, selectedItem.Id, 100);
+                break;
+            case "头盔":
+                item = gc.GenerateHelmet(lv, selectedItem.Id, 100);
+                break;
+            case "鞋履":
+                item = gc.GenerateShoes(lv, selectedItem.Id, 100);
+                break;
+            case "饰品":
+                item = gc.GenerateDecoration(lv, selectedItem.Id, 100);
+                break;
+            case "丹药":
+                item = gc.GenerateMedData(selectedItem.Id, 100);
+                break;
+            case "饮食":
+            case "佳肴":
+            case "美酒":
+                item = gc.GenerateFoodData(selectedItem.Id, 100);
+                item?.CountValueAndWeight();
+                break;
+            case "秘籍":
+            case "内功":
+            case "轻功":
+            case "绝技":
+            case "拳掌":
+            case "剑法":
+            case "刀法":
+            case "长兵":
+            case "奇门":
+            case "射术":
+                item = new ItemData(ItemType.Book);
+                item.SetBookData(selectedItem.Id, 5);
+                item.CountValueAndWeight();
+                break;
+            case "珍宝":
+                item = gc.GenerateTreasure(selectedItem.Id, lv, 100);
+                for (var k = 0; k < item.treasureData.treasureLv.Count; k++)
+                {
+                    item.treasureData.treasureLv[k] = 5;
+                    item.treasureData.identified[k] = true;
+                }
+                item.treasureData.fullIdentified = true;
+                item.value = item.GetTreasureRealValue();
+                item.CountValueAndWeight();
+                break;
+            case "材料":
+                item = gc.GenerateMaterial(selectedItem.Id, lv, 100);
+                break;
+            case "马匹":
+                item = gc.GenerateHorseData(selectedItem.Id, 100);
+                break;
+            case "马鞍":
+                item = gc.GenerateHorseArmorData(lv, 100);
+                break;
+        }
+
+        if (item == null)
+        {
+            _status = $"提示：<color=red>生成物品失败：{selectedItem.SortType} ID={selectedItem.Id}</color>";
+            Log.Warning($"Buy: 生成物品失败，SortType={selectedItem.SortType}, Id={selectedItem.Id}, Name={selectedItem.Name}");
+            return;
+        }
+
+        try
+        {
+            player.fame -= selectedItem.Fame;
+            player.itemListData.money -= selectedItem.Price;
+            _status = "提示：<color=green>购买成功</color>";
+            LyHelper.AddInfoTab($"<color=#red>轮回商店</color> -> 消耗 <color=yellow>{selectedItem.Price} 银两</color>，<color=yellow>{selectedItem.Fame} 声望</color> 购买成功, 成功获得：{item.Name(true)}");
+            player.GetItem(item, false);
+            // player.itemListData.GetItem(item, true);
+        }
+        catch (Exception ex)
+        {
+            _status = $"提示：<color=red>购买失败：{ex.Message}</color>";
+            Log.Warning($"Buy: GetItem 异常，SortType={selectedItem.SortType}, Id={selectedItem.Id}, Name={selectedItem.Name}, 异常：{ex.GetType().Name}: {ex.Message}");
+        }
     }
 }
