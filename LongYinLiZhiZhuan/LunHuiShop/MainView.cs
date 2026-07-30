@@ -77,6 +77,8 @@ public class MainView : MonoBehaviour
     private List<ShopItem> _displayItems = new();
     private string _searchText = "";
 
+    private string[] _tableTitles = new[] { Loc.Get("名称"), Loc.Get("类型"), Loc.Get("物品等级"), Loc.Get("需要银两"), Loc.Get("需要声望") };
+    
     private void DrawMainWindow()
     {
         // 物品分类
@@ -160,7 +162,7 @@ public class MainView : MonoBehaviour
             _displayItems,
             item => new[] { item.Name, item.SortType, item.ItemLevel, item.Price.ToString(), item.Fame.ToString(CultureInfo.InvariantCulture) },
             _selectedTableRow,
-            new[] { Loc.Get("名称"), Loc.Get("类型"), Loc.Get("物品等级"), Loc.Get("需要银两"), Loc.Get("需要声望") },
+            _tableTitles,
             showIndex: true,
             onDrawFirstCell: (rect, data, text) => IconHelper.DrawCellWithIcon(rect, data.IconName, text),
             scrollPosition: ref _tableScrollPos,
