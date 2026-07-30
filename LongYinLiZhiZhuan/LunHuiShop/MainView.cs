@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using Il2Cpp;
 using LunHuiShop.GuiFramework.Controls;
 using LunHuiShop.GuiFramework.Localization;
 using LunHuiShop.GuiFramework.Other;
@@ -293,10 +294,12 @@ public class MainView : MonoBehaviour
     /// </summary>
     private void Buy()
     {
+        var gc = GameController.Instance;
         if (_selectedTableRow < 0 || _selectedTableRow >= _displayItems.Count || 
-            !LyHelper.TryReadPlayer(out var player))
+            !LyHelper.TryReadPlayer(out var player) || gc == null)
             return;
-
+        
+        
         var selectedItem = _displayItems[_selectedTableRow];
         
         if (player.fame < selectedItem.Fame)
@@ -311,7 +314,31 @@ public class MainView : MonoBehaviour
             return;
         }
         _status = "提示：<color=green>购买成功</color>";
-        // Log.Info(selectedItem.Name);
+
+        
+        ItemData item = null!;
+        GamePatches.ItemLevelStrings.TryGetKey(selectedItem.ItemLevel, out var lv);
+        if (selectedItem.SortType == "武器")
+        {
+            item = gc.GenerateWeapon(lv, selectedItem.Id, 0);
+        }
+        if (selectedItem.SortType == "护甲")
+        {
+            item = gc.GenerateArmor(lv, selectedItem.Id, 0);
+        }
+        if (selectedItem.SortType == "头盔")
+        {
+            item = gc.GenerateArmor(lv, selectedItem.Id, 0);
+        }
+        if (selectedItem.SortType == "鞋履")
+        {
+            item = gc.GenerateShoes(lv, selectedItem.Id, 0);
+        }
+        if (selectedItem.SortType == "饰品")
+        {
+            item = gc.GenerateDecoration(lv, selectedItem.Id, 0);
+        }
+        player.GetItem(item, true);
         
     }
 }

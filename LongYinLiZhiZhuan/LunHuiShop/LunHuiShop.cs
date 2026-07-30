@@ -94,6 +94,10 @@ public class LunHuiShop : MelonMod
             {
                 Log.Info(a);
             }
+            foreach (var a in GlobalData.HorseTypeName)
+            {
+                Log.Info(a);
+            }
         }
     }
 

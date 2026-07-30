@@ -8,7 +8,7 @@ namespace LunHuiShop;
 
 public class GamePatches
 {
-    private static readonly BiDictionary<int, string> ItemLevelStrings = new()
+    public static readonly BiDictionary<int, string> ItemLevelStrings = new()
     {
         { 0, $"<color=#949494>{Loc.Get("劣质")}</color>" },
         { 1, $"<color=#7ec00b>{Loc.Get("普通")}</color>" },
@@ -23,77 +23,96 @@ public class GamePatches
         Loc.Get("刀法"),Loc.Get("长兵"),Loc.Get("奇门"),Loc.Get("射术")
     };
 
-    // [HarmonyPostfix]
-    // [HarmonyPatch(typeof(GameController), nameof(GameController.Start))]
-    // public static void GameController_Start_Postfix(GameController __instance)
-    // {
-    //     var list = MainView.ShopItems;
-    //     ItemData item;
-    //     // 饰品
-    //     var decorations = GlobalData.DecorationTypeName;
-    //     for (var i = 0; i < decorations.Count; i++)
-    //     for (var j = 0; j < ItemLevelStrings.Count; j++)
-    //     {
-    //         item = __instance.GenerateDecoration(j, i, 0);
-    //         item.CountValueAndWeight();
-    //         list.Add(new ShopItem
-    //         {
-    //             Id = item.itemID,
-    //             Name = item.Name(true),
-    //             ItemLevel = ItemLevelStrings[item.itemLv],
-    //             Type = "饰品",
-    //             SortType = "饰品",
-    //             Price = item.value,
-    //             Fame = item.value / 10f,
-    //             IconName = item.GetItemIconName()
-    //         });
-    //     }
-    //
-    //     // 珍宝
-    //     var treasureTypeName = GlobalData.TreasureTypeName;
-    //
-    //     for (var j = 0; j < ItemLevelStrings.Count; j++)
-    //     for (var i = 0; i < treasureTypeName.Count; i++)
-    //     {
-    //         item = __instance.GenerateTreasure(i, j, 0);
-    //         item.CountValueAndWeight();
-    //         list.Add(new ShopItem
-    //         {
-    //             Id = item.itemID,
-    //             Name = item.Name(true),
-    //             ItemLevel = ItemLevelStrings[item.itemLv],
-    //             Type = "珍宝",
-    //             SortType = "珍宝",
-    //             Price = item.value,
-    //             Fame = item.value / 10f,
-    //             IconName = item.GetItemIconName()
-    //         });
-    //     }
-    //
-    //     // 材料
-    //     var materialTypeName = GlobalData.MaterialTypeName;
-    //     for (var j = 0; j < ItemLevelStrings.Count; j++)
-    //     for (var i = 0; i < materialTypeName.Count; i++)
-    //     {
-    //         item = __instance.GenerateMaterial(i, j, 0);
-    //         item.CountValueAndWeight();
-    //         list.Add(new ShopItem
-    //         {
-    //             Id = item.itemID,
-    //             Name = item.Name(true),
-    //             ItemLevel = ItemLevelStrings[item.itemLv],
-    //             Type = "材料",
-    //             SortType = "材料",
-    //             Price = item.value,
-    //             Fame = item.value / 10f,
-    //             IconName = item.GetItemIconName()
-    //         });
-    //     }
-    //
-    //     MainView.ShopItems = list;
-    //     ShopDataSaver.Save(list);
-    //     Log.Info("饰品，秘籍，珍宝，材料初始化数据完成并已写入 LunhuiShop.cfg");
-    // }
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(GameController), nameof(GameController.Start))]
+    public static void GameController_Start_Postfix(GameController __instance)
+    {
+        var list = MainView.ShopItems;
+        ItemData item;
+        // 饰品
+        var decorations = GlobalData.DecorationTypeName;
+        for (var i = 0; i < decorations.Count; i++)
+        for (var j = 0; j < ItemLevelStrings.Count; j++)
+        {
+            item = __instance.GenerateDecoration(j, i, 0);
+            item.CountValueAndWeight();
+            list.Add(new ShopItem
+            {
+                Id = i,
+                Name = item.Name(true),
+                ItemLevel = ItemLevelStrings[item.itemLv],
+                Type = "饰品",
+                SortType = "饰品",
+                Price = item.value,
+                Fame = item.value / 10f,
+                IconName = item.GetItemIconName()
+            });
+        }
+    
+        // 珍宝
+        var treasureTypeName = GlobalData.TreasureTypeName;
+    
+        for (var j = 0; j < ItemLevelStrings.Count; j++)
+        for (var i = 0; i < treasureTypeName.Count; i++)
+        {
+            item = __instance.GenerateTreasure(i, j, 0);
+            item.CountValueAndWeight();
+            list.Add(new ShopItem
+            {
+                Id = i,
+                Name = item.Name(true),
+                ItemLevel = ItemLevelStrings[item.itemLv],
+                Type = "珍宝",
+                SortType = "珍宝",
+                Price = item.value,
+                Fame = item.value / 10f,
+                IconName = item.GetItemIconName()
+            });
+        }
+    
+        // 材料
+        var materialTypeName = GlobalData.MaterialTypeName;
+        for (var j = 0; j < ItemLevelStrings.Count; j++)
+        for (var i = 0; i < materialTypeName.Count; i++)
+        {
+            item = __instance.GenerateMaterial(i, j, 0);
+            item.CountValueAndWeight();
+            list.Add(new ShopItem
+            {
+                Id = i,
+                Name = item.Name(true),
+                ItemLevel = ItemLevelStrings[item.itemLv],
+                Type = "材料",
+                SortType = "材料",
+                Price = item.value,
+                Fame = item.value / 10f,
+                IconName = item.GetItemIconName()
+            });
+        }
+
+        // 马鞍
+        for (var j = 0; j < ItemLevelStrings.Count; j++)
+        {
+            item = __instance.GenerateHorseArmorData(j, 55);
+            item.CountValueAndWeight();
+            list.Add(new ShopItem
+            {
+                Id = j,
+                Name = item.Name(true),
+                ItemLevel = ItemLevelStrings[item.itemLv],
+                Type = "马匹",
+                SortType = "马鞍",
+                Price = item.value,
+                Fame = item.value / 10f,
+                IconName = item.GetItemIconName()
+            });
+        }
+        
+    
+        MainView.ShopItems = list;
+        ShopDataSaver.Save(list);
+        Log.Info("饰品，秘籍，珍宝，材料初始化数据完成并已写入 LunhuiShop.cfg");
+    }
 
     /// <summary>
     ///     GameDataController 初始化完成后填充 ShopItems
