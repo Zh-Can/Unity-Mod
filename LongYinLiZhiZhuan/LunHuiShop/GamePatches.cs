@@ -56,7 +56,14 @@ public class GamePatches
     //     for (var j = 0; j < ItemLevelStrings.Count; j++)
     //     for (var i = 0; i < treasureTypeName.Count; i++)
     //     {
-    //         item = __instance.GenerateTreasure(i, j, 0);
+    //         item = __instance.GenerateTreasure(i, j, 100);
+    //         for (var k = 0; k < item.treasureData.treasureLv.Count; k++)
+    //         {
+    //             item.treasureData.treasureLv[k] = 5;
+    //             item.treasureData.identified[k] = true;
+    //         }
+    //         item.treasureData.fullIdentified = true;
+    //         item.rareLv = 5;
     //         item.CountValueAndWeight();
     //         list.Add(new ShopItem
     //         {
@@ -65,8 +72,8 @@ public class GamePatches
     //             ItemLevel = ItemLevelStrings[item.itemLv],
     //             Type = "珍宝",
     //             SortType = "珍宝",
-    //             Price = item.value,
-    //             Fame = item.value / 10f,
+    //             Price = item.GetTreasureRealValue(),
+    //             Fame = item.GetTreasureRealValue() / 10f,
     //             IconName = item.GetItemIconName()
     //         });
     //     }
@@ -76,8 +83,9 @@ public class GamePatches
     //     for (var j = 0; j < ItemLevelStrings.Count; j++)
     //     for (var i = 0; i < materialTypeName.Count; i++)
     //     {
-    //         item = __instance.GenerateMaterial(i, j, 0);
+    //         item = __instance.GenerateMaterial(i, j, 100);
     //         item.CountValueAndWeight();
+    //         
     //         list.Add(new ShopItem
     //         {
     //             Id = i,
@@ -122,7 +130,7 @@ public class GamePatches
     [HarmonyPatch(typeof(GameDataController), nameof(GameDataController.Start))]
     public static void GameDataController_Start_Postfix(GameDataController __instance)
     {
-        MainView.ShopItems = ShopDataSaver.Load();
+        
         
         // var list = new List<ShopItem>();
         //
@@ -227,7 +235,7 @@ public class GamePatches
         //     {
         //         Id = food.itemID,
         //         ItemLevel = ItemLevelStrings[food.itemLv],
-        //         Name = ItemLevelStrings[food.itemLv]+food.Name(true),
+        //         Name = food.Name(true),
         //         Type = "饮食",
         //         SortType = food.subType == 0 ? "佳肴" : "美酒",
         //         Price = food.value,
@@ -274,6 +282,8 @@ public class GamePatches
         //
         // MainView.ShopItems = list;
         
+        
+        MainView.ShopItems = ShopDataSaver.Load();
         IconHelper.PreloadAll(MainView.ShopItems.Select(item => item.IconName));
         
         // Log.Info("武器，头盔，护甲，鞋履，丹药，饮食，马匹初始化数据完成");

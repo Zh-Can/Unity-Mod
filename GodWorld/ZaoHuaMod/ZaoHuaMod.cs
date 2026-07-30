@@ -44,7 +44,6 @@ namespace ZaoHuaMod
             
             var harmony = new HarmonyLib.Harmony("ZHMod");
             harmony.PatchAll(typeof(ZaoHuaMod));
-            harmony.PatchAll(typeof(CraftingDrugRecipeCellSetInfoPatch));
             
             BaseConfig.Load();
             BaseConfig.ApplyToManager();
