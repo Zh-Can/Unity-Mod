@@ -1,12 +1,14 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using HarmonyLib;
 using MelonLoader;
 using MelonLoader.Utils;
 using UnityEngine;
 using ZaoHuaMod;
 using ZaoHuaMod.GuiFramework.Config;
+using ZaoHuaMod.GuiFramework.Controls;
 using ZaoHuaMod.GuiFramework.Localization;
 using ZaoHuaMod.GuiFramework.Logger;
 using ZaoHuaMod.GuiFramework.Logger.Adapters;
@@ -30,8 +32,13 @@ namespace ZaoHuaMod
         internal static MelonPreferences_Entry<bool> AllSkillFlag;
         internal static MelonPreferences_Entry<bool> MaxPlotCountFlag;
         internal static MelonPreferences_Entry<bool> BuildStoFlag;
-        internal static MelonPreferences_Entry<bool> DrugResistLabelFlag;
         internal static MelonPreferences_Entry<bool> DrugProfitLabelFlag;
+
+        // 小世界建筑效果倍率
+        internal static MelonPreferences_Entry<float> GrowSpeedMultiplier;  // 灵泉/火炼池
+        internal static MelonPreferences_Entry<float> CountMultiplier;      // 灵枢台
+        internal static MelonPreferences_Entry<float> JuLingMultiplier;     // 聚灵台
+        internal static MelonPreferences_Entry<float> LingChiMultiplier;    // 灵池
         
         // 窗体对象
         private GameObject _uiObj;
@@ -44,6 +51,7 @@ namespace ZaoHuaMod
             
             var harmony = new HarmonyLib.Harmony("ZHMod");
             harmony.PatchAll(typeof(ZaoHuaMod));
+            harmony.PatchAll(typeof(GameInputBlocker));
             
             BaseConfig.Load();
             BaseConfig.ApplyToManager();
@@ -54,7 +62,7 @@ namespace ZaoHuaMod
             Loc.ScanLanguages();
             Loc.TryApplyLanguage(BaseConfig.Language);
             Log.Initialize(new MelonLoggerAdapter());
-            Log.Info("ZaoHuaMod 加载完成！~");
+            Log.Info("ZaoHuaMod 加载完成！更新日期：2026-07-31");
         }
 
         private void InitConfig()
@@ -66,8 +74,11 @@ namespace ZaoHuaMod
             AllSkillFlag = _mainCategory.CreateEntry("allSkillFlag", false,  description: "炼丹有能解锁两列的技能");
             MaxPlotCountFlag = _mainCategory.CreateEntry("maxPlotCountFlag", false,  description: "神器鼎地块扩增至100");
             BuildStoFlag = _mainCategory.CreateEntry("buildStoFlag", false,  description: "神器鼎地块建筑范围全覆盖开关");
-            DrugResistLabelFlag = _mainCategory.CreateEntry("drugResistLabelFlag", true, description: "丹药耐药性标注");
-            DrugProfitLabelFlag = _mainCategory.CreateEntry("drugProfitLabelFlag", true, description: "炼丹成本利润");
+            DrugProfitLabelFlag = _mainCategory.CreateEntry("drugProfitLabelFlag", true, description: "显示炼丹售价");
+            GrowSpeedMultiplier = _mainCategory.CreateEntry("growSpeedMultiplier", 1f, description: "灵泉/火炼池生长速度倍率");
+            CountMultiplier = _mainCategory.CreateEntry("countMultiplier", 1f, description: "灵枢台产量倍率");
+            JuLingMultiplier = _mainCategory.CreateEntry("juLingMultiplier", 1f, description: "聚灵台增幅倍率");
+            LingChiMultiplier = _mainCategory.CreateEntry("lingChiMultiplier", 1f, description: "灵池灵鱼成长倍率");
         }
         
         public static void SaveConfig()
@@ -254,29 +265,27 @@ namespace ZaoHuaMod
         }
 
         /// <summary>
-        /// 预览建筑影响范围
+        /// 预览建筑影响范围（BuildStoFlag 开启时全场覆盖）
         /// </summary>
         [HarmonyPrefix]
         [HarmonyPatch(typeof(PastureImpl), "GetTargetPlotPosList")]
         public static void PastureImpl_GetTargetPlotPosList_Prefix(TbPastureBuildCfg buildCfg, MyVector2Int curCellPos)
         {
-            if (buildCfg.effectRangeType != 0)
-            {
-                buildCfg.effectRangeType = 2;
-            }
+            Log.Info($"{buildCfg.id} - {buildCfg.GetName} - {buildCfg.effectRangeType} - {buildCfg.effDes}");
+            if (buildCfg.effectRangeType <= 1) return;
+            buildCfg.effectRangeType = BuildStoFlag.Value ? 2 : 11;
         }
         /// <summary>
-        /// 建筑影响范围修改
+        /// 建筑影响范围修改（BuildStoFlag 开启时全场覆盖）
         /// </summary>
         [HarmonyPrefix]
         [HarmonyPatch(typeof(PastureImpl), "GetTargetBuildStoList")]
         public static void PastureImpl_GetTargetBuildStoList_Prefix(TbPastureBuildSto buildSto, ref int effectRangeType)
         {
-            // 只要有范围效果，就改成全场
-            if (effectRangeType != 0)
-            {
-                effectRangeType = 2;
-            }
+            if (effectRangeType <= 1) return;
+            effectRangeType = BuildStoFlag.Value ? 2 : 11;
         }
+        
+        
     }
 }

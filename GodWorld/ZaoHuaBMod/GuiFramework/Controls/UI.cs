@@ -299,9 +299,10 @@ namespace ZaoHuaBMod.GuiFramework.Controls
         /// <param name="max">最大值</param>
         /// <param name="decimals">保留几位小数</param>
         /// <param name="topPadding"></param>
+        /// <param name="options">滑动条布局选项，默认占满可用宽度</param>
         /// <returns></returns>
         public static float Slider(string text, float sliderValue, float min = 0f, float max = 1f, int decimals = 2,
-            float topPadding = 8f)
+            float topPadding = 8f, params GUILayoutOption[] options)
         {
             decimals = Mathf.Max(0, decimals);
             GUILayout.BeginHorizontal();
@@ -311,7 +312,9 @@ namespace ZaoHuaBMod.GuiFramework.Controls
             GUILayout.Label(content, DarkSkin.SLabel, GUILayout.Width(size.x));
             GUILayout.BeginVertical();
             GUILayout.Space(topPadding);
-            sliderValue = GUILayout.HorizontalSlider(sliderValue, min, max, GUILayout.ExpandWidth(true));
+            if (options == null || options.Length == 0)
+                options = new[] { GUILayout.ExpandWidth(true) };
+            sliderValue = GUILayout.HorizontalSlider(sliderValue, min, max, options);
             GUILayout.EndVertical();
             GUILayout.EndHorizontal();
             var multiplier = Mathf.Pow(10f, decimals);

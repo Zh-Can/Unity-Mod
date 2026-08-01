@@ -16,13 +16,13 @@ namespace ZaoHuaMod
             HttpGet.TryHit(this);
             // 创建设置窗口
             SettingsWindow = UI.NewWindow(
-                new Rect(50, 50, 450, 200),
+                new Rect(50, 50, 450, 400),
                 "ZaoHuaMod",
                 DrawSettingsContent
             )
             .Id(20260718)
             .Resizable()
-            .MinSize(new Vector2(350, 150))
+            .MinSize(new Vector2(350, 350))
             .Hide()
             .Build();
             
@@ -117,17 +117,6 @@ namespace ZaoHuaMod
 
                 UI.Space();
 
-                ZaoHuaMod.DrugResistLabelFlag.Value = UI.Toggle("没吃满的丹药显示吃了多少丹药")
-                    .Value(ZaoHuaMod.DrugResistLabelFlag.Value)
-                    .OnChange(v =>
-                    {
-                        ZaoHuaMod.DrugResistLabelFlag.Value = v;
-                        ZaoHuaMod.SaveConfig();
-                    })
-                    .Draw();
-
-                UI.Space();
-
                 ZaoHuaMod.DrugProfitLabelFlag.Value = UI.Toggle("丹药详情展示丹药价格")
                     .Value(ZaoHuaMod.DrugProfitLabelFlag.Value)
                     .OnChange(v =>
@@ -136,6 +125,45 @@ namespace ZaoHuaMod
                         ZaoHuaMod.SaveConfig();
                     })
                     .Draw();
+                
+                UI.Space();
+
+                float newSpeedMul = UI.Slider("灵泉/火炼池 生长速度倍率", ZaoHuaMod.GrowSpeedMultiplier.Value, 1f, 100f, 0);
+                if (!Mathf.Approximately(newSpeedMul, ZaoHuaMod.GrowSpeedMultiplier.Value))
+                {
+                    ZaoHuaMod.GrowSpeedMultiplier.Value = newSpeedMul;
+                    ZaoHuaMod.SaveConfig();
+                    Singleton<PastureImpl>.Instance.RefreshPastureEffect();
+                }
+
+                UI.Space();
+
+                float newCountMul = UI.Slider("灵枢台 产量倍率", ZaoHuaMod.CountMultiplier.Value, 1f, 100f, 0);
+                if (!Mathf.Approximately(newCountMul, ZaoHuaMod.CountMultiplier.Value))
+                {
+                    ZaoHuaMod.CountMultiplier.Value = newCountMul;
+                    ZaoHuaMod.SaveConfig();
+                    Singleton<PastureImpl>.Instance.RefreshPastureEffect();
+                }
+
+                UI.Space();
+
+                float newJuLingMul = UI.Slider("聚灵台 增幅倍率", ZaoHuaMod.JuLingMultiplier.Value, 1f, 100f, 0);
+                if (!Mathf.Approximately(newJuLingMul, ZaoHuaMod.JuLingMultiplier.Value))
+                {
+                    ZaoHuaMod.JuLingMultiplier.Value = newJuLingMul;
+                    ZaoHuaMod.SaveConfig();
+                    Singleton<PastureImpl>.Instance.RefreshPastureEffect();
+                }
+
+                UI.Space();
+
+                float newLingChiMul = UI.Slider("灵池 灵鱼成长倍率", ZaoHuaMod.LingChiMultiplier.Value, 1f, 100f, 0);
+                if (!Mathf.Approximately(newLingChiMul, ZaoHuaMod.LingChiMultiplier.Value))
+                {
+                    ZaoHuaMod.LingChiMultiplier.Value = newLingChiMul;
+                    ZaoHuaMod.SaveConfig();
+                }
             });
            
             UI.FlexibleSpace();
