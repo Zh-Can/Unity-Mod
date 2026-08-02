@@ -39,7 +39,15 @@ namespace ZaoHuaMod
         internal static MelonPreferences_Entry<float> CountMultiplier;      // 灵枢台
         internal static MelonPreferences_Entry<float> JuLingMultiplier;     // 聚灵台
         internal static MelonPreferences_Entry<float> LingChiMultiplier;    // 灵池
-        
+
+        // 灵泉/火炼池描述原始文本备份（避免倍率改回后描述无法还原）
+        private static string _originEffDes4Chinese;
+        private static string _originEffDes6Chinese;
+        private static string _originEffDes4Traditional;
+        private static string _originEffDes6Traditional;
+        private static string _originEffDes4English;
+        private static string _originEffDes6English;
+
         // 窗体对象
         private GameObject _uiObj;
         
@@ -75,7 +83,7 @@ namespace ZaoHuaMod
             MaxPlotCountFlag = _mainCategory.CreateEntry("maxPlotCountFlag", false,  description: "神器鼎地块扩增至100");
             BuildStoFlag = _mainCategory.CreateEntry("buildStoFlag", false,  description: "神器鼎地块建筑范围全覆盖开关");
             DrugProfitLabelFlag = _mainCategory.CreateEntry("drugProfitLabelFlag", true, description: "显示炼丹售价");
-            GrowSpeedMultiplier = _mainCategory.CreateEntry("growSpeedMultiplier", 1, description: "灵泉/火炼池生长速度倍率（值为最终总倍率，默认2倍）");
+            GrowSpeedMultiplier = _mainCategory.CreateEntry("growSpeedMultiplier", 1, description: "灵泉/火炼池生长速度倍率（1=原生+100%，2=+200%，以此类推）");
             CountMultiplier = _mainCategory.CreateEntry("countMultiplier", 1f, description: "灵枢台产量倍率");
             JuLingMultiplier = _mainCategory.CreateEntry("juLingMultiplier", 1f, description: "聚灵台增幅倍率");
             LingChiMultiplier = _mainCategory.CreateEntry("lingChiMultiplier", 1f, description: "灵池灵鱼成长倍率");
@@ -293,20 +301,30 @@ namespace ZaoHuaMod
         {
             if (GrowSpeedMultiplier.Value < 1 || BsSaveDataImpl.nowActor?.pastureBuildStoList == null) return;
 
+            // 灵泉ID：4（effDes key = 2_4），火炼池ID：6（effDes key = 2_6）
+            // 备份原始描述，后续基于原始值替换，避免倍率改回时描述无法还原
+            var langDic = MonoSingleton<TbLanguageImpl>.Instance.GetLanguageDic("TbPastureBuildCfgLocal");
+            if (_originEffDes4Chinese == null) _originEffDes4Chinese = langDic["2_4"].Chinese;
+            if (_originEffDes6Chinese == null) _originEffDes6Chinese = langDic["2_6"].Chinese;
+            if (_originEffDes4Traditional == null) _originEffDes4Traditional = langDic["2_4"].TraditionalChinese;
+            if (_originEffDes6Traditional == null) _originEffDes6Traditional = langDic["2_6"].TraditionalChinese;
+            if (_originEffDes4English == null) _originEffDes4English = langDic["2_4"].English;
+            if (_originEffDes6English == null) _originEffDes6English = langDic["2_6"].English;
+
+            int addPercent = GrowSpeedMultiplier.Value;
+            langDic["2_4"].Chinese = _originEffDes4Chinese.Replace("1", addPercent.ToString());
+            langDic["2_6"].Chinese = _originEffDes6Chinese.Replace("1", addPercent.ToString());
+            langDic["2_4"].TraditionalChinese = _originEffDes4Traditional.Replace("1", addPercent.ToString());
+            langDic["2_6"].TraditionalChinese = _originEffDes6Traditional.Replace("1", addPercent.ToString());
+            langDic["2_4"].English = _originEffDes4English.Replace("1", addPercent.ToString());
+            langDic["2_6"].English = _originEffDes6English.Replace("1", addPercent.ToString());
+
             foreach (var buildSto in BsSaveDataImpl.nowActor.pastureBuildStoList)
             {
                 if (buildSto.updateGrowSpeed > 0)
                 {
-                    // 灵泉ID：4 ,effDes:2_4/ 火炼池ID：6,effDes:2_6
-                    var langDic = MonoSingleton<TbLanguageImpl>.Instance.GetLanguageDic("TbPastureBuildCfgLocal");
-                    langDic["2_4"].Chinese = langDic["2_4"].Chinese.Replace("1", GrowSpeedMultiplier.Value.ToString());
-                    langDic["2_6"].Chinese = langDic["2_6"].Chinese.Replace("1", GrowSpeedMultiplier.Value.ToString());
-                    langDic["2_4"].TraditionalChinese = langDic["2_4"].TraditionalChinese.Replace("1", GrowSpeedMultiplier.Value.ToString());
-                    langDic["2_6"].TraditionalChinese = langDic["2_6"].TraditionalChinese.Replace("1", GrowSpeedMultiplier.Value.ToString());
-                    langDic["2_4"].English = langDic["2_4"].English.Replace("1", GrowSpeedMultiplier.Value.ToString());
-                    langDic["2_6"].English = langDic["2_6"].English.Replace("1", GrowSpeedMultiplier.Value.ToString());
                     Log.Info($"{buildSto.id} - {buildSto.updateGrowSpeed} - {buildSto.growTime} - {buildSto.isVariation}");
-                    buildSto.updateGrowSpeed = GrowSpeedMultiplier.Value * 100;
+                    buildSto.updateGrowSpeed = addPercent;
                 }
             }
         }
