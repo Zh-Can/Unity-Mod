@@ -36,7 +36,7 @@ namespace ZaoHuaMod
 
         // 小世界建筑效果倍率
         internal static MelonPreferences_Entry<int> GrowSpeedMultiplier;  // 灵泉/火炼池
-        internal static MelonPreferences_Entry<float> CountMultiplier;      // 灵枢台
+        internal static MelonPreferences_Entry<int> CountMultiplier;      // 灵枢台
         internal static MelonPreferences_Entry<float> JuLingMultiplier;     // 聚灵台
         internal static MelonPreferences_Entry<float> LingChiMultiplier;    // 灵池
 
@@ -84,7 +84,7 @@ namespace ZaoHuaMod
             BuildStoFlag = _mainCategory.CreateEntry("buildStoFlag", false,  description: "神器鼎地块建筑范围全覆盖开关");
             DrugProfitLabelFlag = _mainCategory.CreateEntry("drugProfitLabelFlag", true, description: "显示炼丹售价");
             GrowSpeedMultiplier = _mainCategory.CreateEntry("growSpeedMultiplier", 1, description: "灵泉/火炼池生长速度倍率（1=原生+100%，2=+200%，以此类推）");
-            CountMultiplier = _mainCategory.CreateEntry("countMultiplier", 1f, description: "灵枢台产量倍率");
+            CountMultiplier = _mainCategory.CreateEntry("countMultiplier", 1, description: "灵枢台产量倍率");
             JuLingMultiplier = _mainCategory.CreateEntry("juLingMultiplier", 1f, description: "聚灵台增幅倍率");
             LingChiMultiplier = _mainCategory.CreateEntry("lingChiMultiplier", 1f, description: "灵池灵鱼成长倍率");
         }
@@ -301,6 +301,7 @@ namespace ZaoHuaMod
         {
             if (GrowSpeedMultiplier.Value < 1 || BsSaveDataImpl.nowActor?.pastureBuildStoList == null) return;
 
+            #region 生长速度修改
             // 灵泉ID：4（effDes key = 2_4），火炼池ID：6（effDes key = 2_6）
             // 备份原始描述，后续基于原始值替换，避免倍率改回时描述无法还原
             var langDic = MonoSingleton<TbLanguageImpl>.Instance.GetLanguageDic("TbPastureBuildCfgLocal");
@@ -323,10 +324,13 @@ namespace ZaoHuaMod
             {
                 if (buildSto.updateGrowSpeed > 0)
                 {
-                    Log.Info($"{buildSto.id} - {buildSto.updateGrowSpeed} - {buildSto.growTime} - {buildSto.isVariation}");
+                    // Log.Info($"{buildSto.id} - {buildSto.updateGrowSpeed} - {buildSto.growTime} - {buildSto.isVariation}");
                     buildSto.updateGrowSpeed = addPercent;
                 }
             }
+            #endregion
+           
+            
         }
     }
 }

@@ -13,6 +13,7 @@ namespace ZaoHuaMod
 
         /// <summary>生长速度输入框文本（在绘制间保持，避免输入被回填打断）。</summary>
         private string _growSpeedInput;
+        private string _productionInput;
 
         private void Start()
         {
@@ -134,10 +135,11 @@ namespace ZaoHuaMod
                 //灵泉/火炼池 生长速度
                 UI.Horizontal(() =>
                 {
-                    UI.Label("生长速度修改：").Tooltip("影响：过一天小世界灵物成长过几天。").Draw(GUILayout.Width(100));
+                    UI.Label("生长速度修改：").Tooltip("灵泉/火炼池影响：原倍率是速度+1倍。默认值：1").Draw(GUILayout.Width(100));
                     // 输入框状态在绘制间保持；首次绘制时以当前配置值为初值
                     if (_growSpeedInput == null) _growSpeedInput = ZaoHuaMod.GrowSpeedMultiplier.Value.ToString();
-                    _growSpeedInput = UI.TextFiled(_growSpeedInput, options: GUILayout.Width(50));
+                    _growSpeedInput = UI.TextFiled(_growSpeedInput, options: GUILayout.Width(70));
+                    UI.Space();
                     UI.Button("设置").Btn().OnClick(() =>
                     {
                         GUIUtility.keyboardControl = 0;
@@ -156,13 +158,29 @@ namespace ZaoHuaMod
 
                 UI.Space();
 
-                float newCountMul = UI.Slider("灵枢台 产量倍率", ZaoHuaMod.CountMultiplier.Value, 1f, 100f, 0);
-                if (!Mathf.Approximately(newCountMul, ZaoHuaMod.CountMultiplier.Value))
+                UI.Horizontal(() =>
                 {
-                    ZaoHuaMod.CountMultiplier.Value = newCountMul;
-                    ZaoHuaMod.SaveConfig();
-                    Singleton<PastureImpl>.Instance.RefreshPastureEffect();
-                }
+                    UI.Label("产量修改：").Tooltip("灵枢台影响：原倍率是产量+1倍。默认值：1").Draw(GUILayout.Width(80));
+                    // 输入框状态在绘制间保持；首次绘制时以当前配置值为初值
+                    if (_productionInput == null) _productionInput = ZaoHuaMod.CountMultiplier.Value.ToString();
+                    _growSpeedInput = UI.TextFiled(_growSpeedInput, options: GUILayout.Width(70));
+                    UI.Space();
+                    UI.Button("设置").Btn().OnClick(() =>
+                    {
+                        GUIUtility.keyboardControl = 0;
+                        if (int.TryParse(_growSpeedInput, out var v) && v > 0)
+                        {
+                            ZaoHuaMod.CountMultiplier.Value = v;
+                            ZaoHuaMod.SaveConfig();
+                            Singleton<PastureImpl>.Instance.RefreshPastureEffect();
+                        }
+                        else
+                        {
+                            _growSpeedInput = ZaoHuaMod.CountMultiplier.Value.ToString();
+                        }
+                    }).Draw(GUILayout.Width(80));
+                });
+                
 
                 UI.Space();
 
