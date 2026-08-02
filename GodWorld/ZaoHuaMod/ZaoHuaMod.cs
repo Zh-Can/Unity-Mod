@@ -311,35 +311,25 @@ namespace ZaoHuaMod
             // TbPastureBuildCfg pastureBuildCfg = Singleton<TbDataImpl>.Instance.GetPastureBuildCfg(5);
             // Log.Info($"{pastureBuildCfg.effDes} - {pastureBuildCfg.GetEffDes}");
             
-            #region 生长速度修改（灵泉/火炼池）
-            // 灵泉ID：4（effDes key = 2_4），火炼池ID：6（effDes key = 2_6）
-            // 备份原始描述，后续基于原始值替换，避免倍率改回后描述无法还原
-            if (_originEffDes4Chinese == null) _originEffDes4Chinese = langDic["2_4"].Chinese;
-            if (_originEffDes6Chinese == null) _originEffDes6Chinese = langDic["2_6"].Chinese;
-            if (_originEffDes4Traditional == null) _originEffDes4Traditional = langDic["2_4"].TraditionalChinese;
-            if (_originEffDes6Traditional == null) _originEffDes6Traditional = langDic["2_6"].TraditionalChinese;
-            if (_originEffDes4English == null) _originEffDes4English = langDic["2_4"].English;
-            if (_originEffDes6English == null) _originEffDes6English = langDic["2_6"].English;
+            // 局部函数：备份并替换某个 effDes key 的三语言描述
+            void ApplyEffDes(string key, string oldText, string newText, ref string originChinese, ref string originTraditional, ref string originEnglish)
+            {
+                if (originChinese == null) originChinese = langDic[key].Chinese;
+                if (originTraditional == null) originTraditional = langDic[key].TraditionalChinese;
+                if (originEnglish == null) originEnglish = langDic[key].English;
 
+                langDic[key].Chinese = originChinese.Replace(oldText, newText);
+                langDic[key].TraditionalChinese = originTraditional.Replace(oldText, newText);
+                langDic[key].English = originEnglish.Replace(oldText, newText);
+            }
+
+            // 灵泉/火炼池：+100% → +N00%
             int speedPercent = GrowSpeedMultiplier.Value * 100;
-            langDic["2_4"].Chinese = _originEffDes4Chinese.Replace("100", speedPercent.ToString());
-            langDic["2_6"].Chinese = _originEffDes6Chinese.Replace("100", speedPercent.ToString());
-            langDic["2_4"].TraditionalChinese = _originEffDes4Traditional.Replace("100", speedPercent.ToString());
-            langDic["2_6"].TraditionalChinese = _originEffDes6Traditional.Replace("100", speedPercent.ToString());
-            langDic["2_4"].English = _originEffDes4English.Replace("100", speedPercent.ToString());
-            langDic["2_6"].English = _originEffDes6English.Replace("100", speedPercent.ToString());
-            #endregion
+            ApplyEffDes("2_4", "100", speedPercent.ToString(), ref _originEffDes4Chinese, ref _originEffDes4Traditional, ref _originEffDes4English);
+            ApplyEffDes("2_6", "100", speedPercent.ToString(), ref _originEffDes6Chinese, ref _originEffDes6Traditional, ref _originEffDes6English);
 
-            #region 产量修改（灵枢台）
-            // 灵枢台ID：5（effDes key = 2_5）
-            if (_originEffDes5Chinese == null) _originEffDes5Chinese = langDic["2_5"].Chinese;
-            if (_originEffDes5Traditional == null) _originEffDes5Traditional = langDic["2_5"].TraditionalChinese;
-            if (_originEffDes5English == null) _originEffDes5English = langDic["2_5"].English;
-
-            langDic["2_5"].Chinese = _originEffDes5Chinese.Replace("1", CountMultiplier.Value.ToString());
-            langDic["2_5"].TraditionalChinese = _originEffDes5Traditional.Replace("1", CountMultiplier.Value.ToString());
-            langDic["2_5"].English = _originEffDes5English.Replace("1", CountMultiplier.Value.ToString());
-            #endregion
+            // 灵枢台：+1 → +N
+            ApplyEffDes("2_5", "1", CountMultiplier.Value.ToString(), ref _originEffDes5Chinese, ref _originEffDes5Traditional, ref _originEffDes5English);
 
             foreach (var buildSto in BsSaveDataImpl.nowActor.pastureBuildStoList)
             {
