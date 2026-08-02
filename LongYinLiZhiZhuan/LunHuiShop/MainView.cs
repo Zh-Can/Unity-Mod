@@ -31,6 +31,9 @@ public class MainView : MonoBehaviour
             .Hide()
             .Footer(DrawStatusBar)
             .Build();
+
+        RebuildDisplayOptions();
+        Loc.LanguageChanged += _ => RebuildDisplayOptions();
     }
 
     private void Start()
@@ -38,37 +41,43 @@ public class MainView : MonoBehaviour
         RefreshShopData();
     }
     
-    // 物品分类
-    private static readonly string[] ItemTypeRadioOptions =
+    // 物品分类 key（用于筛选，保持简体中文不变）
+    private static readonly string[] ItemTypeKeys =
     {
-        Loc.Get("装备"), Loc.Get("丹药"), Loc.Get("饮食"), Loc.Get("秘籍"), Loc.Get("珍宝"), 
-        Loc.Get("材料"), Loc.Get("马匹")
+        "装备", "丹药", "饮食", "秘籍", "珍宝", 
+        "材料", "马匹"
     };
+    private string[] _itemTypeDisplayOptions = null!;
     private int _itemTypeRadioIndex;
-    // 物品等级
-    private static readonly string[] ItemLevelOptions =
+    
+    // 物品等级 key（颜色+文本 key，用于筛选；颜色不变，文本用于显示翻译）
+    private static readonly (string Color, string Key)[] ItemLevelKeys =
     {
-        $"<color=#df2c45>{Loc.Get("绝世")}</color>",
-        $"<color=#e08d07>{Loc.Get("完美")}</color>",
-        $"<color=#9c7fe0>{Loc.Get("精良")}</color>",
-        $"<color=#307ede>{Loc.Get("优质")}</color>",
-        $"<color=#7ec00b>{Loc.Get("普通")}</color>",
-        $"<color=#949494>{Loc.Get("劣质")}</color>"
+        ("#df2c45", "绝世"),
+        ("#e08d07", "完美"),
+        ("#9c7fe0", "精良"),
+        ("#307ede", "优质"),
+        ("#7ec00b", "普通"),
+        ("#949494", "劣质")
     };
+    private string[] _itemLevelDisplayOptions = null!;
     private int _itemLevelRadioIndex;
     
-    // 装备类型
-    private static readonly string[] EquipmentOptions =
+    // 装备类型 key（用于筛选，保持简体中文不变）
+    private static readonly string[] EquipmentKeys =
     {
-        Loc.Get("武器"), Loc.Get("护甲"), Loc.Get("头盔"), Loc.Get("鞋履"),Loc.Get("饰品")
+        "武器", "护甲", "头盔", "鞋履","饰品"
     };
+    private string[] _equipmentDisplayOptions = null!;
     private int _equipmentRadioIndex;
-    // 秘籍类型
-    private static readonly string[] BookTypeOptions =
+    
+    // 秘籍类型 key（用于筛选，保持简体中文不变）
+    private static readonly string[] BookTypeKeys =
     {
-        Loc.Get("内功"), Loc.Get("轻功"), Loc.Get("绝技"), Loc.Get("拳掌"),Loc.Get("剑法"),
-        Loc.Get("刀法"),Loc.Get("长兵"),Loc.Get("奇门"),Loc.Get("射术")
+        "内功", "轻功", "绝技", "拳掌","剑法",
+        "刀法","长兵","奇门","射术"
     };
+    private string[] _bookTypeDisplayOptions = null!;
     private int _bookTypeIndex;
     
     // 表格选中项
@@ -77,14 +86,45 @@ public class MainView : MonoBehaviour
     private List<ShopItem> _displayItems = new();
     private string _searchText = "";
 
-    private string[] _tableTitles = new[] { Loc.Get("名称"), Loc.Get("类型"), Loc.Get("物品等级"), Loc.Get("需要银两"), Loc.Get("需要声望") };
+    private string[] _tableTitles = null!;
+
+    private void RebuildDisplayOptions()
+    {
+        _itemTypeDisplayOptions = new[]
+        {
+            Loc.Get("装备"), Loc.Get("丹药"), Loc.Get("饮食"), Loc.Get("秘籍"), Loc.Get("珍宝"),
+            Loc.Get("材料"), Loc.Get("马匹")
+        };
+        _equipmentDisplayOptions = new[]
+        {
+            Loc.Get("武器"), Loc.Get("护甲"), Loc.Get("头盔"), Loc.Get("鞋履"), Loc.Get("饰品")
+        };
+        _bookTypeDisplayOptions = new[]
+        {
+            Loc.Get("内功"), Loc.Get("轻功"), Loc.Get("绝技"), Loc.Get("拳掌"), Loc.Get("剑法"),
+            Loc.Get("刀法"), Loc.Get("长兵"), Loc.Get("奇门"), Loc.Get("射术")
+        };
+        _itemLevelDisplayOptions = new[]
+        {
+            $"<color=#df2c45>{Loc.Get("绝世")}</color>",
+            $"<color=#e08d07>{Loc.Get("完美")}</color>",
+            $"<color=#9c7fe0>{Loc.Get("精良")}</color>",
+            $"<color=#307ede>{Loc.Get("优质")}</color>",
+            $"<color=#7ec00b>{Loc.Get("普通")}</color>",
+            $"<color=#949494>{Loc.Get("劣质")}</color>"
+        };
+        _tableTitles = new[] { Loc.Get("名称"), Loc.Get("类型"), Loc.Get("物品等级"), Loc.Get("需要银两"), Loc.Get("需要声望") };
+
+        if (_mainWindow != null)
+            _mainWindow.TitleBar.Title = Loc.Get("轮回商店");
+    }
     
     private void DrawMainWindow()
     {
         // 物品分类
         _itemTypeRadioIndex = UI.RadioButtonGroup
             .Selected(_itemTypeRadioIndex)
-            .Options(ItemTypeRadioOptions)
+            .Options(_itemTypeDisplayOptions)
             .ButtonStyle()
             .Horizontal()
             .OnChange(index =>
@@ -99,7 +139,7 @@ public class MainView : MonoBehaviour
         if (_itemTypeRadioIndex == 0)
         {
             _equipmentRadioIndex = UI.RadioButtonGroup
-                .Options(EquipmentOptions)
+                .Options(_equipmentDisplayOptions)
                 .Selected(_equipmentRadioIndex)
                 .ButtonStyle()
                 .Horizontal()
@@ -115,7 +155,7 @@ public class MainView : MonoBehaviour
         if (_itemTypeRadioIndex == 3)
         {
             _bookTypeIndex = UI.RadioButtonGroup
-                .Options(BookTypeOptions)
+                .Options(_bookTypeDisplayOptions)
                 .Selected(_bookTypeIndex)
                 .ButtonStyle()
                 .Horizontal()
@@ -129,7 +169,7 @@ public class MainView : MonoBehaviour
         }
         // 物品等级
         _itemLevelRadioIndex = UI.RadioButtonGroup
-            .Options(ItemLevelOptions)
+            .Options(_itemLevelDisplayOptions)
             .Selected(_itemLevelRadioIndex)
             .ButtonStyle()
             .Horizontal()
@@ -214,8 +254,8 @@ public class MainView : MonoBehaviour
             return;
         }
 
-        var selectedType = ItemTypeRadioOptions[_itemTypeRadioIndex];
-        var selectedLevel = ItemLevelOptions[_itemLevelRadioIndex];
+        var selectedType = ItemTypeKeys[_itemTypeRadioIndex];
+        var selectedLevelColor = ItemLevelKeys[_itemLevelRadioIndex].Color;
 
         _displayItems = new List<ShopItem>(ShopItems.Count);
         foreach (var item in ShopItems)
@@ -235,7 +275,7 @@ public class MainView : MonoBehaviour
             // 子类型筛选
             if (selectedType == "装备")
             {
-                var subType = EquipmentOptions[_equipmentRadioIndex];
+                var subType = EquipmentKeys[_equipmentRadioIndex];
                 if (subType == "饰品")
                 {
                     if (item.Type != "饰品")
@@ -249,12 +289,12 @@ public class MainView : MonoBehaviour
             }
             else if (selectedType == "秘籍")
             {
-                if (item.SortType != BookTypeOptions[_bookTypeIndex])
+                if (item.SortType != BookTypeKeys[_bookTypeIndex])
                     continue;
             }
 
-            // 物品等级
-            if (item.ItemLevel != selectedLevel)
+            // 物品等级（按颜色匹配，避免简繁文本不同导致筛选失效）
+            if (!item.ItemLevel.Contains(selectedLevelColor))
                 continue;
 
             // 名称搜索
@@ -307,13 +347,13 @@ public class MainView : MonoBehaviour
         
         if (player.fame < selectedItem.Fame)
         {
-            _status = "提示：<color=red>声望不够</color>";
+            _status = $"{Loc.Get("提示")}：<color=red>{Loc.Get("声望不足！")}</color>";
             return;
         }
 
         if (player.itemListData.money < selectedItem.Price)
         {
-            _status = "提示：<color=yellow>银钱不够</color>";
+            _status = $"{Loc.Get("提示")}：<color=yellow>{Loc.Get("银两不足！")}</color>";
             return;
         }
         
@@ -394,14 +434,14 @@ public class MainView : MonoBehaviour
         {
             player.fame -= selectedItem.Fame;
             player.itemListData.money -= selectedItem.Price;
-            _status = "提示：<color=green>购买成功</color>";
-            LyHelper.AddInfoTab($"<color=#red>轮回商店</color> -> 消耗 <color=yellow>{selectedItem.Price} 银两</color>，<color=yellow>{selectedItem.Fame} 声望</color> 购买成功, 成功获得：{item.Name(true)}");
+            _status = $"{Loc.Get("提示")}：<color=green>{Loc.Get("购买成功")}</color>";
+            LyHelper.AddInfoTab($"<color=#red>{Loc.Get("轮回商店")}</color> -> {Loc.Get("消耗")} <color=yellow>{selectedItem.Price} {Loc.Get("银两")}</color>，<color=yellow>{selectedItem.Fame} {Loc.Get("声望")}</color> {Loc.Get("购买成功, 成功获得")}：{item.Name(true)}");
             player.GetItem(item, false);
             // player.itemListData.GetItem(item, true);
         }
         catch (Exception ex)
         {
-            _status = $"提示：<color=red>购买失败：{ex.Message}</color>";
+            _status = $"{Loc.Get("提示")}：<color=red>{Loc.Get("购买失败")}：{ex.Message}</color>";
             Log.Warning($"Buy: GetItem 异常，SortType={selectedItem.SortType}, Id={selectedItem.Id}, Name={selectedItem.Name}, 异常：{ex.GetType().Name}: {ex.Message}");
         }
     }

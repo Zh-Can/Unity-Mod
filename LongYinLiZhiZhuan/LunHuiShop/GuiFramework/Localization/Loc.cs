@@ -172,7 +172,7 @@ namespace LunHuiShop.GuiFramework.Localization
 
 
         /// <summary>
-        /// 扫描 ModDirectory/languages 目录下的 .cfg 语言文件。
+        /// 扫描 ModDirectory/language 目录下格式为 {ModInfo.Name}-{语言}.cfg 的语言文件。
         /// 返回是否扫描到除简中外的新语言。
         /// </summary>
         public static bool ScanLanguages()
@@ -183,22 +183,26 @@ namespace LunHuiShop.GuiFramework.Localization
             if (string.IsNullOrEmpty(ModDirectory))
                 return false;
 
-            var langDir = Path.Combine(ModDirectory, "languages");
+            var langDir = Path.Combine(ModDirectory, "language");
             if (!Directory.Exists(langDir))
                 return false;
 
-            var cfgFiles = Directory.GetFiles(langDir, "*.cfg")
+            var prefix = ModInfo.Name + "-";
+            var cfgFiles = Directory.GetFiles(langDir, $"{ModInfo.Name}-*.cfg")
                 .OrderBy(f => f)
                 .ToArray();
 
             foreach (var file in cfgFiles)
             {
                 var fileName = Path.GetFileNameWithoutExtension(file);
-
-                if (fileName == Chinese)
+                if (!fileName.StartsWith(prefix))
                     continue;
 
-                AvailableLanguages.Add(new LanguageInfo(fileName, file));
+                var displayName = fileName.Substring(prefix.Length);
+                if (string.IsNullOrEmpty(displayName) || displayName == Chinese)
+                    continue;
+
+                AvailableLanguages.Add(new LanguageInfo(displayName, file));
             }
 
             return AvailableLanguages.Count > 1;
@@ -250,7 +254,7 @@ namespace LunHuiShop.GuiFramework.Localization
             var info = AvailableLanguages.FirstOrDefault(l => l.DisplayName == language);
             if (info == null || string.IsNullOrEmpty(info.FilePath) || !File.Exists(info.FilePath))
             {
-                Log.Warning($"[Loc] 语言文件 {language}.cfg 不存在，回退到简中");
+                Log.Warning($"[Loc] 语言文件 {ModInfo.Name}-{language}.cfg 不存在，回退到简中");
                 CurrentLanguage = Chinese;
                 BaseConfig.Language = Chinese;
                 BaseConfig.Save();
