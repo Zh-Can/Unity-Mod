@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Text.RegularExpressions;
 using HarmonyLib;
 using MelonLoader;
@@ -37,8 +38,8 @@ namespace ZaoHuaMod
         // 小世界建筑效果倍率
         internal static MelonPreferences_Entry<int> GrowSpeedMultiplier;  // 灵泉/火炼池
         internal static MelonPreferences_Entry<int> CountMultiplier;      // 灵枢台
-        internal static MelonPreferences_Entry<float> JuLingMultiplier;     // 聚灵台
-        internal static MelonPreferences_Entry<float> LingChiMultiplier;    // 灵池
+        internal static MelonPreferences_Entry<int> JuLingMultiplier;     // 聚灵台
+        internal static MelonPreferences_Entry<int> LingChiMultiplier;    // 灵池
 
         // 灵泉/火炼池描述原始文本备份（避免倍率改回后描述无法还原）
         private static string _originEffDes4Chinese;
@@ -52,6 +53,11 @@ namespace ZaoHuaMod
         private static string _originEffDes5Chinese;
         private static string _originEffDes5Traditional;
         private static string _originEffDes5English;
+
+        // 聚灵台描述原始文本备份（effDes key = 2_10）
+        private static string _originEffDes10Chinese;
+        private static string _originEffDes10Traditional;
+        private static string _originEffDes10English;
 
         // 窗体对象
         private GameObject _uiObj;
@@ -90,8 +96,8 @@ namespace ZaoHuaMod
             DrugProfitLabelFlag = _mainCategory.CreateEntry("drugProfitLabelFlag", true, description: "显示炼丹售价");
             GrowSpeedMultiplier = _mainCategory.CreateEntry("growSpeedMultiplier", 1, description: "灵泉/火炼池生长速度倍率（1=原生+100%，2=+200%，以此类推）");
             CountMultiplier = _mainCategory.CreateEntry("countMultiplier", 1, description: "灵枢台产量倍率");
-            JuLingMultiplier = _mainCategory.CreateEntry("juLingMultiplier", 1f, description: "聚灵台增幅倍率");
-            LingChiMultiplier = _mainCategory.CreateEntry("lingChiMultiplier", 1f, description: "灵池灵鱼成长倍率");
+            JuLingMultiplier = _mainCategory.CreateEntry("juLingMultiplier", 1, description: "聚灵台增幅倍率");
+            LingChiMultiplier = _mainCategory.CreateEntry("lingChiMultiplier", 1, description: "灵池灵鱼成长倍率");
         }
         
         public static void SaveConfig()
@@ -323,25 +329,44 @@ namespace ZaoHuaMod
                 langDic[key].English = originEnglish.Replace(oldText, newText);
             }
 
-            // 灵泉/火炼池：+100% → +N00%
-            int speedPercent = GrowSpeedMultiplier.Value * 100;
-            ApplyEffDes("2_4", "100", speedPercent.ToString(), ref _originEffDes4Chinese, ref _originEffDes4Traditional, ref _originEffDes4English);
-            ApplyEffDes("2_6", "100", speedPercent.ToString(), ref _originEffDes6Chinese, ref _originEffDes6Traditional, ref _originEffDes6English);
+            // 灵泉/火炼池：+1 → +N
+            ApplyEffDes("2_4", "1", GrowSpeedMultiplier.Value.ToString(), ref _originEffDes4Chinese, ref _originEffDes4Traditional, ref _originEffDes4English);
+            ApplyEffDes("2_6", "1", GrowSpeedMultiplier.Value.ToString(), ref _originEffDes6Chinese, ref _originEffDes6Traditional, ref _originEffDes6English);
 
             // 灵枢台：+1 → +N
             ApplyEffDes("2_5", "1", CountMultiplier.Value.ToString(), ref _originEffDes5Chinese, ref _originEffDes5Traditional, ref _originEffDes5English);
+
+            // 聚灵台：50 → 50 * N
+            int juLingBonus = JuLingMultiplier.Value * 50;
+            Log.Info($"聚灵台描述修改: multiplier={JuLingMultiplier.Value}, bonus={juLingBonus}, " +
+                     $"origin={_originEffDes10Chinese ?? langDic["2_10"].Chinese}, " +
+                     $"after={langDic["2_10"].Chinese.Replace("50", juLingBonus.ToString())}");
+            ApplyEffDes("2_10", "50", juLingBonus.ToString(), ref _originEffDes10Chinese, ref _originEffDes10Traditional, ref _originEffDes10English);
 
             foreach (var buildSto in BsSaveDataImpl.nowActor.pastureBuildStoList)
             {
                 if (buildSto.updateGrowSpeed > 0)
                 {
-                    buildSto.updateGrowSpeed = speedPercent;
+                    buildSto.updateGrowSpeed = GrowSpeedMultiplier.Value * 100;
                 }
                 if (buildSto.updateGrowCount > 0)
                 {
                     buildSto.updateGrowCount = CountMultiplier.Value;
                 }
             }
+        }
+
+        /// <summary>
+        /// 修炼界面聚灵台增幅倍率修改
+        /// 原逻辑：GetBuildPlacedCount(10) 返回实际数量，每个 +50
+        /// 改为：对 buildId=10 返回 数量 * JuLingMultiplier，让修炼界面自己算出正确数值
+        /// </summary>
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(PastureImpl), nameof(PastureImpl.GetBuildPlacedCount))]
+        public static void PastureImpl_GetBuildPlacedCount_Postfix(int buildId, ref int __result)
+        {
+            if (buildId == 10 && __result > 0)
+                __result *= JuLingMultiplier.Value;
         }
     }
 }

@@ -1,5 +1,6 @@
 using UnityEngine;
 using ZaoHuaMod.GuiFramework.Localization;
+using ZaoHuaMod.GuiFramework.Logger;
 using ZaoHuaMod.GuiFramework.Other;
 using ZaoHuaMod.GuiFramework.Style;
 using UI = ZaoHuaMod.GuiFramework.Controls.UI;
@@ -14,13 +15,15 @@ namespace ZaoHuaMod
         /// <summary>生长速度输入框文本（在绘制间保持，避免输入被回填打断）。</summary>
         private string _growSpeedInput;
         private string _productionInput;
+        private string _jltEffectInput;
+        private string _lyGrowSpeedInput;
 
         private void Start()
         {
             HttpGet.TryHit(this);
             // 创建设置窗口
             SettingsWindow = UI.NewWindow(
-                new Rect(50, 50, 450, 400),
+                new Rect(50, 50, 390, 510),
                 "ZaoHuaMod",
                 DrawSettingsContent
             )
@@ -50,7 +53,11 @@ namespace ZaoHuaMod
                 if (SettingsWindow != null)
                 {
                     if (SettingsWindow.Visible)
+                    {
+                        // var rect = SettingsWindow.Rect;
+                        // Log.Info($"SettingsWindow 隐藏 — 尺寸: {rect.width} x {rect.height}");
                         SettingsWindow.Hide();
+                    }
                     else
                         SettingsWindow.Show();
                 }
@@ -181,25 +188,55 @@ namespace ZaoHuaMod
                     }).Draw(GUILayout.Width(80));
                 });
                 
-
+                UI.Space();
+                
+                UI.Horizontal(() =>
+                {
+                    UI.Label("聚灵台的增幅：").Tooltip("聚灵台影响：原倍率是产量+50%。默认值：1").Draw(GUILayout.Width(100));
+                    // 输入框状态在绘制间保持；首次绘制时以当前配置值为初值
+                    if (_jltEffectInput == null) _jltEffectInput = ZaoHuaMod.JuLingMultiplier.Value.ToString();
+                    _jltEffectInput = UI.TextFiled(_jltEffectInput, options: GUILayout.Width(70));
+                    UI.Space();
+                    UI.Button("设置").Btn().OnClick(() =>
+                    {
+                        GUIUtility.keyboardControl = 0;
+                        if (int.TryParse(_jltEffectInput, out var v) && v > 0)
+                        {
+                            ZaoHuaMod.JuLingMultiplier.Value = v;
+                            ZaoHuaMod.SaveConfig();
+                            Singleton<PastureImpl>.Instance.RefreshPastureEffect();
+                        }
+                        else
+                        {
+                            _productionInput = ZaoHuaMod.JuLingMultiplier.Value.ToString();
+                        }
+                    }).Draw(GUILayout.Width(80));
+                });
+                
                 UI.Space();
 
-                float newJuLingMul = UI.Slider("聚灵台 增幅倍率", ZaoHuaMod.JuLingMultiplier.Value, 1f, 100f, 0);
-                if (!Mathf.Approximately(newJuLingMul, ZaoHuaMod.JuLingMultiplier.Value))
+                UI.Horizontal(() =>
                 {
-                    ZaoHuaMod.JuLingMultiplier.Value = newJuLingMul;
-                    ZaoHuaMod.SaveConfig();
-                    Singleton<PastureImpl>.Instance.RefreshPastureEffect();
-                }
-
-                UI.Space();
-
-                float newLingChiMul = UI.Slider("灵池 灵鱼成长倍率", ZaoHuaMod.LingChiMultiplier.Value, 1f, 100f, 0);
-                if (!Mathf.Approximately(newLingChiMul, ZaoHuaMod.LingChiMultiplier.Value))
-                {
-                    ZaoHuaMod.LingChiMultiplier.Value = newLingChiMul;
-                    ZaoHuaMod.SaveConfig();
-                }
+                    UI.Label("灵鱼成长倍数：").Tooltip("默认值：1").Draw(GUILayout.Width(100));
+                    // 输入框状态在绘制间保持；首次绘制时以当前配置值为初值
+                    if (_lyGrowSpeedInput == null) _lyGrowSpeedInput = ZaoHuaMod.LingChiMultiplier.Value.ToString();
+                    _lyGrowSpeedInput = UI.TextFiled(_lyGrowSpeedInput, options: GUILayout.Width(70));
+                    UI.Space();
+                    UI.Button("设置").Btn().OnClick(() =>
+                    {
+                        GUIUtility.keyboardControl = 0;
+                        if (int.TryParse(_lyGrowSpeedInput, out var v) && v > 0)
+                        {
+                            ZaoHuaMod.LingChiMultiplier.Value = v;
+                            ZaoHuaMod.SaveConfig();
+                            Singleton<PastureImpl>.Instance.RefreshPastureEffect();
+                        }
+                        else
+                        {
+                            _productionInput = ZaoHuaMod.LingChiMultiplier.Value.ToString();
+                        }
+                    }).Draw(GUILayout.Width(80));
+                });
             });
            
             UI.FlexibleSpace();
