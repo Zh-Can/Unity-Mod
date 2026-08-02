@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using LunHuiShop.GuiFramework.Controls;
 using LunHuiShop.GuiFramework.Localization;
 
@@ -10,25 +10,29 @@ namespace LunHuiShop.GuiFramework.Config
     public static class BaseConfig
     {
         private const string ScaleKey = "_Mod_Scale";
-        private const string LanguageKey = "_Mod_Language";
+    private const string LanguageKey = "_Mod_Language";
+    private const string HotkeyKey = "_Mod_Hotkey";
 
-        public static float Scale { get; set; } = 1f;
-        public static string Language { get; set; } = Loc.Chinese;
-
-
-        public static void Load()
-        {
-            Scale = PlayerPrefs.GetFloat(ScaleKey, 1f);
-            Language = PlayerPrefs.GetString(LanguageKey, Loc.Chinese);
-        }
+    public static float Scale { get; set; } = 1f;
+    public static string Language { get; set; } = Loc.Chinese;
+    public static HotkeyConfig Hotkey { get; set; } = new();
 
 
-        public static void Save()
-        {
-            PlayerPrefs.SetFloat(ScaleKey, Scale);
-            PlayerPrefs.SetString(LanguageKey, Language);
-            PlayerPrefs.Save();
-        }
+    public static void Load()
+    {
+        Scale = PlayerPrefs.GetFloat(ScaleKey, 1f);
+        Language = PlayerPrefs.GetString(LanguageKey, Loc.Chinese);
+        Hotkey = HotkeyConfig.Parse(PlayerPrefs.GetString(HotkeyKey, new HotkeyConfig().ToString()));
+    }
+
+
+    public static void Save()
+    {
+        PlayerPrefs.SetFloat(ScaleKey, Scale);
+        PlayerPrefs.SetString(LanguageKey, Language);
+        PlayerPrefs.SetString(HotkeyKey, Hotkey.ToString());
+        PlayerPrefs.Save();
+    }
 
 
         public static void ApplyToManager()

@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text;
 using Il2Cpp;
+using LunHuiShop.GuiFramework.Config;
 using LunHuiShop.GuiFramework.Controls;
 using LunHuiShop.GuiFramework.Localization;
 using LunHuiShop.GuiFramework.Logger;
@@ -11,10 +12,12 @@ using UnityEngine;
 
 namespace LunHuiShop;
 
-[RegisterTypeInIl2Cpp]
-public class MainView : MonoBehaviour
+[RegisterTypeInIl2Cpp]public class MainView : MonoBehaviour
 {
     private WindowData _mainWindow = null!;
+    private WindowData _hotkeyWindow = null!;
+    private HotkeyConfig _editingHotkey = new();
+    private bool _capturingHotkey;
     private string _status = "";
     private Vector2 _tableScrollPos;
     
@@ -30,6 +33,14 @@ public class MainView : MonoBehaviour
             .Id(1)
             .Hide()
             .Footer(DrawStatusBar)
+            .Build();
+
+        _hotkeyWindow = UI.NewWindow(
+                new Rect(300, 300, 320, 220),
+                "",
+                DrawHotkeyWindow)
+            .Id(2)
+            .Hide()
             .Build();
 
         RebuildDisplayOptions();
@@ -214,10 +225,15 @@ public class MainView : MonoBehaviour
         UI.Divider(5);
         UI.Horizontal(() =>
         {
-            UI.Label($"{Loc.Get("缩放")}: {Mathf.RoundToInt(UI.WindowControls.Scale * 100f)}%  {Loc.Get("按`键显示/隐藏")}")
-                .AsMuted()
-                .Draw(GUILayout.Width(180));
-                
+            // UI.Label($"{Loc.Get("缩放")}: {Mathf.RoundToInt(UI.WindowControls.Scale * 100f)}%  {Loc.Get("按`键显示/隐藏")}")
+            //     .AsMuted()
+            //     .Draw(GUILayout.Width(180));
+            UI.Button($"{Loc.Get("缩放")}: {Mathf.RoundToInt(UI.WindowControls.Scale * 100f)}%  {Loc.Get("按")}{BaseConfig.Hotkey.GetDisplayName()}{Loc.Get("键显示/隐藏")}")
+                .Label().OnClick(() =>
+                {
+                    _editingHotkey = BaseConfig.Hotkey.Clone();
+                    _hotkeyWindow.Show();
+                }).Style(DarkSkin.SMuted).Draw(GUILayout.Width(220));
             UI.FlexibleSpace();
                 
             UI.Button(Loc.Get("点赞数:") + HttpGet.Count).Label().OnClick(() =>
@@ -228,9 +244,57 @@ public class MainView : MonoBehaviour
         });
     }
 
+    private void DrawHotkeyWindow()
+    {
+        UI.Vertical(() =>
+        {
+            UI.Space(8);
+
+            UI.Label($"{Loc.Get("当前热键")}: {(_capturingHotkey ? Loc.Get("请按下按键...") : _editingHotkey.GetDisplayName())}")
+                .AsMuted()
+                .Draw();
+
+            UI.Space(8);
+
+            if (UI.Button(_capturingHotkey ? Loc.Get("取消捕获") : Loc.Get("按下新按键")).Draw())
+            {
+                _capturingHotkey = !_capturingHotkey;
+            }
+
+            UI.Space(12);
+            UI.Label(Loc.Get("修饰键")).AsMuted().Draw();
+
+            UI.Horizontal(() =>
+            {
+                _editingHotkey.Ctrl = UI.Toggle("Ctrl").Value(_editingHotkey.Ctrl).Draw();
+                _editingHotkey.Alt = UI.Toggle("Alt").Value(_editingHotkey.Alt).Draw();
+                _editingHotkey.Shift = UI.Toggle("Shift").Value(_editingHotkey.Shift).Draw();
+            });
+
+            UI.Space(16);
+            UI.Horizontal(() =>
+            {
+                UI.FlexibleSpace();
+                if (UI.Button(Loc.Get("确定")).Add().Draw())
+                {
+                    BaseConfig.Hotkey = _editingHotkey.Clone();
+                    BaseConfig.Save();
+                    _hotkeyWindow.Hide();
+                }
+                UI.Space(10);
+                if (UI.Button(Loc.Get("取消")).Draw())
+                {
+                    _capturingHotkey = false;
+                    _hotkeyWindow.Hide();
+                }
+                UI.FlexibleSpace();
+            });
+        });
+    }
+
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.BackQuote))
+        if (BaseConfig.Hotkey.IsPressed())
         {
             _mainWindow.Visible = !_mainWindow.Visible;
         }
@@ -238,6 +302,27 @@ public class MainView : MonoBehaviour
 
     private void OnGUI()
     {
+        if (_capturingHotkey)
+        {
+            var e = Event.current;
+            if (e.type == EventType.KeyDown)
+            {
+                // 忽略纯修饰键
+                if (e.keyCode is not (KeyCode.LeftControl or KeyCode.RightControl
+                    or KeyCode.LeftAlt or KeyCode.RightAlt
+                    or KeyCode.LeftShift or KeyCode.RightShift
+                    or KeyCode.None))
+                {
+                    _editingHotkey.Key = e.keyCode;
+                    _editingHotkey.Ctrl = e.control;
+                    _editingHotkey.Alt = e.alt;
+                    _editingHotkey.Shift = e.shift;
+                    _capturingHotkey = false;
+                }
+                e.Use();
+            }
+        }
+
         UI.WindowControls.OnGUI();
     }
 
