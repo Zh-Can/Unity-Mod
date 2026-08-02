@@ -48,6 +48,11 @@ namespace ZaoHuaMod
         private static string _originEffDes4English;
         private static string _originEffDes6English;
 
+        // 灵枢台描述原始文本备份（effDes key = 2_5）
+        private static string _originEffDes5Chinese;
+        private static string _originEffDes5Traditional;
+        private static string _originEffDes5English;
+
         // 窗体对象
         private GameObject _uiObj;
         
@@ -299,12 +304,16 @@ namespace ZaoHuaMod
         [HarmonyPatch(typeof(PastureImpl), nameof(PastureImpl.RefreshPastureEffect))]
         public static void PastureImpl_RefreshPastureEffect_Postfix()
         {
-            if (GrowSpeedMultiplier.Value < 1 || BsSaveDataImpl.nowActor?.pastureBuildStoList == null) return;
+            if (BsSaveDataImpl.nowActor?.pastureBuildStoList == null) return;
 
-            #region 生长速度修改
-            // 灵泉ID：4（effDes key = 2_4），火炼池ID：6（effDes key = 2_6）
-            // 备份原始描述，后续基于原始值替换，避免倍率改回时描述无法还原
             var langDic = MonoSingleton<TbLanguageImpl>.Instance.GetLanguageDic("TbPastureBuildCfgLocal");
+            
+            // TbPastureBuildCfg pastureBuildCfg = Singleton<TbDataImpl>.Instance.GetPastureBuildCfg(5);
+            // Log.Info($"{pastureBuildCfg.effDes} - {pastureBuildCfg.GetEffDes}");
+            
+            #region 生长速度修改（灵泉/火炼池）
+            // 灵泉ID：4（effDes key = 2_4），火炼池ID：6（effDes key = 2_6）
+            // 备份原始描述，后续基于原始值替换，避免倍率改回后描述无法还原
             if (_originEffDes4Chinese == null) _originEffDes4Chinese = langDic["2_4"].Chinese;
             if (_originEffDes6Chinese == null) _originEffDes6Chinese = langDic["2_6"].Chinese;
             if (_originEffDes4Traditional == null) _originEffDes4Traditional = langDic["2_4"].TraditionalChinese;
@@ -312,25 +321,37 @@ namespace ZaoHuaMod
             if (_originEffDes4English == null) _originEffDes4English = langDic["2_4"].English;
             if (_originEffDes6English == null) _originEffDes6English = langDic["2_6"].English;
 
-            int addPercent = GrowSpeedMultiplier.Value;
-            langDic["2_4"].Chinese = _originEffDes4Chinese.Replace("1", addPercent.ToString());
-            langDic["2_6"].Chinese = _originEffDes6Chinese.Replace("1", addPercent.ToString());
-            langDic["2_4"].TraditionalChinese = _originEffDes4Traditional.Replace("1", addPercent.ToString());
-            langDic["2_6"].TraditionalChinese = _originEffDes6Traditional.Replace("1", addPercent.ToString());
-            langDic["2_4"].English = _originEffDes4English.Replace("1", addPercent.ToString());
-            langDic["2_6"].English = _originEffDes6English.Replace("1", addPercent.ToString());
+            int speedPercent = GrowSpeedMultiplier.Value * 100;
+            langDic["2_4"].Chinese = _originEffDes4Chinese.Replace("100", speedPercent.ToString());
+            langDic["2_6"].Chinese = _originEffDes6Chinese.Replace("100", speedPercent.ToString());
+            langDic["2_4"].TraditionalChinese = _originEffDes4Traditional.Replace("100", speedPercent.ToString());
+            langDic["2_6"].TraditionalChinese = _originEffDes6Traditional.Replace("100", speedPercent.ToString());
+            langDic["2_4"].English = _originEffDes4English.Replace("100", speedPercent.ToString());
+            langDic["2_6"].English = _originEffDes6English.Replace("100", speedPercent.ToString());
+            #endregion
+
+            #region 产量修改（灵枢台）
+            // 灵枢台ID：5（effDes key = 2_5）
+            if (_originEffDes5Chinese == null) _originEffDes5Chinese = langDic["2_5"].Chinese;
+            if (_originEffDes5Traditional == null) _originEffDes5Traditional = langDic["2_5"].TraditionalChinese;
+            if (_originEffDes5English == null) _originEffDes5English = langDic["2_5"].English;
+
+            langDic["2_5"].Chinese = _originEffDes5Chinese.Replace("1", CountMultiplier.Value.ToString());
+            langDic["2_5"].TraditionalChinese = _originEffDes5Traditional.Replace("1", CountMultiplier.Value.ToString());
+            langDic["2_5"].English = _originEffDes5English.Replace("1", CountMultiplier.Value.ToString());
+            #endregion
 
             foreach (var buildSto in BsSaveDataImpl.nowActor.pastureBuildStoList)
             {
                 if (buildSto.updateGrowSpeed > 0)
                 {
-                    // Log.Info($"{buildSto.id} - {buildSto.updateGrowSpeed} - {buildSto.growTime} - {buildSto.isVariation}");
-                    buildSto.updateGrowSpeed = addPercent;
+                    buildSto.updateGrowSpeed = speedPercent;
+                }
+                if (buildSto.updateGrowCount > 0)
+                {
+                    buildSto.updateGrowCount = CountMultiplier.Value;
                 }
             }
-            #endregion
-           
-            
         }
     }
 }

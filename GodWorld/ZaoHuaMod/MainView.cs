@@ -160,15 +160,15 @@ namespace ZaoHuaMod
 
                 UI.Horizontal(() =>
                 {
-                    UI.Label("产量修改：").Tooltip("灵枢台影响：原倍率是产量+1倍。默认值：1").Draw(GUILayout.Width(80));
+                    UI.Label("地块产量修改：").Tooltip("灵枢台影响：原倍率是产量+1倍。默认值：1").Draw(GUILayout.Width(100));
                     // 输入框状态在绘制间保持；首次绘制时以当前配置值为初值
                     if (_productionInput == null) _productionInput = ZaoHuaMod.CountMultiplier.Value.ToString();
-                    _growSpeedInput = UI.TextFiled(_growSpeedInput, options: GUILayout.Width(70));
+                    _productionInput = UI.TextFiled(_productionInput, options: GUILayout.Width(70));
                     UI.Space();
                     UI.Button("设置").Btn().OnClick(() =>
                     {
                         GUIUtility.keyboardControl = 0;
-                        if (int.TryParse(_growSpeedInput, out var v) && v > 0)
+                        if (int.TryParse(_productionInput, out var v) && v > 0)
                         {
                             ZaoHuaMod.CountMultiplier.Value = v;
                             ZaoHuaMod.SaveConfig();
@@ -176,7 +176,7 @@ namespace ZaoHuaMod
                         }
                         else
                         {
-                            _growSpeedInput = ZaoHuaMod.CountMultiplier.Value.ToString();
+                            _productionInput = ZaoHuaMod.CountMultiplier.Value.ToString();
                         }
                     }).Draw(GUILayout.Width(80));
                 });
