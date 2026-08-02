@@ -322,18 +322,29 @@ namespace ZaoHuaMod.GuiFramework.Controls
         }
 
         /// <summary>
-        ///     输入框
+        ///     输入框（支持 placeholder）
         /// </summary>
-        /// <param name="text"></param>
-        /// <param name="style"></param>
-        /// <param name="options"></param>
-        /// 文本
+        /// <param name="text">当前文本</param>
+        /// <param name="style">自定义样式</param>
+        /// <param name="placeholder">为空时显示的提示文本</param>
+        /// <param name="options">布局选项</param>
         /// <returns>文本</returns>
-        public static string TextFiled(string text, GUIStyle style = null, params GUILayoutOption[] options)
+        public static string TextFiled(string text, GUIStyle style = null, string placeholder = null, params GUILayoutOption[] options)
         {
             text = text ?? string.Empty;
             if (style == null) style = DarkSkin.SField;
-            return GUILayout.TextField(text, style, options);
+
+            // 空文本时用 placeholder 计算布局矩形，避免输入框过窄
+            var content = new GUIContent(string.IsNullOrEmpty(text) ? (placeholder ?? string.Empty) : text);
+            var rect = GUILayoutUtility.GetRect(content, style, options);
+            text = GUI.TextField(rect, text, style);
+
+            if (string.IsNullOrEmpty(text) && !string.IsNullOrEmpty(placeholder))
+            {
+                GUI.Label(rect, Loc.Get(placeholder), DarkSkin.SFieldPlaceholder);
+            }
+
+            return text;
         }
 
         /// <summary>

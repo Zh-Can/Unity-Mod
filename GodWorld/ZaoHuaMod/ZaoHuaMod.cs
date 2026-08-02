@@ -285,7 +285,12 @@ namespace ZaoHuaMod
             if (effectRangeType <= 1) return;
             effectRangeType = BuildStoFlag.Value ? 2 : 11;
         }
-        
-        
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(PastureImpl), nameof(PastureImpl.RefreshPastureEffect))]
+        public static void PastureImpl_RefreshPastureEffect_Prefix(PastureImpl __instance)
+        {
+            
+        }
     }
 }

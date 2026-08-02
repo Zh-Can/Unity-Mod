@@ -111,6 +111,7 @@ namespace ZaoHuaMod.GuiFramework.Style
         public static GUIStyle TextArea => SField;
         public static GUIStyle Box => SPanel;
         public static GUIStyle Toggle => SToggle;
+        public static GUIStyle SFieldPlaceholder { get; set; }
 
         /// <summary>
         ///     初始化所有样式。首次访问 Skin 或任何样式时自动调用。
@@ -183,7 +184,10 @@ namespace ZaoHuaMod.GuiFramework.Style
                 SPanel.fontSize = 13;
                 SPanel.alignment = TextAnchor.UpperLeft;
                 SPanel.wordWrap = true;
-
+                SFieldPlaceholder = new GUIStyle(SField)
+                {
+                    normal = { textColor = TextDim }
+                };
                 SBtn = new GUIStyle(GUI.skin.button)
                 {
                     fontSize = 13,

@@ -127,14 +127,15 @@ namespace ZaoHuaMod
                     .Draw();
                 
                 UI.Space();
-
-                float newSpeedMul = UI.Slider("灵泉/火炼池 生长速度倍率", ZaoHuaMod.GrowSpeedMultiplier.Value, 1f, 100f, 0);
-                if (!Mathf.Approximately(newSpeedMul, ZaoHuaMod.GrowSpeedMultiplier.Value))
+                //灵泉/火炼池 生长速度
+                UI.Label("生长速度修改：").Tooltip("影响：过一天小世界灵物成长过几天。").Draw();
+                var newSpeed = UI.TextFiled("", placeholder: "填入正整数", options:GUILayout.Width(200));
+                UI.Button("设置").Btn().OnClick(() => 
                 {
-                    ZaoHuaMod.GrowSpeedMultiplier.Value = newSpeedMul;
+                    ZaoHuaMod.GrowSpeedMultiplier.Value = int.Parse(newSpeed);
                     ZaoHuaMod.SaveConfig();
                     Singleton<PastureImpl>.Instance.RefreshPastureEffect();
-                }
+                }).Draw();
 
                 UI.Space();
 
