@@ -35,7 +35,7 @@ namespace ZaoHuaMod
         internal static MelonPreferences_Entry<bool> DrugProfitLabelFlag;
 
         // 小世界建筑效果倍率
-        internal static MelonPreferences_Entry<float> GrowSpeedMultiplier;  // 灵泉/火炼池
+        internal static MelonPreferences_Entry<int> GrowSpeedMultiplier;  // 灵泉/火炼池
         internal static MelonPreferences_Entry<float> CountMultiplier;      // 灵枢台
         internal static MelonPreferences_Entry<float> JuLingMultiplier;     // 聚灵台
         internal static MelonPreferences_Entry<float> LingChiMultiplier;    // 灵池
@@ -75,7 +75,7 @@ namespace ZaoHuaMod
             MaxPlotCountFlag = _mainCategory.CreateEntry("maxPlotCountFlag", false,  description: "神器鼎地块扩增至100");
             BuildStoFlag = _mainCategory.CreateEntry("buildStoFlag", false,  description: "神器鼎地块建筑范围全覆盖开关");
             DrugProfitLabelFlag = _mainCategory.CreateEntry("drugProfitLabelFlag", true, description: "显示炼丹售价");
-            GrowSpeedMultiplier = _mainCategory.CreateEntry("growSpeedMultiplier", 1f, description: "灵泉/火炼池生长速度倍率");
+            GrowSpeedMultiplier = _mainCategory.CreateEntry("growSpeedMultiplier", 1, description: "灵泉/火炼池生长速度倍率（值为最终总倍率，默认2倍）");
             CountMultiplier = _mainCategory.CreateEntry("countMultiplier", 1f, description: "灵枢台产量倍率");
             JuLingMultiplier = _mainCategory.CreateEntry("juLingMultiplier", 1f, description: "聚灵台增幅倍率");
             LingChiMultiplier = _mainCategory.CreateEntry("lingChiMultiplier", 1f, description: "灵池灵鱼成长倍率");
@@ -271,12 +271,13 @@ namespace ZaoHuaMod
         [HarmonyPatch(typeof(PastureImpl), "GetTargetPlotPosList")]
         public static void PastureImpl_GetTargetPlotPosList_Prefix(TbPastureBuildCfg buildCfg, MyVector2Int curCellPos)
         {
-            Log.Info($"{buildCfg.id} - {buildCfg.GetName} - {buildCfg.effectRangeType} - {buildCfg.effDes}");
+            // Log.Info($"{buildCfg.id} - {buildCfg.GetName} - {buildCfg.effectRangeType} - {buildCfg.effDes}");
             if (buildCfg.effectRangeType <= 1) return;
             buildCfg.effectRangeType = BuildStoFlag.Value ? 2 : 11;
         }
         /// <summary>
         /// 建筑影响范围修改（BuildStoFlag 开启时全场覆盖）
+        /// - ``1`` ：只影响自身- ``2`` ：全图所有建筑- ``11~20`` ：菱形范围（num = effectRangeType - 10），找到该建筑占据的地块，扩展菱形- ``21~30`` ：方形范围
         /// </summary>
         [HarmonyPrefix]
         [HarmonyPatch(typeof(PastureImpl), "GetTargetBuildStoList")]
@@ -286,11 +287,28 @@ namespace ZaoHuaMod
             effectRangeType = BuildStoFlag.Value ? 2 : 11;
         }
 
-        [HarmonyPrefix]
+        [HarmonyPostfix]
         [HarmonyPatch(typeof(PastureImpl), nameof(PastureImpl.RefreshPastureEffect))]
-        public static void PastureImpl_RefreshPastureEffect_Prefix(PastureImpl __instance)
+        public static void PastureImpl_RefreshPastureEffect_Postfix()
         {
-            
+            if (GrowSpeedMultiplier.Value < 1 || BsSaveDataImpl.nowActor?.pastureBuildStoList == null) return;
+
+            foreach (var buildSto in BsSaveDataImpl.nowActor.pastureBuildStoList)
+            {
+                if (buildSto.updateGrowSpeed > 0)
+                {
+                    // 灵泉ID：4 ,effDes:2_4/ 火炼池ID：6,effDes:2_6
+                    var langDic = MonoSingleton<TbLanguageImpl>.Instance.GetLanguageDic("TbPastureBuildCfgLocal");
+                    langDic["2_4"].Chinese = langDic["2_4"].Chinese.Replace("1", GrowSpeedMultiplier.Value.ToString());
+                    langDic["2_6"].Chinese = langDic["2_6"].Chinese.Replace("1", GrowSpeedMultiplier.Value.ToString());
+                    langDic["2_4"].TraditionalChinese = langDic["2_4"].TraditionalChinese.Replace("1", GrowSpeedMultiplier.Value.ToString());
+                    langDic["2_6"].TraditionalChinese = langDic["2_6"].TraditionalChinese.Replace("1", GrowSpeedMultiplier.Value.ToString());
+                    langDic["2_4"].English = langDic["2_4"].English.Replace("1", GrowSpeedMultiplier.Value.ToString());
+                    langDic["2_6"].English = langDic["2_6"].English.Replace("1", GrowSpeedMultiplier.Value.ToString());
+                    Log.Info($"{buildSto.id} - {buildSto.updateGrowSpeed} - {buildSto.growTime} - {buildSto.isVariation}");
+                    buildSto.updateGrowSpeed = GrowSpeedMultiplier.Value * 100;
+                }
+            }
         }
     }
 }

@@ -11,6 +11,9 @@ namespace ZaoHuaMod
         private static UI.WindowData SettingsWindow { get; set; }
         public static UI.WindowData RefreshButtonWindow { get; private set; }
 
+        /// <summary>生长速度输入框文本（在绘制间保持，避免输入被回填打断）。</summary>
+        private string _growSpeedInput;
+
         private void Start()
         {
             HttpGet.TryHit(this);
@@ -127,15 +130,29 @@ namespace ZaoHuaMod
                     .Draw();
                 
                 UI.Space();
+                
                 //灵泉/火炼池 生长速度
-                UI.Label("生长速度修改：").Tooltip("影响：过一天小世界灵物成长过几天。").Draw();
-                var newSpeed = UI.TextFiled("", placeholder: "填入正整数", options:GUILayout.Width(200));
-                UI.Button("设置").Btn().OnClick(() => 
+                UI.Horizontal(() =>
                 {
-                    ZaoHuaMod.GrowSpeedMultiplier.Value = int.Parse(newSpeed);
-                    ZaoHuaMod.SaveConfig();
-                    Singleton<PastureImpl>.Instance.RefreshPastureEffect();
-                }).Draw();
+                    UI.Label("生长速度修改：").Tooltip("影响：过一天小世界灵物成长过几天。").Draw(GUILayout.Width(100));
+                    // 输入框状态在绘制间保持；首次绘制时以当前配置值为初值
+                    if (_growSpeedInput == null) _growSpeedInput = ZaoHuaMod.GrowSpeedMultiplier.Value.ToString();
+                    _growSpeedInput = UI.TextFiled(_growSpeedInput, options: GUILayout.Width(50));
+                    UI.Button("设置").Btn().OnClick(() =>
+                    {
+                        GUIUtility.keyboardControl = 0;
+                        if (int.TryParse(_growSpeedInput, out var v) && v > 0)
+                        {
+                            ZaoHuaMod.GrowSpeedMultiplier.Value = v;
+                            ZaoHuaMod.SaveConfig();
+                            Singleton<PastureImpl>.Instance.RefreshPastureEffect();
+                        }
+                        else
+                        {
+                            _growSpeedInput = ZaoHuaMod.GrowSpeedMultiplier.Value.ToString();
+                        }
+                    }).Draw(GUILayout.Width(80));
+                });
 
                 UI.Space();
 
