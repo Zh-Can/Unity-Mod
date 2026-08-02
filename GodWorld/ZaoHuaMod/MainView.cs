@@ -16,7 +16,6 @@ namespace ZaoHuaMod
         private string _growSpeedInput;
         private string _productionInput;
         private string _jltEffectInput;
-        private string _lyGrowSpeedInput;
 
         private void Start()
         {
@@ -139,6 +138,22 @@ namespace ZaoHuaMod
                 
                 UI.Space();
                 
+                UI.Horizontal(() =>
+                {
+                    UI.Toggle("灵泉/灵枢效果作用于灵池")
+                        .Value(ZaoHuaMod.LingChiEffectFlag.Value)
+                        .Tooltip("开启后，灵泉的成长速度加成和灵枢台的产量加成也会作用于灵池中的灵鱼")
+                        .OnChange(v =>
+                        {
+                            ZaoHuaMod.LingChiEffectFlag.Value = v;
+                            ZaoHuaMod.SaveConfig();
+                            Singleton<PastureImpl>.Instance.RefreshPastureEffect();
+                        })
+                        .Draw();
+                });
+                
+                UI.Space();
+                
                 //灵泉/火炼池 生长速度
                 UI.Horizontal(() =>
                 {
@@ -208,32 +223,7 @@ namespace ZaoHuaMod
                         }
                         else
                         {
-                            _productionInput = ZaoHuaMod.JuLingMultiplier.Value.ToString();
-                        }
-                    }).Draw(GUILayout.Width(80));
-                });
-                
-                UI.Space();
-
-                UI.Horizontal(() =>
-                {
-                    UI.Label("灵鱼成长倍数：").Tooltip("默认值：1").Draw(GUILayout.Width(100));
-                    // 输入框状态在绘制间保持；首次绘制时以当前配置值为初值
-                    if (_lyGrowSpeedInput == null) _lyGrowSpeedInput = ZaoHuaMod.LingChiMultiplier.Value.ToString();
-                    _lyGrowSpeedInput = UI.TextFiled(_lyGrowSpeedInput, options: GUILayout.Width(70));
-                    UI.Space();
-                    UI.Button("设置").Btn().OnClick(() =>
-                    {
-                        GUIUtility.keyboardControl = 0;
-                        if (int.TryParse(_lyGrowSpeedInput, out var v) && v > 0)
-                        {
-                            ZaoHuaMod.LingChiMultiplier.Value = v;
-                            ZaoHuaMod.SaveConfig();
-                            Singleton<PastureImpl>.Instance.RefreshPastureEffect();
-                        }
-                        else
-                        {
-                            _productionInput = ZaoHuaMod.LingChiMultiplier.Value.ToString();
+                            _jltEffectInput = ZaoHuaMod.JuLingMultiplier.Value.ToString();
                         }
                     }).Draw(GUILayout.Width(80));
                 });

@@ -39,7 +39,7 @@ namespace ZaoHuaMod
         internal static MelonPreferences_Entry<int> GrowSpeedMultiplier;  // 灵泉/火炼池
         internal static MelonPreferences_Entry<int> CountMultiplier;      // 灵枢台
         internal static MelonPreferences_Entry<int> JuLingMultiplier;     // 聚灵台
-        internal static MelonPreferences_Entry<int> LingChiMultiplier;    // 灵池
+        internal static MelonPreferences_Entry<bool> LingChiEffectFlag;   // 灵泉/灵枢效果是否对灵池生效
 
         // 灵泉/火炼池描述原始文本备份（避免倍率改回后描述无法还原）
         private static string _originEffDes4Chinese;
@@ -97,7 +97,7 @@ namespace ZaoHuaMod
             GrowSpeedMultiplier = _mainCategory.CreateEntry("growSpeedMultiplier", 1, description: "灵泉/火炼池生长速度倍率（1=原生+100%，2=+200%，以此类推）");
             CountMultiplier = _mainCategory.CreateEntry("countMultiplier", 1, description: "灵枢台产量倍率");
             JuLingMultiplier = _mainCategory.CreateEntry("juLingMultiplier", 1, description: "聚灵台增幅倍率");
-            LingChiMultiplier = _mainCategory.CreateEntry("lingChiMultiplier", 1, description: "灵池灵鱼成长倍率");
+            LingChiEffectFlag = _mainCategory.CreateEntry("lingChiEffectFlag", false, description: "灵泉/灵枢效果对灵池生效");
         }
         
         public static void SaveConfig()
@@ -312,7 +312,10 @@ namespace ZaoHuaMod
         {
             if (BsSaveDataImpl.nowActor?.pastureBuildStoList == null) return;
 
-            var langDic = MonoSingleton<TbLanguageImpl>.Instance.GetLanguageDic("TbPastureBuildCfgLocal");
+            var langImpl = MonoSingleton<TbLanguageImpl>.Instance;
+            if (langImpl == null) return;
+            var langDic = langImpl.GetLanguageDic("TbPastureBuildCfgLocal");
+            if (langDic == null) return;
             
             // TbPastureBuildCfg pastureBuildCfg = Singleton<TbDataImpl>.Instance.GetPastureBuildCfg(5);
             // Log.Info($"{pastureBuildCfg.effDes} - {pastureBuildCfg.GetEffDes}");
@@ -338,9 +341,9 @@ namespace ZaoHuaMod
 
             // 聚灵台：50 → 50 * N
             int juLingBonus = JuLingMultiplier.Value * 50;
-            Log.Info($"聚灵台描述修改: multiplier={JuLingMultiplier.Value}, bonus={juLingBonus}, " +
-                     $"origin={_originEffDes10Chinese ?? langDic["2_10"].Chinese}, " +
-                     $"after={langDic["2_10"].Chinese.Replace("50", juLingBonus.ToString())}");
+            // Log.Info($"聚灵台描述修改: multiplier={JuLingMultiplier.Value}, bonus={juLingBonus}, " +
+            //          $"origin={_originEffDes10Chinese ?? langDic["2_10"].Chinese}, " +
+            //          $"after={langDic["2_10"].Chinese.Replace("50", juLingBonus.ToString())}");
             ApplyEffDes("2_10", "50", juLingBonus.ToString(), ref _originEffDes10Chinese, ref _originEffDes10Traditional, ref _originEffDes10English);
 
             foreach (var buildSto in BsSaveDataImpl.nowActor.pastureBuildStoList)
@@ -353,7 +356,36 @@ namespace ZaoHuaMod
                 {
                     buildSto.updateGrowCount = CountMultiplier.Value;
                 }
+
+                // 灵池（buildId=3）：toggle 开启时，让灵泉/火炼池/灵枢台的效果也作用于灵池
+                if (LingChiEffectFlag.Value && buildSto.buildId == 3 && buildSto.itemId != BlendId.none)
+                {
+                    // 统计全场灵泉/灵枢台数量（火炼池只对矿物生效，不对灵鱼）
+                    int lingQuanCount = 0, lingShuCount = 0;
+                    foreach (var other in BsSaveDataImpl.nowActor.pastureBuildStoList)
+                    {
+                        if (other.buildId == 4) lingQuanCount++;
+                        else if (other.buildId == 5) lingShuCount++;
+                    }
+                    buildSto.updateGrowSpeed += lingQuanCount * GrowSpeedMultiplier.Value * 100;
+                    buildSto.updateGrowCount += lingShuCount * CountMultiplier.Value;
+                }
             }
+
+            // foreach (var cfg in Singleton<TbDataImpl>.Instance.pastureBuildCfgList)
+            // {
+            //     Log.Info($"id={cfg.id}, name={cfg.GetName}, fixedItemId={cfg.fixedItemId}, " +
+            //              $"effect=[{cfg.pastureEffect}], effDesKey={cfg.effDes}");
+            // }
+            // foreach (var buildSto in BsSaveDataImpl.nowActor.pastureBuildStoList)
+            // {
+            //     if (buildSto.buildId == 3 && buildSto.itemId != BlendId.none)
+            //     {
+            //         var itemCfg = Singleton<TbItemImpl>.Instance.GetItemCfg(buildSto.itemId);
+            //         Log.Info($"灵池物品: itemId={buildSto.itemId}, name={itemCfg.GetName}, " +
+            //                  $"growTime={itemCfg.growTime}, typeId={itemCfg.typeId}, gradeId={itemCfg.gradeId}");
+            //     }
+            // }
         }
 
         /// <summary>
