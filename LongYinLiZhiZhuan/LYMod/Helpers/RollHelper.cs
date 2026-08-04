@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
 using System.Collections;
+using System.Reflection.Emit;
 using MelonLoader;
 
 namespace LYMod.Helpers;
@@ -30,6 +31,17 @@ public class RollHelper
         }
         return true;
     }
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(GameController), nameof(GameController.GenerateRandomItem), typeof(float), typeof(float), typeof(bool), typeof(HeroData))] 
+    public static void GameController_GenerateRandomItem_Prefix(GameController __instance, ref float shopLv, ref float bossLv, bool noRandom, HeroData targetHero)
+    {
+        if (Plugin.Instance.ShopLvRate.Value >= 12)
+        {
+            shopLv = Plugin.Instance.ShopLvRate.Value;
+            bossLv = Plugin.Instance.ShopLvRate.Value;
+        }
+    }
+    
     public static void TryAuctionRoll()
     {
         if (ModConfig.HaveAucRoll) return;
