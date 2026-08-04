@@ -1,4 +1,4 @@
-﻿﻿using HarmonyLib;
+﻿using HarmonyLib;
 using Il2Cpp;
 using UnityEngine;
 using UnityEngine.UI;
