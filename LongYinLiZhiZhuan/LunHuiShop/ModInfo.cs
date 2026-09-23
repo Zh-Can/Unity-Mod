@@ -1,6 +1,6 @@
 ﻿namespace LunHuiShop;
 
-public class ModInfo
+public static class ModInfo
 {
     public const string Name = "轮回商店";
 

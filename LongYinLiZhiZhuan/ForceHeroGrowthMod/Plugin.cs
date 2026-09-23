@@ -3,7 +3,7 @@ using MelonLoader.Utils;
 using Il2Cpp;
 using UnityEngine;
 
-[assembly: MelonInfo(typeof(ForceHeroGrowthMod.Plugin), "ForceHeroGrowthMod", "5.0.2", "Can")]
+[assembly: MelonInfo(typeof(ForceHeroGrowthMod.Plugin), "ForceHeroGrowthMod", "5.0.3", "Can")]
 [assembly: MelonGame("TppStudio", "LongYinLiZhiZhuan")]
 [assembly: MelonPlatformDomain(MelonPlatformDomainAttribute.CompatibleDomains.IL2CPP)]
 
@@ -273,8 +273,17 @@ public class Plugin : MelonMod
             var actualUpgrade = Mathf.Min(upgradeCount, 10 - oldLv);
             
             // 使用HeroData.UpgradeSkill升级技能（每次升1级，循环调用）
+            // 每升一级前重新检查突破障碍，防止一次升多级时跨越突破点（如3级一次升到6级跳过5级突破）
             for (var i = 0; i < actualUpgrade; i++)
             {
+                if (isPlayer && skill.SkillMeetObstacleLv())
+                {
+                    if (EnableDetailedLog.Value)
+                    {
+                        LOG.Msg($"[门派弟子成长Mod] 玩家 {hero.heroName} 装备技能 {skill.Name(true)} 在 {skill.lv} 级遇到突破障碍，停止本次升级");
+                    }
+                    break;
+                }
                 hero.UpgradeSkill(skill);
             }
             
@@ -373,7 +382,17 @@ public class Plugin : MelonMod
             var actualUpgrade = Mathf.Min(upgradeCount, 10 - oldLv);
 
             // 使用HeroData.UpgradeSkill升级技能（每次升1级，循环调用）
-            for (var i = 0; i < actualUpgrade; i++) hero.UpgradeSkill(skill);
+            // 每升一级前重新检查突破障碍，防止一次升多级时跨越突破点（如3级一次升到6级跳过5级突破）
+            for (var i = 0; i < actualUpgrade; i++)
+            {
+                if (isPlayer && skill.SkillMeetObstacleLv())
+                {
+                    if (EnableDetailedLog.Value)
+                        LOG.Msg($"[门派弟子成长Mod] 玩家 {hero.heroName} 技能 {skill.Name(true)} 在 {skill.lv} 级遇到突破障碍，停止本次升级");
+                    break;
+                }
+                hero.UpgradeSkill(skill);
+            }
 
             var upgradeMsg = $"[过月成长] {hero.Name(true)} 奋发图强，将技能 {skill.Name(true)} 从 {oldLv} 级提升到 {skill.lv} 级";
             if (EnableDetailedLog.Value) LOG.Msg($"[门派弟子成长Mod] 人物 {hero.heroName} (天赋{talentLv}){upgradeMsg}");

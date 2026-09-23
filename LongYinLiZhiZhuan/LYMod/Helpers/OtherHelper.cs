@@ -194,7 +194,7 @@ public static class OtherHelper
             foreach (var hero in allHeros)
                 if (hero != null)
                 {
-                    var key = $"HandBookHero_{hero.heroID}";
+                    var key = $"HandBookHero_{hero.Key}";
 
                     // 检查是否已解锁
                     if (!prefDict.ContainsKey(key))

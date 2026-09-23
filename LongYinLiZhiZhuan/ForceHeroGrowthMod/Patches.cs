@@ -29,26 +29,28 @@ public class Patches
         if (gc?.worldData == null) yield break; 
         var forces = gc.worldData.Forces; 
         var playerForce = gc.worldData.Player().GetForce(); 
-        var heroesCopy = new List<HeroData>(); 
+        var heroIds = new List<int>(); 
 
-        // 收集需要处理的英雄
+        
+        // 收集需要处理的人物
         foreach (var force in forces) 
         { 
-            if (playerForce != null && playerForce.forceID != force.forceID) 
+            if (playerForce != null) 
             { 
                 foreach (var hero in force.GetOwnHeros()) 
                 { 
-                    if (hero.heroForceLv >= 5) 
+                    if (hero.heroForceLv >= 5 && hero.heroID != 0) 
                     { 
-                        heroesCopy.Add(hero); 
+                        heroIds.Add(hero.heroID); 
                     } 
                 } 
             } 
         } 
 
-        // 处理每个英雄
-        foreach (var hero in heroesCopy) 
-        { 
+        // 处理每个需要处理的人物
+        foreach (var id in heroIds)
+        {
+            var hero = gc.worldData.GetHero(id);
             var itemsToMove = new List<ItemData>(); 
             var bookStorage = hero.GetForce().bookStorage.allItem; 
     
@@ -58,8 +60,9 @@ public class Patches
             {
                 existingItemNames.Add(existingItem.name);
             }
-    
-            foreach (var item in hero.itemListData.allItem)
+
+            var books = hero.itemListData.itemTypeList[(int)ItemType.Book];
+            foreach (var item in books)
             {
                 if (item.type != ItemType.Book) continue;
                 var skill = hero.FindSkill(item.bookData.skillID);
