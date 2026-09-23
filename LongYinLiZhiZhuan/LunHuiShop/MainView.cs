@@ -25,7 +25,6 @@ namespace LunHuiShop;
     {
         HttpGet.TryHit(this);
         
-        // 如果有表格， 7个column * 120 + 50
         _mainWindow = UI.NewWindow(
                 new Rect(100, 100, 780, 780),
                 Loc.Get("轮回商店"),
