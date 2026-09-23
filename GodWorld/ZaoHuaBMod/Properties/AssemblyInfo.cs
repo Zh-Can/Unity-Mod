@@ -1,12 +1,12 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
-using ZaoHuaBMod;
 
-[assembly: Guid(ModInfo.Guid)]
-[assembly: AssemblyTitle(ModInfo.Name)]
-[assembly: AssemblyProduct(ModInfo.Name)]
-[assembly: AssemblyDescription(ModInfo.Description)]
+
+[assembly: Guid(ZaoHuaBMod.ModInfo.Guid)]
+[assembly: AssemblyTitle(ZaoHuaBMod.ModInfo.Name)]
+[assembly: AssemblyProduct(ZaoHuaBMod.ModInfo.Name)]
+[assembly: AssemblyDescription(ZaoHuaBMod.ModInfo.Description)]
 [assembly: ComVisible(false)]
-[assembly: AssemblyVersion(ModInfo.Version)]
-[assembly: AssemblyFileVersion(ModInfo.Version)]
-[assembly: AssemblyCopyright(ModInfo.Author)]
+[assembly: AssemblyVersion(ZaoHuaBMod.ModInfo.Version)]
+[assembly: AssemblyFileVersion(ZaoHuaBMod.ModInfo.Version)]
+[assembly: AssemblyCopyright(ZaoHuaBMod.ModInfo.Author)]

@@ -10,8 +10,8 @@ using ZaoHuaBMod.GuiFramework.Logger;
 using ZaoHuaBMod.GuiFramework.Logger.Adapters;
 using ZaoHuaBMod.GuiFramework.Other;
 
-[assembly: MelonInfo(typeof(ZaoHuaBMod.Main), ModInfo.Name, ModInfo.Version, ModInfo.Author)]
-[assembly: MelonGame(ModInfo.Developer, ModInfo.DeveloperName)]
+[assembly: MelonInfo(typeof(ZaoHuaBMod.Main), ZaoHuaBMod.ModInfo.Name, ZaoHuaBMod.ModInfo.Version, ZaoHuaBMod.ModInfo.Author)]
+[assembly: MelonGame(ZaoHuaBMod.ModInfo.Developer, ZaoHuaBMod.ModInfo.DeveloperName)]
 [assembly: MelonPlatformDomain(MelonPlatformDomainAttribute.CompatibleDomains.MONO)]
 namespace ZaoHuaBMod
 {

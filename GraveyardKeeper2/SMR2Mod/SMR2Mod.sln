@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SMR2Mod", "SMR2Mod.csproj", "{43B36AC5-5D40-41EC-8B5E-649205197201}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{43B36AC5-5D40-41EC-8B5E-649205197201}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43B36AC5-5D40-41EC-8B5E-649205197201}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43B36AC5-5D40-41EC-8B5E-649205197201}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43B36AC5-5D40-41EC-8B5E-649205197201}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

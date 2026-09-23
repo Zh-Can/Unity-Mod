@@ -225,9 +225,6 @@ namespace LunHuiShop;
         UI.Divider(5);
         UI.Horizontal(() =>
         {
-            // UI.Label($"{Loc.Get("缩放")}: {Mathf.RoundToInt(UI.WindowControls.Scale * 100f)}%  {Loc.Get("按`键显示/隐藏")}")
-            //     .AsMuted()
-            //     .Draw(GUILayout.Width(180));
             UI.Button($"{Loc.Get("缩放")}: {Mathf.RoundToInt(UI.WindowControls.Scale * 100f)}%  {Loc.Get("按")}{BaseConfig.Hotkey.GetDisplayName()}{Loc.Get("键显示/隐藏")}")
                 .Label().OnClick(() =>
                 {
