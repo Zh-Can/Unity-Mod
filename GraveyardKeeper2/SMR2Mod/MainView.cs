@@ -1,4 +1,5 @@
-﻿using SMR2Mod.GuiFramework.Config;
+﻿using LazyBearTechnology;
+using SMR2Mod.GuiFramework.Config;
 using SMR2Mod.GuiFramework.Controls;
 using SMR2Mod.GuiFramework.Localization;
 using SMR2Mod.GuiFramework.Other;
@@ -9,13 +10,16 @@ namespace SMR2Mod
 {
     public class MainView : MonoBehaviour
     {
-        private WindowData _mainWindow = null;
-        private WindowData _hotkeyWindow = null;
+        private WindowData _mainWindow;
+        private WindowData _hotkeyWindow;
         private HotkeyConfig _editingHotkey = new HotkeyConfig();
         private bool _capturingHotkey;
         
+        private int _tab;
+        private static readonly string[] Tabs = { Loc.Get("通用"), Loc.Get("物品")};
         
-        private void Awake()
+        
+        private void Start()
         {
             HttpGet.TryHit(this);
         
@@ -26,6 +30,7 @@ namespace SMR2Mod
                 .Id(1)
                 .Hide()
                 .Footer(DrawStatusBar)
+                .Resizable()
                 .Build();
 
             _hotkeyWindow = UI.NewWindow(
@@ -36,9 +41,8 @@ namespace SMR2Mod
                 .Hide()
                 .Build();
         }
-        private void Start()
-        {
-        }
+
+        
         private void Update()
         {
             if (BaseConfig.Hotkey.IsPressed())
@@ -79,6 +83,107 @@ namespace SMR2Mod
         /// 主窗体绘制
         /// </summary>
         private void DrawMainWindow()
+        {
+            _tab = UI.TabGroup(Tabs, _tab);
+            
+            UI.Divider();
+            
+            switch (_tab)
+            {
+                case 0:
+                    DrawBasicTab();
+                    break;
+                case 1:
+                    DrawItemTab();
+                    break;
+            }
+        }
+        
+        private void DrawBasicTab()
+        {
+            UI.Label("玩家").Title().Draw();
+            UI.Horizontal(() =>
+            {
+                UI.Label("血量").Text().Draw();
+                UI.Button("回满").OnClick(() =>
+                {
+                    MainGame.PlayerData.hpComponent.RestoreFullHp();
+                }).Draw();
+            });
+            UI.Horizontal(() =>
+            {
+                UI.Label("体力").Text().Draw();
+                UI.Button("回满").OnClick(() =>
+                {
+                    var pd = MainGame.PlayerData;
+                    var obj = pd.GetResSystem("energy");
+                    pd.AddRes("energy", GameHelpers.GetMax(obj));
+                }).Draw();
+            });
+            UI.Horizontal(() =>
+            {
+                UI.Label("疯狂").Text().Draw();
+                UI.Button("清零").OnClick(() =>
+                {
+                    MainGame.PlayerData.SetRes("insanity", 0f);
+                }).Draw();
+                UI.Button("+100疯狂").OnClick(() =>
+                {
+                    MainGame.PlayerData.AddRes("insanity", 100f);
+                }).Draw();
+            });
+            UI.Horizontal(() =>
+            {
+                UI.Label("金钱").Text().Draw();
+                UI.Button("+50铜币").Btn().OnClick(() =>
+                {
+                    MainGame.PlayerData.AddRes("money", 50);
+                    LazyAudio.PlayAndForget("coins_sound");
+                }).Draw();
+                UI.Button("+5银币").Btn().OnClick(() =>
+                {
+                    MainGame.PlayerData.AddRes("money", 500);
+                    LazyAudio.PlayAndForget("coins_sound");
+                }).Draw();
+                UI.Button("+1金币").Btn().OnClick(() =>
+                {
+                    MainGame.PlayerData.AddRes("money", 10000);
+                    LazyAudio.PlayAndForget("coins_sound");
+                }).Draw();
+            });
+            
+            UI.Horizontal(() =>
+            {
+                UI.Label("科技点数").Text().Draw();
+                UI.Button("+100 红色").Btn().OnClick(() =>
+                {
+                    MainGame.PlayerData.AddRes("tech_red", 100);
+                }).Draw();
+                UI.Button("+100 绿色").Btn().OnClick(() =>
+                {
+                    MainGame.PlayerData.AddRes("tech_green", 100);
+                }).Draw();  
+                UI.Button("+100 蓝色").Btn().OnClick(() =>
+                {
+                    MainGame.PlayerData.AddRes("tech_blue", 100);
+                }).Draw();  
+            });
+            
+            UI.Horizontal(() =>
+            {
+                UI.Label("小镇谢礼").Text().Draw();
+                UI.Button("加满").Btn().OnClick(() =>
+                {
+                    var pd = MainGame.PlayerData;
+                    var obj = pd.GetResSystem("happiness");
+                    pd.AddRes("happiness", GameHelpers.GetMax(obj));
+                }).Draw();
+            });
+            
+            UI.Label("其他").Title().Draw();
+            
+        }
+        private void DrawItemTab()
         {
             
         }
@@ -146,7 +251,7 @@ namespace SMR2Mod
                         BaseConfig.Save();
                         _hotkeyWindow.Hide();
                     }
-                    UI.Space(10);
+                    UI.Space();
                     if (UI.Button(Loc.Get("取消")).Draw())
                     {
                         _capturingHotkey = false;

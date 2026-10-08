@@ -22,15 +22,20 @@
         <DefineConstants>DEBUG;TRACE</DefineConstants>
         <ErrorReport>prompt</ErrorReport>
         <WarningLevel>4</WarningLevel>
-    </PropertyGroup>
-    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-        <PlatformTarget>AnyCPU</PlatformTarget>
-        <DebugType>pdbonly</DebugType>
-        <Optimize>true</Optimize>
-        <OutputPath>bin\Release\</OutputPath>
-        <DefineConstants>TRACE</DefineConstants>
-        <ErrorReport>prompt</ErrorReport>
-        <WarningLevel>4</WarningLevel>
+
+        <OutputPath>C:\Program Files (x86)\Steam\steamapps\common\Graveyard Keeper 2\BepInEx\plugins\SMR2Mod</OutputPath>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <!-- 关键：移除配置文件夹（Debug/Release） -->
+        <AppendConfigurationToOutputPath>false</AppendConfigurationToOutputPath>
+        <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+        <PlatformTarget>x64</PlatformTarget>
+        <!-- 👇 核心：禁用 PDB 调试符号文件 -->
+        <DebugType>None</DebugType>          <!-- 禁用调试类型，不生成 PDB -->
+        <DebugSymbols>false</DebugSymbols>   <!-- 显式关闭调试符号生成 -->
+        
+        <!-- 👇 禁用生成 .json 编译配置文件 -->
+         <GenerateDependencyFile>false</GenerateDependencyFile>
+        <GenerateRuntimeConfigurationFiles>false</GenerateRuntimeConfigurationFiles>
     </PropertyGroup>
     <ItemGroup>
         <Reference Include="0Harmony">
@@ -43,6 +48,10 @@
         </Reference>
         <Reference Include="BepInEx">
           <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Graveyard Keeper 2\BepInEx\core\BepInEx.dll</HintPath>
+          <Private>False</Private>
+        </Reference>
+        <Reference Include="LazyBearTechnology">
+          <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Graveyard Keeper 2\GraveyardKeeper2_Data\Managed\LazyBearTechnology.dll</HintPath>
           <Private>False</Private>
         </Reference>
         <Reference Include="System"/>
@@ -75,6 +84,7 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="GameHelpers.cs" />
         <Compile Include="GamePatches.cs" />
         <Compile Include="GuiFramework\Config\BaseConfig.cs" />
         <Compile Include="GuiFramework\Config\HotkeyConfig.cs" />
@@ -115,5 +125,11 @@
     <Target Name="AfterBuild">
     </Target>
     -->
-
+    <!-- 编译后自动生成繁体中文语言包 -->
+    <Target Name="GenerateTraditionalChinese" AfterTargets="Build">
+        <!-- 全扫描 -->
+        <Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\GuiFramework\Localization\GenerateTraditionalChinese.ps1&quot; -SourceDir &quot;$(MSBuildProjectDirectory)&quot; -OutputFile &quot;$(TargetDir)language\SMR2Mod-繁中.cfg&quot;" />
+        <!-- 指定文件扫描 -->
+        <!-- <Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\GuiFramework\Localization\GenerateTraditionalChinese.ps1&quot; -SourceDir &quot;$(MSBuildProjectDirectory)&quot; -OutputFile &quot;$(TargetDir)language\$(ModInfoName)-繁中.cfg&quot; -Files &quot;MainView.cs&quot;,&quot;GuiFramework\Controls\UI.cs&quot;" /> -->
+    </Target>
 </Project>

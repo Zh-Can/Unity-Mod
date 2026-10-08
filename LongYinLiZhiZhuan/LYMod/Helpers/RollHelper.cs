@@ -143,7 +143,7 @@ public class RollHelper
     {
         _shopParam = shopParam;
     }
-    
+
     // 野外商人 + 鬼市 + 官府兑换 + 商店
     public static void TryZhongyuanRoll()
     {
@@ -151,19 +151,19 @@ public class RollHelper
         var gc = GameController.Instance;
         var pc = PlotController.Instance;
         var flag = HeroHelper.TryReadPlayer(out var player);
-        if (pc == null || !flag || tuic == null || !tuic.tradeUI.activeInHierarchy || gc == null) return;
+        if (pc == null || !flag || tuic == null || !tuic.tradeUI.activeInHierarchy || gc == null) { return; }
         var buildUI = BuildingUIController.Instance;
         var eventName = pc.nowEvent?.eventName;
         if (player.GetArea() == null || eventName == "商号甩卖" || eventName == "家传兵器")
         {
             var rightItemListData = tuic.rightList.targetItemList;
             rightItemListData.money = 5000;
-            
-            if (string.IsNullOrEmpty(_shopParam)) return;
     
-            tuic.rightList.ClearAllItem();
+            if (string.IsNullOrEmpty(_shopParam)) return;
+            
+            // tuic.rightList.ClearAllItem();
             tuic.rightList.targetItemList.ClearAllItem();
-            rightItemListData.allItem.Clear();
+            // rightItemListData.allItem.Clear();
             
             // 分割参数
             string[] parts = _shopParam.Split('-');
@@ -215,7 +215,7 @@ public class RollHelper
                 gc.GenerateRandomItem(rightItemListData, itemCount, itemTypes, shopLevel, 0f, noRandom, subType);
             }
             tuic.rightList.RefreshItemList(false);
-           
+
             // 如果存在 BookOwnMark Mod，为新生成的秘籍添加标记
             if (ModConfig.HaveBookOwnMark)
             {
@@ -278,6 +278,25 @@ public class RollHelper
         {
             Plugin.LOG.Msg("Roll出现未知情况");
             Plugin.LOG.Msg($"eventName:{eventName}");
+        }
+        // 刷新过程中 QuickDetail 所在的 GameObject 会被置为 inactive，
+        // 而它的显示逻辑全在自身的 Update() 里，一旦 inactive 就再也不会执行，
+        // 导致物品详情永久不再显示。这里在刷新后强制恢复激活，并清空悬停去抖键以便重新判定。
+        var quickDetail = QuickDetail.Instance;
+        if (quickDetail != null) 
+        {
+            var qdGo = quickDetail.gameObject;
+            if (qdGo != null)
+            {
+                quickDetail.enabled = true;
+                quickDetail.transform.gameObject.SetActive(true);
+                qdGo.active = true;
+                var qd = qdGo.transform;
+                if (qd != null && !qd.gameObject.activeSelf) qd.gameObject.SetActive(true);
+                if (!qdGo.activeSelf) qdGo.SetActive(true);
+            }
+            quickDetail.nowShowObject = null;
+            quickDetail.detailDirty = true;
         }
     }
 

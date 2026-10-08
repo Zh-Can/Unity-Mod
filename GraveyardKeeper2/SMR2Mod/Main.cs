@@ -1,6 +1,7 @@
 using System.IO;
 using System.Reflection;
 using BepInEx;
+using BepInEx.Configuration;
 using HarmonyLib;
 using SMR2Mod.GuiFramework.Config;
 using SMR2Mod.GuiFramework.Localization;
@@ -14,11 +15,13 @@ namespace SMR2Mod
     public class Main : BaseUnityPlugin
     {
         public static Main Instance;
+        
+        //配置
+        
 
         private void Awake()
         {
             Instance = this;
-            ConfinInit();
         }
 
         private void Start()
@@ -44,11 +47,14 @@ namespace SMR2Mod
             UnityEngine.Object.DontDestroyOnLoad(uiObj);
             uiObj.AddComponent<MainView>();
             
+            ConfinInit();
         }
         
         private void ConfinInit()
         {
+           
             
         }
+        
     }
 }
