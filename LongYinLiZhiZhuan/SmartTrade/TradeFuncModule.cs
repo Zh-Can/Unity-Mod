@@ -28,7 +28,10 @@ namespace SmartTrade
 
         public static void HandleTradeButtons()
         {
-            if (_currentTradeUI == null || _autoBuyButton == null || _autoSellButton == null)
+            if (_currentTradeUI == null || _currentTradeUI.tradeUI == null)
+                return;
+
+            if (_autoBuyButton == null && _autoSellButton == null)
                 return;
 
             if (!_currentTradeUI.tradeUI.activeInHierarchy)
@@ -40,8 +43,8 @@ namespace SmartTrade
             if (Time.unscaledTime - _lastClickTime < 0.2f)
                 return;
 
-            CheckButtonClick(_autoBuyButton, OnAutoBuyClicked);
-            CheckButtonClick(_autoSellButton, OnAutoSellClicked);
+            if (_autoBuyButton != null) CheckButtonClick(_autoBuyButton, OnAutoBuyClicked);
+            if (_autoSellButton != null) CheckButtonClick(_autoSellButton, OnAutoSellClicked);
         }
 
         private static void CheckButtonClick(GameObject buttonObj, Func<IEnumerator> callback)
@@ -63,38 +66,22 @@ namespace SmartTrade
         public static void CreateButtons(TradeUIController tradeUIController)
         {
             DestroyButtons();
-            if (!HasTreasureInShop(tradeUIController))
-            {
-                MelonCoroutines.Start(WaitForItemsAndCreateButtons(tradeUIController));
-                return;
-            }
+            MelonCoroutines.Start(CreateButtonsCoroutine(tradeUIController));
+        }
+
+        private static IEnumerator CreateButtonsCoroutine(TradeUIController tradeUIController)
+        {
+            if (tradeUIController == null) yield break;
 
             var tradeUI = tradeUIController.tradeUI;
+            if (tradeUI == null) yield break;
+
             var sureButton = FindButton(tradeUI, "SureButton");
             var cancelButton = FindButton(tradeUI, "CancelButton");
 
             if (sureButton == null)
             {
                 Plugin.LOG.Warning("[SmartTrade] 未找到SureButton");
-                return;
-            }
-
-            _autoBuyButton = CreateButtonFromTemplate(sureButton, "AutoBuyButton", "自动买入");
-            _autoSellButton = CreateButtonFromTemplate(sureButton, "AutoSellButton", "自动卖出");
-
-            if (_autoBuyButton != null && _autoSellButton != null)
-            {
-                PositionButtons(_autoBuyButton, _autoSellButton, sureButton, cancelButton);
-            }
-        }
-
-        private static IEnumerator WaitForItemsAndCreateButtons(TradeUIController tradeUIController)
-        {
-            if (tradeUIController == null) yield break;
-
-            var merchantList = tradeUIController.rightList;
-            if (merchantList == null || merchantList.itemGrid == null)
-            {
                 yield break;
             }
 
@@ -103,8 +90,9 @@ namespace SmartTrade
 
             while (waited < maxWait)
             {
-                var icons = merchantList.itemGrid.GetComponentsInChildren<ItemIconController>(true);
-                if (icons is { Length: > 0 })
+                var merchantList = tradeUIController.rightList;
+                var allItem = merchantList?.targetItemList?.allItem;
+                if (merchantList?.itemGrid != null && allItem != null && allItem.Count > 0)
                 {
                     break;
                 }
@@ -112,25 +100,17 @@ namespace SmartTrade
                 yield return null;
             }
 
-            if (!HasTreasureInShop(tradeUIController))
+            if (HasTreasureInShop(tradeUIController))
             {
-                yield break;
+                _autoBuyButton = CreateButtonFromTemplate(sureButton, "AutoBuyButton", "自动买入");
             }
 
-            var tradeUI = tradeUIController.tradeUI;
-            var sureButton = FindButton(tradeUI, "SureButton");
-            var cancelButton = FindButton(tradeUI, "CancelButton");
-
-            if (sureButton == null)
+            if (ShopHasMoney(tradeUIController))
             {
-                Plugin.LOG.Warning("[SmartTrade] 未找到SureButton");
-                yield break;
+                _autoSellButton = CreateButtonFromTemplate(sureButton, "AutoSellButton", "自动卖出");
             }
 
-            _autoBuyButton = CreateButtonFromTemplate(sureButton, "AutoBuyButton", "自动买入");
-            _autoSellButton = CreateButtonFromTemplate(sureButton, "AutoSellButton", "自动卖出");
-
-            if (_autoBuyButton != null && _autoSellButton != null)
+            if (_autoBuyButton != null || _autoSellButton != null)
             {
                 PositionButtons(_autoBuyButton, _autoSellButton, sureButton, cancelButton);
             }
@@ -155,31 +135,33 @@ namespace SmartTrade
         {
             try
             {
-                var flag = false;
-                var merchantList = tradeUIController.rightList;
-                if (merchantList == null || merchantList.itemGrid == null)
+                var allItem = tradeUIController?.rightList?.targetItemList?.allItem;
+                if (allItem == null) return false;
+
+                foreach (var item in allItem)
                 {
-                    Plugin.LOG.Msg("[SmartTrade] 商人物品列表为空");
-                    return false;
+                    if (item == null) continue;
+                    if (item.type == ItemType.Treasure) return true;
                 }
 
-                var icons = merchantList.itemGrid.GetComponentsInChildren<ItemIconController>(true);
-                foreach (var icon in icons)
-                {
-                    if (icon == null) continue;
-
-                    var itemData = icon.itemData;
-                    if (itemData == null) continue;
-                    if (itemData.type != ItemType.Treasure) continue;
-                    flag = true;
-                    break;
-                }
-                if (!flag) Plugin.LOG.Msg("[SmartTrade] 未检测到珍宝商品");;
-                return flag;
+                return false;
             }
             catch (Exception ex)
             {
                 Plugin.LOG.Msg($"[SmartTrade] 检查珍宝时出错: {ex.Message}");
+                return false;
+            }
+        }
+
+        private static bool ShopHasMoney(TradeUIController tradeUIController)
+        {
+            try
+            {
+                var money = tradeUIController?.rightList?.targetItemList?.money ?? 0;
+                return money > 0;
+            }
+            catch
+            {
                 return false;
             }
         }
@@ -239,25 +221,11 @@ namespace SmartTrade
             Button cancelButton)
         {
             var sureRect = sureButton.GetComponent<RectTransform>();
-            var buyRect = buyButton.GetComponent<RectTransform>();
-            var sellRect = sellButton.GetComponent<RectTransform>();
-
-            if (sureRect == null || buyRect == null || sellRect == null) return;
+            if (sureRect == null) return;
 
             var smallerSize = new Vector2(sureRect.sizeDelta.x * 0.7f, sureRect.sizeDelta.y * 0.85f);
-
-            buyRect.sizeDelta = smallerSize;
-            buyRect.anchorMin = sureRect.anchorMin;
-            buyRect.anchorMax = sureRect.anchorMax;
-            buyRect.pivot = sureRect.pivot;
-
-            sellRect.sizeDelta = smallerSize;
-            sellRect.anchorMin = sureRect.anchorMin;
-            sellRect.anchorMax = sureRect.anchorMax;
-            sellRect.pivot = sureRect.pivot;
-
             var gap = 30f;
-            var startX = sureRect.anchoredPosition.x - smallerSize.x - gap;
+            var x = sureRect.anchoredPosition.x - smallerSize.x - gap;
             var y = sureRect.anchoredPosition.y;
 
             if (cancelButton != null)
@@ -265,9 +233,33 @@ namespace SmartTrade
                 var cancelRect = cancelButton.GetComponent<RectTransform>();
                 if (cancelRect != null) y = Math.Min(sureRect.anchoredPosition.y, cancelRect.anchoredPosition.y);
             }
-            
-            sellRect.anchoredPosition = new Vector2(startX, y);
-            buyRect.anchoredPosition = new Vector2(startX - smallerSize.x - gap, y);
+
+            if (sellButton != null)
+            {
+                var sellRect = sellButton.GetComponent<RectTransform>();
+                if (sellRect != null)
+                {
+                    sellRect.sizeDelta = smallerSize;
+                    sellRect.anchorMin = sureRect.anchorMin;
+                    sellRect.anchorMax = sureRect.anchorMax;
+                    sellRect.pivot = sureRect.pivot;
+                    sellRect.anchoredPosition = new Vector2(x, y);
+                    x -= smallerSize.x + gap;
+                }
+            }
+
+            if (buyButton != null)
+            {
+                var buyRect = buyButton.GetComponent<RectTransform>();
+                if (buyRect != null)
+                {
+                    buyRect.sizeDelta = smallerSize;
+                    buyRect.anchorMin = sureRect.anchorMin;
+                    buyRect.anchorMax = sureRect.anchorMax;
+                    buyRect.pivot = sureRect.pivot;
+                    buyRect.anchoredPosition = new Vector2(x, y);
+                }
+            }
         }
 
         #endregion
@@ -280,43 +272,95 @@ namespace SmartTrade
         private static IEnumerator OnAutoBuyClicked()
         {
             Other.ShowInfo("开始自动买入");
-            var icons = _currentTradeUI.rightList.itemGrid.GetComponentsInChildren<ItemIconController>(true);
-            if (icons.Length <= 0) yield break;
-            
-            var player = GameController.Instance.worldData.Player();
+
+            if (_currentTradeUI == null) yield break;
+
+            var rightList = _currentTradeUI.rightList;
+            if (rightList == null || rightList.itemGrid == null) yield break;
+
+            var gc = GameController.Instance;
+            if (gc == null) yield break;
+
+            var player = gc.worldData?.Player();
+            if (player == null) yield break;
+
             var area = player.GetArea();
-            var expensiveList = new List<int>();
-            if (area != null)
+            var expensiveTypes = new HashSet<int>();
+            var treasurePriceList = area?.areaTreasurePriceData;
+            if (treasurePriceList != null)
             {
-                var list = area.areaTreasurePriceData;
-                
-                foreach (var atpd in list)
+                foreach (var atpd in treasurePriceList)
                 {
-                    if (atpd.expensive)
+                    if (atpd != null && atpd.expensive)
                     {
-                        expensiveList.Add(atpd.treasureType);
+                        expensiveTypes.Add(atpd.treasureType);
                     }
                 }
             }
-            
-            
-            foreach (var icon in icons)
-            {
-                var item = icon.itemData;
-                if (item.type != ItemType.Treasure || icon.itemData.treasureData == null) continue;
 
-                var realValue = item.GetTreasureRealValue();
-                var price = icon.GetItemPrice(true);
-                var netIncome = NetIncome(realValue, Plugin.AreaRate, price);
-                
-                if (area != null && expensiveList.Contains(icon.itemData.subType)) continue;
-                
-                if (netIncome > 1 
-                    || (Plugin.Instance.RedQuality && !icon.itemData.treasureData.fullIdentified)
-                    || (Plugin.Instance.GoodTreasure && !icon.itemData.treasureData.fullIdentified)
-                    ) icon.OnClick();
+            var plugin = Plugin.Instance;
+            var buyAll = plugin != null && (plugin.RedQuality || plugin.GoodTreasure);
+            
+            
+            var clicked = new HashSet<string>();
+            var scroll = rightList.itemGrid.GetComponentInParent<ScrollRect>();
+            if (scroll != null)
+            {
+                scroll.verticalNormalizedPosition = 1f;
+                yield return null;
             }
-            yield break;
+
+            var stale = 0;
+            for (var pass = 0; pass < 600 && stale < 30; pass++)
+            {
+                ItemIconController target = null;
+                var targetKey = "";
+                var grid = _currentTradeUI?.rightList?.itemGrid;
+                var icons = grid?.GetComponentsInChildren<ItemIconController>(true);
+                if (icons != null)
+                {
+                    foreach (var icon in icons)
+                    {
+                        if (icon == null || icon.gameObject == null || !icon.gameObject.activeInHierarchy) continue;
+
+                        var item = icon.itemData;
+                        if (item == null || item.type != ItemType.Treasure || item.treasureData == null) continue;
+
+                        var key = TreasureKey(item);
+                        if (clicked.Contains(key)) continue;
+
+                        if (!buyAll)
+                        {
+                            if (area != null && expensiveTypes.Contains(item.subType)) continue;
+                            if (NetIncome(item.GetTreasureRealValue(), Plugin.AreaRate, icon.GetItemPrice(true)) <= 1) continue;
+                        }
+
+                        target = icon;
+                        targetKey = key;
+                        break;
+                    }
+                }
+
+                if (target != null)
+                {
+                    clicked.Add(targetKey);
+                    target.OnClick();
+                    stale = 0;
+                    yield return null;
+                    continue;
+                }
+
+                if (scroll != null && scroll.verticalNormalizedPosition > 0.001f)
+                {
+                    scroll.verticalNormalizedPosition = Mathf.Max(0f, scroll.verticalNormalizedPosition - 0.25f);
+                    stale = 0;
+                    yield return null;
+                    continue;
+                }
+
+                stale++;
+                yield return null;
+            }
         }
         
         public static void SetCurrentTradeUI(TradeUIController controller)
@@ -335,80 +379,126 @@ namespace SmartTrade
             var leftList = _currentTradeUI.leftList;
             if (leftList == null) yield break;
 
-            var icons = leftList.itemGrid?.GetComponentsInChildren<ItemIconController>(true);
-            if (icons == null || icons.Length == 0) yield break;
+            if (leftList.itemGrid == null) yield break;
 
             ScanPlayerTreasures();
 
             var shopMoney = _currentTradeUI.rightList?.targetItemList?.money ?? 0;
             var totalSellPrice = 0;
 
-            var player = GameController.Instance.worldData.Player();
+            var gc = GameController.Instance;
+            if (gc == null) yield break;
+
+            var player = gc.worldData?.Player();
+            if (player == null) yield break;
+
+            var plugin = Plugin.Instance;
+
             var area = player.GetArea();
-            var list = area?.areaTreasurePriceData;
+            var treasurePriceList = area?.areaTreasurePriceData;
 
             var cheapTypes = new HashSet<int>();
             var expensiveTypes = new HashSet<int>();
 
-            if (list != null)
+            if (treasurePriceList != null)
             {
-                foreach (var atpd in list)
+                foreach (var atpd in treasurePriceList)
                 {
+                    if (atpd == null) continue;
                     if (atpd.expensive) expensiveTypes.Add(atpd.treasureType);
                     else cheapTypes.Add(atpd.treasureType);
                 }
             }
 
-            var expensiveList = new List<ItemIconController>();
-            var normalList = new List<ItemIconController>();
-
             var validSellItemIds = new HashSet<int>(Plugin.PlayerTreasures.Where(t => t != null).Select(t => t.itemID));
 
-            foreach (var icon in icons)
+            var sold = new HashSet<string>();
+            var scroll = leftList.itemGrid.GetComponentInParent<ScrollRect>();
+            if (scroll != null)
             {
-                if (icon?.itemData?.treasureData == null) continue;
-                if (!validSellItemIds.Contains(icon.itemData.itemID)) continue;
-
-                if (expensiveTypes.Contains(icon.itemData.subType))
-                    expensiveList.Add(icon);
-                else if (!cheapTypes.Contains(icon.itemData.subType))
-                    normalList.Add(icon);
+                scroll.verticalNormalizedPosition = 1f;
+                yield return null;
             }
 
-            bool shopFull = false;
-
-            var allLists = new[] { expensiveList, normalList };
-            foreach (var currentList in allLists)
+            var stale = 0;
+            for (var pass = 0; pass < 600 && stale < 30; pass++)
             {
-                if (shopFull) break;
-
-                foreach (var icon in currentList)
+                ItemIconController target = null;
+                var targetKey = "";
+                var targetPrice = 0;
+                var grid = _currentTradeUI?.leftList?.itemGrid;
+                var icons = grid?.GetComponentsInChildren<ItemIconController>(true);
+                if (icons != null)
                 {
-                    if (icon?.itemData == null || icon.itemData.treasureData == null) continue;
-
-                    if (!icon.itemData.treasureData.fullIdentified) continue;
-
-                    if (icon.itemData.itemLv >= 3 && !Plugin.Instance.SellHighQuality) continue;
-
-                    var sellPrice = icon.GetItemPrice(false);
-
-                    if (totalSellPrice + sellPrice > shopMoney)
+                    foreach (var wantExpensive in new[] { true, false })
                     {
-                        shopFull = true;
-                        break;
+                        foreach (var icon in icons)
+                        {
+                            if (icon == null || icon.gameObject == null || !icon.gameObject.activeInHierarchy) continue;
+
+                            var item = icon.itemData;
+                            if (item == null || item.type != ItemType.Treasure || item.treasureData == null) continue;
+                            if (!validSellItemIds.Contains(item.itemID)) continue;
+                            if (!item.treasureData.fullIdentified) continue;
+                            if (item.itemLv >= 3 && (plugin == null || !plugin.SellHighQuality)) continue;
+
+                            if (wantExpensive)
+                            {
+                                if (!expensiveTypes.Contains(item.subType)) continue;
+                            }
+                            else
+                            {
+                                if (expensiveTypes.Contains(item.subType)) continue;
+                                if (cheapTypes.Contains(item.subType)) continue;
+                            }
+
+                            var key = TreasureKey(item);
+                            if (sold.Contains(key)) continue;
+
+                            var price = icon.GetItemPrice(false);
+                            if (totalSellPrice + price > shopMoney) continue;
+
+                            target = icon;
+                            targetKey = key;
+                            targetPrice = price;
+                            break;
+                        }
+
+                        if (target != null) break;
                     }
-
-                    icon.OnClick();
-                    totalSellPrice += sellPrice;
-
-                    yield return null;
                 }
+
+                if (target != null)
+                {
+                    sold.Add(targetKey);
+                    target.OnClick();
+                    totalSellPrice += targetPrice;
+                    stale = 0;
+                    yield return null;
+                    continue;
+                }
+
+                if (scroll != null && scroll.verticalNormalizedPosition > 0.001f)
+                {
+                    scroll.verticalNormalizedPosition = Mathf.Max(0f, scroll.verticalNormalizedPosition - 0.25f);
+                    stale = 0;
+                    yield return null;
+                    continue;
+                }
+
+                stale++;
+                yield return null;
             }
         }
 
         private static float NetIncome(float realValue, float areaRate, int price)
         {
             return realValue * Plugin.SellRate * areaRate - price;
+        }
+
+        private static string TreasureKey(ItemData item)
+        {
+            return $"{item.type},{item.itemID},{item.subType},{item.itemLv},{item.rareLv},{item.value},{item.GetTreasureRealValue()}";
         }
 
         public static void RefreshData()

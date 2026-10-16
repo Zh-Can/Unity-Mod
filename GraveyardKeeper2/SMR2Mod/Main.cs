@@ -15,9 +15,15 @@ namespace SMR2Mod
     public class Main : BaseUnityPlugin
     {
         public static Main Instance;
-        
+
         //配置
-        
+        public static ConfigEntry<bool> CombatGodMode;
+        public static ConfigEntry<bool> InfiniteCombatStamina;
+        public static ConfigEntry<bool> InfiniteEnergy;
+        public static ConfigEntry<bool> LockInsanity;
+        public static ConfigEntry<bool> FullHappiness;
+        public static ConfigEntry<bool> OneHitWork;
+
 
         private void Awake()
         {
@@ -47,13 +53,17 @@ namespace SMR2Mod
             UnityEngine.Object.DontDestroyOnLoad(uiObj);
             uiObj.AddComponent<MainView>();
             
-            ConfinInit();
+            ConfigInit();
         }
         
-        private void ConfinInit()
+        private void ConfigInit()
         {
-           
-            
+            CombatGodMode = Config.Bind("Toggles", "CombatGodMode", false, "战斗时血量无敌锁血");
+            InfiniteCombatStamina = Config.Bind("Toggles", "InfiniteCombatStamina", false, "战斗时体力无限");
+            InfiniteEnergy = Config.Bind("Toggles", "InfiniteEnergy", false, "体力无限");
+            LockInsanity = Config.Bind("Toggles", "LockInsanity", false, "疯狂锁定");
+            FullHappiness = Config.Bind("Toggles", "FullHappiness", false, "小镇谢礼总是满值");
+            OneHitWork = Config.Bind("Toggles", "OneHitWork", false, "一次完成工作内容");
         }
         
     }

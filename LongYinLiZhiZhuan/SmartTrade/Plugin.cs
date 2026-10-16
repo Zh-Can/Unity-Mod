@@ -9,7 +9,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
-[assembly: MelonInfo(typeof(SmartTrade.Plugin), "SmartTrade", "1.7.6", "Can")]
+[assembly: MelonInfo(typeof(SmartTrade.Plugin), "SmartTrade", "1.7.8", "Can")]
 [assembly: MelonGame("TppStudio", "LongYinLiZhiZhuan")]
 [assembly: MelonPlatformDomain(MelonPlatformDomainAttribute.CompatibleDomains.IL2CPP)]
 
@@ -87,7 +87,7 @@ namespace SmartTrade
             _smartTradeCategory = MelonPreferences.CreateCategory("SmartTradeConfig", "智能交易配置");
             _smartTradeCategory.SetFilePath(MelonEnvironment.UserDataDirectory + "\\SmartTradeConfig.cfg");
             SellHighQuality = _smartTradeCategory.CreateEntry("SellHighQuality", true, description: "售卖精良以上").Value;
-            ShopModify = _smartTradeCategory.CreateEntry("ShopModify", true, description: "商店修改").Value;
+            ShopModify = _smartTradeCategory.CreateEntry("ShopModify", false, description: "商店修改").Value;
         }
 
         public override void OnUpdate()
