@@ -83,12 +83,12 @@ public class LoadSavePostPatches
             var skinDataBase = GameDataController.Instance.skinDataBase;
             var skinIdFlag = true;
             foreach (var skin in skinDataBase)
-        {
-            if (skin.skinID == Plugin.Instance.SpecifiedSkinId.Value)
             {
-                skinIdFlag = false;
+                if (skin.skinID == Plugin.Instance.SpecifiedSkinId.Value)
+                {
+                    skinIdFlag = false;
+                }
             }
-        }
 
             if (skinIdFlag)
             {
@@ -106,5 +106,17 @@ public class LoadSavePostPatches
                 hero.skinLv = hero.heroForceLv;
             }
         }
+        //进入存档后判断解开属性提升限制
+        if (Plugin.Instance.BreakMaxLimitFlag.Value)
+        {
+            GlobalData.HeroLimitAttriNum = 1000;
+            GlobalData.HeroLimitFightSkillNum = 1000;
+        }
+        else
+        {
+            GlobalData.HeroLimitAttriNum = 110;
+            GlobalData.HeroLimitFightSkillNum = 110;
+        }
+        
     }
 }

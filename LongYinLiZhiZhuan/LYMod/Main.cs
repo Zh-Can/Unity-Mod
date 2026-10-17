@@ -367,6 +367,13 @@ public class Plugin : MelonMod
         }
         if (Input.GetKeyDown(KeyCode.KeypadPlus))
         {
+            // LOG.Msg(GlobalData.HeroLimitAttriNum);
+            // LOG.Msg(GlobalData.HeroLimitFightSkillNum);
+            // HeroHelper.TryReadPlayer(out HeroData player);
+            // for (int i = 0; i < player.maxAttri.Count; i++)
+            // {
+            //     LOG.Msg(player.maxAttri[i]);
+            // }
             
         }
     }
@@ -658,7 +665,7 @@ public class Plugin : MelonMod
             .EndHorizontal()
            
             .AddAutoSaveRow("玩家天赋数量上限", PlayerMaxTagNum, "Npc天赋数量上限", NpcMaxTagNum,  labelWidth:150)
-            .AddAutoSaveRow("属性未达限制时不受潜力限制",BreakMaxLimitFlag, "该项不对玩家生效", BreakMaxLimitNotForPlayerFlag)
+            .AddAutoSaveRow("基础/战斗属性增加不受潜力限制",BreakMaxLimitFlag, "该项不对玩家生效", BreakMaxLimitNotForPlayerFlag)
             .AddLabelRow("修改读取到人物的潜力：", 200)
             .Space(5)
             .BeginHorizontal()

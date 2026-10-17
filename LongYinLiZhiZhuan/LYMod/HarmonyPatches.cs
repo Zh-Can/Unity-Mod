@@ -1559,43 +1559,6 @@ public class HeroDataPatch
     #endregion
     
     # region 人物潜力限制开关
-
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(HeroData), nameof(HeroData.GetUpgradeNeedMaxFightSkill))]
-    public static void HeroData_GetUpgradeNeedMaxFightSkill_Postfix(HeroData __instance, int id, ref int __result)
-    {
-        if (__instance != null && Plugin.Instance.BreakMaxLimitFlag.Value)
-        {
-            __result = 0;
-        }
-    }
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(HeroData), nameof(HeroData.GetUpgradeLeftMaxFightSkill))]
-    public static void HeroData_GetUpgradeLeftMaxFightSkill_Postfix(HeroData __instance, int id, ref int __result)
-    {
-        if (__instance != null && Plugin.Instance.BreakMaxLimitFlag.Value)
-        {
-            __result = 0;
-        }
-    }
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(HeroData), nameof(HeroData.GetUpgradeNeedMaxAttri))]
-    public static void HeroData_GetUpgradeNeedMaxAttri_Postfix(HeroData __instance, int id, ref int __result)
-    {
-        if (__instance != null && Plugin.Instance.BreakMaxLimitFlag.Value)
-        {
-            __result = 1;
-        }
-    }
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(HeroData), nameof(HeroData.GetUpgradeLeftMaxAttri))]
-    public static void HeroData_GetUpgradeLeftMaxAttri_Postfix(HeroData __instance, int id, ref int __result)
-    {
-        if (__instance != null && Plugin.Instance.BreakMaxLimitFlag.Value)
-        {
-            __result = 0;
-        }
-    }
     
     [HarmonyPostfix]
     [HarmonyPatch(typeof(HeroData), nameof(HeroData.ChangeAttri))]
@@ -1608,8 +1571,6 @@ public class HeroDataPatch
         var maxAttri = __instance.maxAttri;
         if (baseAttri == null || maxAttri == null) return;
         if (id < 0 || id >= baseAttri.Count || id >= maxAttri.Count) return;
-        
-        Plugin.LOG.Msg($"id:{id},base:{baseAttri[id]},max:{maxAttri[id]},changeNum:{num},skillUpgrade:{skillUpgrade}");
         
         var currentVal = baseAttri[id];
         var maxVal = maxAttri[id];
