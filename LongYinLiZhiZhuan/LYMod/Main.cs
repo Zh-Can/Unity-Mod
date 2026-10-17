@@ -662,33 +662,33 @@ public class Plugin : MelonMod
             .AddLabelRow("修改读取到人物的潜力：", 200)
             .Space(5)
             .BeginHorizontal()
-            .AddButton("基本属性潜力120", () =>
+            .AddButton("基本属性潜力1000", () =>
             {
                 if (_readedHeroData == null) return;
                 var list = _readedHeroData.maxAttri;
                 for (var i = 0; i < list.Count; i++)
                 {
-                    list[i] = 120;
+                    list[i] = 1000;
                 }
             }, 170)
             .Space(3)
-            .AddButton("战斗技能潜力120", () =>
+            .AddButton("战斗技能潜力1000", () =>
             {
                 if (_readedHeroData == null) return;
                 var list = _readedHeroData.maxFightSkill;
                 for (var i = 0; i < list.Count; i++)
                 {
-                    list[i] = 120;
+                    list[i] = 1000;
                 }
             }, 170)
             .Space(5)
-            .AddButton("生活技能潜力100", () =>
+            .AddButton("生活技能潜力1000", () =>
             {
                 if (_readedHeroData == null) return;
                 var list = _readedHeroData.maxLivingSkill;
                 for (var i = 0; i < list.Count; i++)
                 {
-                    list[i] = 100;
+                    list[i] = 1000;
                 }
             }, 170)
             .EndHorizontal()

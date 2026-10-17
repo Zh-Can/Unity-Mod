@@ -416,7 +416,7 @@ namespace SmartTrade
             var scroll = leftList.itemGrid.GetComponentInParent<ScrollRect>();
             if (scroll != null)
             {
-                scroll.verticalNormalizedPosition = 1f;
+                scroll.verticalNormalizedPosition = 5f;
                 yield return null;
             }
 
