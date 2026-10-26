@@ -338,8 +338,20 @@ public class Plugin : MelonMod
                 HeroHelper.TryReadNowHero(out _readedHeroData);
                 GameCustomDifficultyPatches.GetCustomDifficultyData();
             }
+            else
+            {
+                if (BreakMaxLimitFlag.Value)
+                {
+                    GlobalData.HeroLimitAttriNum = 1000;
+                    GlobalData.HeroLimitFightSkillNum = 1000;
+                }
+                else
+                {
+                    GlobalData.HeroLimitAttriNum = 110;
+                    GlobalData.HeroLimitFightSkillNum = 110;
+                }
+            }
 
-            // OtherHelper.ChaneMaxNum();
             if (Relation999Flag.Value)
             {
                 GlobalData.MaxLoverNum = 99;
