@@ -655,22 +655,6 @@ public class ChooseControllerPatches
         __instance.nowSinglePlot.choices = list;
     }
     
-    // [HarmonyPrefix]
-    // [HarmonyPatch(typeof(PlotInteractController), nameof(PlotInteractController.OnClick))]
-    // public static void Prefix(PlotInteractController __instance)
-    // {
-    //     // 获取选项数据
-    //     var choiceData = __instance.choiceData;
-    //     if (choiceData != null)
-    //     {
-    //         string callFunc = choiceData.callFuc;  // 调用的函数名
-    //         string callParam = choiceData.callParam; // 参数
-    //         
-    //         Plugin.LOG.Msg($"{callFunc}-{callParam}");
-    //     }
-    // }
-    
-   
     #endregion
     
     

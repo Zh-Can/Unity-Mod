@@ -360,6 +360,7 @@ public class Plugin : MelonMod
             RollHelper.TryBreakThoughtRoll();
             RollHelper.TryCraftRoll();
             RollHelper.TryAuctionRoll();
+            RollHelper.TryAuctionRoll1();
             RollHelper.TryZhongyuanRoll();
             RollHelper.TryRefreshRecruitList();
             RollHelper.TrySpePoisonRoll();

@@ -6,6 +6,22 @@ namespace LYMod.Patches;
 [HarmonyPatch]
 public class TestPatches
 {
+    // [HarmonyPrefix]
+    // [HarmonyPatch(typeof(PlotInteractController), nameof(PlotInteractController.OnClick))]
+    // public static void Prefix(PlotInteractController __instance)
+    // {
+    //     // 获取选项数据
+    //     var choiceData = __instance.choiceData;
+    //     if (choiceData != null)
+    //     {
+    //         string callFunc = choiceData.callFuc;  // 调用的函数名
+    //         string callParam = choiceData.callParam; // 参数
+    //         
+    //         Plugin.LOG.Msg($"{callFunc}-{callParam}");
+    //     }
+    // }
+    
+    // DLC解锁
     [HarmonyPrefix]
     [HarmonyPatch(typeof(SteamStatsAndAchievements), nameof(SteamStatsAndAchievements.CheckDLCState))]
     public static bool SteamStatsAndAchievements_CheckDLCState_Prefix(SteamStatsAndAchievements __instance)

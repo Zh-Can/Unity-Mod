@@ -42,6 +42,7 @@ public class RollHelper
         }
     }
     
+    // 拍卖会开始后roll
     public static void TryAuctionRoll()
     {
         if (ModConfig.HaveAucRoll) return;
@@ -65,6 +66,70 @@ public class RollHelper
                 auc.endMatchCallPlot, auc.auctionDifficulty, auc.havePlayer, auc.auctionKeeper);
         }
     }
+
+    // 查看拍卖会商品时roll
+    public static void TryAuctionRoll1()
+    {
+        if (ModConfig.HaveAucRoll) return;
+        
+        var plotController = PlotController.Instance;
+        var choices = plotController.nowSinglePlot.choices;
+        var isAuction1 = false;
+        var isAuction2 = false;
+        foreach (var chioce in choices)
+        {
+            if (chioce.choiceText.Contains("查看展品"))
+            {
+                isAuction1 = true;
+                break;
+            }
+        }
+
+        var cc = ChooseController.Instance;
+        if (cc.choosePanel.activeInHierarchy)
+        {
+            isAuction2 = true;
+        }
+
+        if (!isAuction1 || !isAuction2) return;
+        
+        
+        // ---- 1. 重掷展品 ----
+        var nowEvent = plotController.nowEvent;
+        if (nowEvent == null) return;
+        nowEvent.eventItemList = new ItemListData();
+        plotController.GenerateAuctionItem(nowEvent.eventItemList, plotController.GetNowEventDifficulty());
+        // plotController.ChangeAuctionPlot();
+        // plotController.ShowAuctionItem();
+        
+        if (nowEvent.eventItemList.allItem == null || nowEvent.eventItemList.allItem.Count == 0)
+            return;
+        // ---- 2. 销毁面板里现有的展品格子 ----
+        ClearChoosePanelItems(cc.choosePanel);
+        // ---- 3. 重新打开展示面板
+        plotController.ShowAuctionItem();
+    }
+    
+    private static void ClearChoosePanelItems(GameObject choosePanel)
+    {
+        if (choosePanel == null) return;
+
+        // 含未激活的，倒序处理：Destroy 是帧末生效，正序遍历容易受子节点顺序变化影响
+        var icons = choosePanel.GetComponentsInChildren<ItemIconController>(true);
+        for (var i = icons.Length - 1; i >= 0; i--)
+        {
+            var icon = icons[i];
+            if (icon == null) continue;
+
+            var go = icon.gameObject;
+            if (go == null) continue;
+            //
+            // go.SetActive(false);
+            // go.transform.SetParent(null, false);
+            UnityEngine.Object.Destroy(go);
+        }
+    }
+    
     
     #endregion
 
