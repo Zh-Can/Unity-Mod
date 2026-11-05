@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -266,17 +266,21 @@ namespace SmartTrade
 
         #region 自动买卖逻辑
 
+        private static bool _automating;
+
         /**
          * 买入按钮
          */
         private static IEnumerator OnAutoBuyClicked()
         {
-            Other.ShowInfo("开始自动买入");
-
+            if (_automating) yield break;
             if (_currentTradeUI == null) yield break;
 
             var rightList = _currentTradeUI.rightList;
             if (rightList == null || rightList.itemGrid == null) yield break;
+
+            var srcData = rightList.targetItemList;
+            if (srcData?.allItem == null) yield break;
 
             var gc = GameController.Instance;
             if (gc == null) yield break;
@@ -300,66 +304,197 @@ namespace SmartTrade
 
             var plugin = Plugin.Instance;
             var buyAll = plugin != null && (plugin.RedQuality || plugin.GoodTreasure);
-            
-            
-            var clicked = new HashSet<string>();
-            var scroll = rightList.itemGrid.GetComponentInParent<ScrollRect>();
-            if (scroll != null)
+
+            // 待购区已有物品的快照：已在待购里的绝不能再点，否则会再 GetItem 一份（虚空物品）
+            var cartList = _currentTradeUI.rightOutList;
+            var cartData = cartList?.targetItemList;
+            var cartSet = new HashSet<IntPtr>();
+            if (cartData?.allItem != null)
             {
-                scroll.verticalNormalizedPosition = 1f;
-                yield return null;
+                var cartCount = cartData.allItem.Count;
+                for (var i = 0; i < cartCount; i++)
+                {
+                    var cartItem = cartData.allItem[i];
+                    if (cartItem != null) cartSet.Add(ItemPtr(cartItem));
+                }
             }
 
+            Other.ShowInfo("开始自动买入");
+
+            // 注意：同款珍宝的物品数据可能完全一样，用 TreasureKey 去重会把"第二件同款"当重复跳过，
+            // 所以这里按 ItemData 实例去重（每件物品只点一次）
+            var clicked = new HashSet<IntPtr>();
+            var failed = new HashSet<IntPtr>();
+            var scroll = rightList.itemGrid.GetComponentInParent<ScrollRect>();
+
+            // 虚拟列表：把整张表的图标都租出来，不再靠滚动去"刷"物品
+            var bulk = BulkIconBinder.CanBind(rightList);
+            var staleLimit = bulk ? 6 : 20;
+
+            _automating = true;
             var stale = 0;
-            for (var pass = 0; pass < 600 && stale < 30; pass++)
+            try
             {
-                ItemIconController target = null;
-                var targetKey = "";
-                var grid = _currentTradeUI?.rightList?.itemGrid;
-                var icons = grid?.GetComponentsInChildren<ItemIconController>(true);
+                for (var pass = 0; pass < 3000 && stale < staleLimit; pass++)
+                {
+                    var ui = _currentTradeUI;
+                    if (ui == null || ui.tradeUI == null || !ui.tradeUI.activeInHierarchy) yield break;
+
+                    // 列表每次刷新后虚拟化只会留下可视区间的格子，这里补齐
+                    if (bulk) BulkIconBinder.EnsureAllBound(rightList);
+
+                    ItemIconController target = null;
+                    ItemData targetItem = null;
+                    var targetKey = IntPtr.Zero;
+
+                    var icons = rightList.itemGrid?.GetComponentsInChildren<ItemIconController>(true);
+                    if (icons != null)
+                    {
+                        foreach (var icon in icons)
+                        {
+                            if (icon == null || icon.gameObject == null || !icon.gameObject.activeInHierarchy) continue;
+
+                            var item = icon.itemData;
+                            if (item == null || item.type != ItemType.Treasure || item.treasureData == null) continue;
+
+                            var key = ItemPtr(item);
+                            if (clicked.Contains(key) || failed.Contains(key) || cartSet.Contains(key)) continue;
+
+                            // 图标指向的物品必须真的还在商店列表里
+                            if (!ContainsItem(srcData.allItem, key)) continue;
+
+                            if (!buyAll)
+                            {
+                                if (area != null && expensiveTypes.Contains(item.subType)) continue;
+                                if (NetIncome(item.GetTreasureRealValue(), Plugin.AreaRate, icon.GetItemPrice(true)) <= 1) continue;
+                            }
+
+                            target = icon;
+                            targetItem = item;
+                            targetKey = key;
+                            break;
+                        }
+                    }
+
+                    if (target != null)
+                    {
+                        var ok = TryBuy(target, targetItem, targetKey, srcData, cartData, cartSet, failed);
+                        if (ok)
+                        {
+                            clicked.Add(targetKey);
+                            cartSet.Add(targetKey);
+                        }
+
+                        stale = 0;
+                        yield return null;
+                        continue;
+                    }
+
+                    // 无法批量绑定时退回滚动方案
+                    if (!bulk && scroll != null && scroll.verticalNormalizedPosition > 0.001f)
+                    {
+                        scroll.verticalNormalizedPosition = Mathf.Max(0f, scroll.verticalNormalizedPosition - 0.25f);
+                        stale = 0;
+                        yield return null;
+                        continue;
+                    }
+
+                    stale++;
+                    yield return null;
+                }
+
+                // 扫完后统计一下剩下的，方便确认"为什么没买"
+                LogBuySummary(rightList, clicked, buyAll, area, expensiveTypes);
+            }
+            finally
+            {
+                if (bulk) BulkIconBinder.ReleaseExtra(rightList);
+                _automating = false;
+            }
+        }
+
+        /// <summary>点一次“买入”，并校验物品是否真的从商店列表消失，没消失就把待购里那份撤掉</summary>
+        private static bool TryBuy(ItemIconController icon, ItemData item, IntPtr key,
+            ItemListData srcData, ItemListData cartData, HashSet<IntPtr> cartSet, HashSet<IntPtr> failed)
+        {
+            if (icon == null || item == null) return false;
+
+            try
+            {
+                icon.OnClick();
+            }
+            catch (Exception ex)
+            {
+                Plugin.LOG.Warning("[SmartTrade] 买入点击异常: " + ex.Message);
+                failed.Add(key);
+                return false;
+            }
+
+            if (!ContainsItem(srcData.allItem, key))
+            {
+                cartSet.Add(key);
+                return true;
+            }
+
+            failed.Add(key);
+            try
+            {
+                if (cartData != null && ContainsItem(cartData.allItem, key))
+                {
+                    cartData.LoseItem(item);
+                    _currentTradeUI?.rightOutList?.RefreshItemList(true);
+                }
+
+                Plugin.LOG.Warning($"[SmartTrade] 买入未生效，已回滚: {item.Name()}");
+            }
+            catch (Exception ex)
+            {
+                Plugin.LOG.Warning("[SmartTrade] 回滚待购物品失败: " + ex.Message);
+            }
+
+            cartSet.Remove(key);
+            return false;
+        }
+
+        private static void LogBuySummary(ItemListController list, HashSet<IntPtr> bought, bool buyAll,
+            AreaData area, HashSet<int> expensiveTypes)
+        {
+            try
+            {
+                var lowProfit = 0;
+                var expensive = 0;
+                var unknown = 0;
+
+                // 把剩下的条目也全部绑出来，统计才完整
+                if (BulkIconBinder.CanBind(list)) BulkIconBinder.EnsureAllBound(list);
+
+                var icons = list?.itemGrid?.GetComponentsInChildren<ItemIconController>(true);
                 if (icons != null)
                 {
                     foreach (var icon in icons)
                     {
-                        if (icon == null || icon.gameObject == null || !icon.gameObject.activeInHierarchy) continue;
-
+                        if (icon == null || icon.itemData == null) continue;
                         var item = icon.itemData;
-                        if (item == null || item.type != ItemType.Treasure || item.treasureData == null) continue;
+                        if (item.type != ItemType.Treasure) continue;
 
-                        var key = TreasureKey(item);
-                        if (clicked.Contains(key)) continue;
-
-                        if (!buyAll)
+                        if (buyAll) { unknown++; continue; }
+                        if (area != null && expensiveTypes.Contains(item.subType)) { expensive++; continue; }
+                        if (NetIncome(item.GetTreasureRealValue(), Plugin.AreaRate, icon.GetItemPrice(true)) <= 1)
                         {
-                            if (area != null && expensiveTypes.Contains(item.subType)) continue;
-                            if (NetIncome(item.GetTreasureRealValue(), Plugin.AreaRate, icon.GetItemPrice(true)) <= 1) continue;
+                            lowProfit++;
+                            continue;
                         }
 
-                        target = icon;
-                        targetKey = key;
-                        break;
+                        unknown++;
                     }
                 }
 
-                if (target != null)
-                {
-                    clicked.Add(targetKey);
-                    target.OnClick();
-                    stale = 0;
-                    yield return null;
-                    continue;
-                }
-
-                if (scroll != null && scroll.verticalNormalizedPosition > 0.001f)
-                {
-                    scroll.verticalNormalizedPosition = Mathf.Max(0f, scroll.verticalNormalizedPosition - 0.25f);
-                    stale = 0;
-                    yield return null;
-                    continue;
-                }
-
-                stale++;
-                yield return null;
+                Other.ShowInfo($"买入 {bought.Count} 件，剩余：利润不足 {lowProfit}、贵品类 {expensive}、未处理 {unknown}");
+                Plugin.LOG.Msg($"[SmartTrade] 自动买入结束：买入 {bought.Count} 件，剩余 利润不足={lowProfit} 贵品类={expensive} 未处理={unknown}");
+            }
+            catch (Exception ex)
+            {
+                Plugin.LOG.Warning("[SmartTrade] 统计剩余物品失败: " + ex.Message);
             }
         }
         
@@ -372,14 +507,16 @@ namespace SmartTrade
          */
         private static IEnumerator OnAutoSellClicked()
         {
-            Other.ShowInfo("开始自动卖出");
-
+            if (_automating) yield break;
             if (_currentTradeUI == null) yield break;
 
             var leftList = _currentTradeUI.leftList;
             if (leftList == null) yield break;
 
             if (leftList.itemGrid == null) yield break;
+
+            var srcData = leftList.targetItemList;
+            if (srcData?.allItem == null) yield break;
 
             ScanPlayerTreasures();
 
@@ -393,6 +530,7 @@ namespace SmartTrade
             if (player == null) yield break;
 
             var plugin = Plugin.Instance;
+            var sellHighQuality = plugin != null && plugin.SellHighQuality;
 
             var area = player.GetArea();
             var treasurePriceList = area?.areaTreasurePriceData;
@@ -412,88 +550,278 @@ namespace SmartTrade
 
             var validSellItemIds = new HashSet<int>(Plugin.PlayerTreasures.Where(t => t != null).Select(t => t.itemID));
 
-            var sold = new HashSet<string>();
-            var scroll = leftList.itemGrid.GetComponentInParent<ScrollRect>();
-            if (scroll != null)
+            // UI 上勾选的卖出类别（空 = 不按类别，全卖）
+            var sellTypeFilter = Plugin.SellTypeFilter;
+
+            // 待售区已有物品的快照：已经在待售里的东西绝不能再点，否则 GetItem 会再 Add 一份（虚空物品）
+            var cartList = _currentTradeUI.leftOutList;
+            var cartData = cartList?.targetItemList;
+            var cartSet = new HashSet<IntPtr>();
+            if (cartData?.allItem != null)
             {
-                scroll.verticalNormalizedPosition = 5f;
-                yield return null;
+                var cartCount = cartData.allItem.Count;
+                for (var i = 0; i < cartCount; i++)
+                {
+                    var cartItem = cartData.allItem[i];
+                    if (cartItem != null) cartSet.Add(ItemPtr(cartItem));
+                }
             }
 
-            var stale = 0;
-            for (var pass = 0; pass < 600 && stale < 30; pass++)
+            try
             {
-                ItemIconController target = null;
-                var targetKey = "";
-                var targetPrice = 0;
-                var grid = _currentTradeUI?.leftList?.itemGrid;
-                var icons = grid?.GetComponentsInChildren<ItemIconController>(true);
-                if (icons != null)
+                var invAll = player.itemListData?.allItem;
+                var same = invAll != null && srcData.allItem != null && invAll.Pointer == srcData.allItem.Pointer;
+                Plugin.LOG.Msg($"[SmartTrade] 卖出源列表: allItem={srcData.allItem?.Count} " +
+                               $"背包allItem={invAll?.Count} 同一列表={same} 待售={cartData?.allItem?.Count ?? 0}");
+            }
+            catch (Exception ex)
+            {
+                Plugin.LOG.Warning("[SmartTrade] 诊断卖出列表失败: " + ex.Message);
+            }
+
+            Other.ShowInfo("开始自动卖出");
+
+            var sold = new HashSet<IntPtr>();
+            var failed = new HashSet<IntPtr>();
+            var scroll = leftList.itemGrid.GetComponentInParent<ScrollRect>();
+
+            var bulk = BulkIconBinder.CanBind(leftList);
+            var staleLimit = bulk ? 6 : 20;
+
+            _automating = true;
+            var stale = 0;
+            try
+            {
+                for (var pass = 0; pass < 3000 && stale < staleLimit; pass++)
                 {
-                    foreach (var wantExpensive in new[] { true, false })
+                    var ui = _currentTradeUI;
+                    if (ui == null || ui.tradeUI == null || !ui.tradeUI.activeInHierarchy) yield break;
+
+                    if (bulk) BulkIconBinder.EnsureAllBound(leftList);
+
+                    ItemIconController target = null;
+                    ItemData targetItem = null;
+                    var targetKey = IntPtr.Zero;
+                    var targetPrice = 0;
+
+                    var icons = leftList.itemGrid?.GetComponentsInChildren<ItemIconController>(true);
+                    if (icons != null)
                     {
-                        foreach (var icon in icons)
+                        foreach (var wantExpensive in new[] { true, false })
                         {
-                            if (icon == null || icon.gameObject == null || !icon.gameObject.activeInHierarchy) continue;
-
-                            var item = icon.itemData;
-                            if (item == null || item.type != ItemType.Treasure || item.treasureData == null) continue;
-                            if (!validSellItemIds.Contains(item.itemID)) continue;
-                            if (!item.treasureData.fullIdentified) continue;
-                            if (item.itemLv >= 3 && (plugin == null || !plugin.SellHighQuality)) continue;
-
-                            if (wantExpensive)
+                            foreach (var icon in icons)
                             {
-                                if (!expensiveTypes.Contains(item.subType)) continue;
+                                if (icon == null || icon.gameObject == null || !icon.gameObject.activeInHierarchy) continue;
+
+                                var item = icon.itemData;
+                                if (item == null || item.type != ItemType.Treasure || item.treasureData == null) continue;
+                                if (!validSellItemIds.Contains(item.itemID)) continue;
+                                if (!item.treasureData.fullIdentified) continue;
+                                if (item.itemLv >= 3 && !sellHighQuality) continue;
+                                if (sellTypeFilter.Count > 0 && !sellTypeFilter.Contains(item.subType)) continue;
+
+                                if (wantExpensive)
+                                {
+                                    if (!expensiveTypes.Contains(item.subType)) continue;
+                                }
+                                else
+                                {
+                                    if (expensiveTypes.Contains(item.subType)) continue;
+                                    if (cheapTypes.Contains(item.subType)) continue;
+                                }
+
+                                var key = ItemPtr(item);
+                                if (sold.Contains(key) || failed.Contains(key) || cartSet.Contains(key)) continue;
+
+                                // 图标指向的物品必须真的还在源列表里，否则点下去只会往待售里凭空塞一份
+                                if (!ContainsItem(srcData.allItem, key)) continue;
+
+                                var price = icon.GetItemPrice(false);
+                                // deltaMoney = 已经在待售/待购里的金额，游戏确认后才真正结算，
+                                // 所以要把它算进店家预算，否则每次点都以为店家还有满额的钱
+                                var pending = _currentTradeUI?.deltaMoney ?? 0;
+                                if (pending + price > shopMoney) continue;
+
+                                target = icon;
+                                targetItem = item;
+                                targetKey = key;
+                                targetPrice = price;
+                                break;
                             }
-                            else
-                            {
-                                if (expensiveTypes.Contains(item.subType)) continue;
-                                if (cheapTypes.Contains(item.subType)) continue;
-                            }
 
-                            var key = TreasureKey(item);
-                            if (sold.Contains(key)) continue;
+                            if (target != null) break;
+                        }
+                    }
 
-                            var price = icon.GetItemPrice(false);
-                            if (totalSellPrice + price > shopMoney) continue;
-
-                            target = icon;
-                            targetKey = key;
-                            targetPrice = price;
-                            break;
+                    if (target != null)
+                    {
+                        var ok = TrySell(target, targetItem, targetKey, srcData, cartData, cartSet, failed);
+                        if (ok)
+                        {
+                            sold.Add(targetKey);
+                            cartSet.Add(targetKey);
+                            totalSellPrice += targetPrice;
                         }
 
-                        if (target != null) break;
+                        stale = 0;
+                        yield return null;
+                        continue;
+                    }
+
+                    if (!bulk && scroll != null && scroll.verticalNormalizedPosition > 0.001f)
+                    {
+                        scroll.verticalNormalizedPosition = Mathf.Max(0f, scroll.verticalNormalizedPosition - 0.25f);
+                        stale = 0;
+                        yield return null;
+                        continue;
+                    }
+
+                    stale++;
+                    yield return null;
+                }
+
+                LogSellSummary(leftList, sold.Count, totalSellPrice, shopMoney, validSellItemIds, cheapTypes,
+                    sellHighQuality, sellTypeFilter);
+            }
+            finally
+            {
+                if (bulk) BulkIconBinder.ReleaseExtra(leftList);
+                _automating = false;
+            }
+        }
+
+        /// <summary>
+        /// 点一次“卖出”，并校验物品是否真的从源列表消失。
+        /// 若没消失（图标失效/数据不同步），把刚才塞进待售的那一份撤掉，避免虚空物品累积。
+        /// </summary>
+        private static bool TrySell(ItemIconController icon, ItemData item, IntPtr key,
+            ItemListData srcData, ItemListData cartData, HashSet<IntPtr> cartSet, HashSet<IntPtr> failed)
+        {
+            if (icon == null || item == null) return false;
+
+            try
+            {
+                icon.OnClick();
+            }
+            catch (Exception ex)
+            {
+                Plugin.LOG.Warning("[SmartTrade] 卖出点击异常: " + ex.Message);
+                failed.Add(key);
+                return false;
+            }
+
+            // 正常情况下 LoseItem 已经把它从 allItem / itemTypeList 移除
+            if (!ContainsItem(srcData.allItem, key))
+            {
+                cartSet.Add(key);
+                return true;
+            }
+
+            // 还在源列表里 → 这次点击没生效，但 GetItem 可能已经往待售里加了一份
+            failed.Add(key);
+            try
+            {
+                if (cartData != null && ContainsItem(cartData.allItem, key))
+                {
+                    cartData.LoseItem(item);
+                    _currentTradeUI?.leftOutList?.RefreshItemList(true);
+                }
+
+                Plugin.LOG.Warning($"[SmartTrade] 卖出未生效，已回滚: {item.Name()}");
+            }
+            catch (Exception ex)
+            {
+                Plugin.LOG.Warning("[SmartTrade] 回滚待售物品失败: " + ex.Message);
+            }
+
+            cartSet.Remove(key);
+            return false;
+        }
+
+        private static void LogSellSummary(ItemListController leftList, int soldCount, int totalSellPrice, int shopMoney,
+            HashSet<int> validIds, HashSet<int> cheapTypes, bool sellHighQuality, HashSet<int> typeFilter)
+        {
+            try
+            {
+                var notIdentified = 0;
+                var levelBlocked = 0;
+                var notOwned = 0;
+                var cheap = 0;
+                var typeSkipped = 0;
+                var noMoney = 0;
+                var other = 0;
+                var moneyLeft = shopMoney - Math.Max(0, _currentTradeUI?.deltaMoney ?? 0);
+
+                if (BulkIconBinder.CanBind(leftList)) BulkIconBinder.EnsureAllBound(leftList);
+
+                var icons = leftList?.itemGrid?.GetComponentsInChildren<ItemIconController>(true);
+                if (icons != null)
+                {
+                    foreach (var icon in icons)
+                    {
+                        if (icon == null || icon.itemData == null) continue;
+                        var item = icon.itemData;
+                        if (item.type != ItemType.Treasure) continue;
+
+                        if (!validIds.Contains(item.itemID)) { notOwned++; continue; }
+                        if (item.treasureData == null) { other++; continue; }
+                        if (!item.treasureData.fullIdentified) { notIdentified++; continue; }
+                        if (item.itemLv >= 3 && !sellHighQuality) { levelBlocked++; continue; }
+                        if (typeFilter.Count > 0 && !typeFilter.Contains(item.subType)) { typeSkipped++; continue; }
+                        if (cheapTypes.Contains(item.subType)) { cheap++; continue; }
+                        if (icon.GetItemPrice(false) > moneyLeft) { noMoney++; continue; }
+
+                        other++;
                     }
                 }
 
-                if (target != null)
-                {
-                    sold.Add(targetKey);
-                    target.OnClick();
-                    totalSellPrice += targetPrice;
-                    stale = 0;
-                    yield return null;
-                    continue;
-                }
-
-                if (scroll != null && scroll.verticalNormalizedPosition > 0.001f)
-                {
-                    scroll.verticalNormalizedPosition = Mathf.Max(0f, scroll.verticalNormalizedPosition - 0.25f);
-                    stale = 0;
-                    yield return null;
-                    continue;
-                }
-
-                stale++;
-                yield return null;
+                Other.ShowInfo($"卖出 {soldCount} 件/{totalSellPrice}文，剩余：未鉴定 {notIdentified}、" +
+                               $"等级限制 {levelBlocked}、类别未选 {typeSkipped}、本地便宜 {cheap}、" +
+                               $"店家钱不足 {noMoney}、未处理 {other}");
+                Plugin.LOG.Msg($"[SmartTrade] 自动卖出结束：卖出 {soldCount} 件 共{totalSellPrice}文，" +
+                               $"剩余 未鉴定={notIdentified} 等级限制={levelBlocked} 不在背包={notOwned} " +
+                               $"类别未选={typeSkipped} 本地便宜={cheap} 店家钱不足={noMoney} 未处理={other}");
             }
+            catch (Exception ex)
+            {
+                Plugin.LOG.Warning("[SmartTrade] 统计剩余物品失败: " + ex.Message);
+            }
+        }
+
+        private static bool ContainsItem(Il2CppSystem.Collections.Generic.List<ItemData> list, IntPtr key)
+        {
+            if (list == null) return false;
+
+            var count = list.Count;
+            for (var i = 0; i < count; i++)
+            {
+                var item = list[i];
+                if (item != null && ItemPtr(item) == key) return true;
+            }
+
+            return false;
         }
 
         private static float NetIncome(float realValue, float areaRate, int price)
         {
             return realValue * Plugin.SellRate * areaRate - price;
+        }
+
+        /// <summary>物品实例身份（同一件物品的稳定标识，用于"这件已经点过了"判重）</summary>
+        private static IntPtr ItemPtr(ItemData item)
+        {
+            if (item == null) return IntPtr.Zero;
+            try
+            {
+                var ptr = item.Pointer;
+                if (ptr != IntPtr.Zero) return ptr;
+            }
+            catch
+            {
+                // 拿不到原生指针时退回引用哈希，绝不能让判重键变成 0 而跳过物品
+            }
+
+            return new IntPtr(System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(item));
         }
 
         private static string TreasureKey(ItemData item)
@@ -609,6 +937,11 @@ public static class TradeUIControllerPatch
     public static bool SureButtonClicked_Prefix(TradeUIController __instance)
     {
         if (__instance == null) return true;
+
+        // 待买卖列表同样是虚拟列表，先补齐图标再统计，否则看不到的格子会漏记
+        if (__instance.rightOutList != null) BulkIconBinder.EnsureAllBound(__instance.rightOutList);
+        if (__instance.leftOutList != null) BulkIconBinder.EnsureAllBound(__instance.leftOutList);
+
         var rightOutList =__instance.rightOutList?.itemGrid?.GetComponentsInChildren<ItemIconController>(true);
         var leftOutList =__instance.leftOutList?.itemGrid?.GetComponentsInChildren<ItemIconController>(true);
 

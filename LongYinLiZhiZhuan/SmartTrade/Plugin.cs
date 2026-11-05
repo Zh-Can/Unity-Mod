@@ -1,4 +1,4 @@
-using MelonLoader;
+﻿using MelonLoader;
 using Il2Cpp;
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
-[assembly: MelonInfo(typeof(SmartTrade.Plugin), "SmartTrade", "1.7.8", "Can")]
+[assembly: MelonInfo(typeof(SmartTrade.Plugin), "SmartTrade", "1.8", "Can")]
 [assembly: MelonGame("TppStudio", "LongYinLiZhiZhuan")]
 [assembly: MelonPlatformDomain(MelonPlatformDomainAttribute.CompatibleDomains.IL2CPP)]
 
@@ -57,6 +57,17 @@ namespace SmartTrade
         private Vector2 _windowDragStartPos;
         private bool _lastMouseButtonState;
         
+        // 自动卖出类别筛选：空 = 不按类别（全卖）
+        public static readonly HashSet<int> SellTypeFilter = new();
+        private const int SellTypeCount = 10;
+
+        // 兜底名称（实测游戏里 subType 的实际顺序）
+        private static readonly string[] SellTypeFallbackNames =
+            ["乐器", "棋谱", "字帖", "画本", "香炉", "服饰", "珠玉", "酒器", "史书", "典籍"];
+
+        private string[] _sellTypeNames = SellTypeFallbackNames;
+        private readonly Toggle[] _sellTypeToggles = new Toggle[SellTypeCount];
+
         private Toggle _toggleAll;
         private Toggle _toggleUp;
         private Toggle _toggleDown;
@@ -492,8 +503,118 @@ namespace SmartTrade
                 _toggleDown.onValueChanged.AddListener(new Action<bool>(isOn => { if (isOn) SetFilter(2); }));
             }
             #endregion
+
+            #region 自动卖出类别筛选（2 行 x 5 列，宽度不变）
+            _sellTypeNames = BuildSellTypeNames();
+            LOG.Msg("[SmartTrade] 卖出类别: " + string.Join(" ", _sellTypeNames.Select((n, i) => i + "=" + n)));
+            var toolbar3Obj = CreateUIObject("Toolbar3", _panelRect.transform);
+
+            var toolbar3BgComp = toolbar3Obj.AddComponent(Il2CppType.Of<RawImage>());
+            var toolbar3Bg = toolbar3BgComp?.TryCast<RawImage>();
+            if (toolbar3Bg != null)
+            {
+                toolbar3Bg.texture = GetWhiteTexture();
+                toolbar3Bg.color = new Color(0.1f, 0.1f, 0.12f, 1f);
+                toolbar3Bg.raycastTarget = true;
+            }
+
+            var toolbar3Rect = toolbar3Obj.GetComponent<RectTransform>();
+            if (toolbar3Rect == null) return;
+
+            toolbar3Rect.anchorMin = new Vector2(0f, 1f);
+            toolbar3Rect.anchorMax = new Vector2(1f, 1f);
+            toolbar3Rect.pivot = new Vector2(0.5f, 1f);
+            toolbar3Rect.anchoredPosition = new Vector2(0f, -124f);
+            toolbar3Rect.sizeDelta = new Vector2(-16f, 78f);
+
+            var tipObj = CreateUIObject("SellTypeTip", toolbar3Rect);
+            var tipText = tipObj.AddComponent(Il2CppType.Of<Text>())?.TryCast<Text>();
+            if (tipText != null)
+            {
+                var font = GetFont();
+                if (font != null) tipText.font = font;
+                tipText.text = "自动卖出类别（不勾选 = 全部卖出）";
+                tipText.fontSize = 13;
+                tipText.alignment = TextAnchor.MiddleLeft;
+                tipText.color = new Color(0.72f, 0.76f, 0.84f);
+            }
+
+            var tipRect = tipObj.GetComponent<RectTransform>();
+            if (tipRect != null)
+            {
+                tipRect.anchorMin = new Vector2(0f, 1f);
+                tipRect.anchorMax = new Vector2(1f, 1f);
+                tipRect.pivot = new Vector2(0.5f, 1f);
+                tipRect.anchoredPosition = new Vector2(0f, -2f);
+                tipRect.sizeDelta = new Vector2(-12f, 16f);
+            }
+
+            for (var row = 0; row < 2; row++)
+            {
+                var rowObj = CreateUIObject("SellTypeRow" + row, toolbar3Rect);
+                var rowRect = rowObj.GetComponent<RectTransform>();
+                if (rowRect == null) continue;
+
+                rowRect.anchorMin = new Vector2(0f, 1f);
+                rowRect.anchorMax = new Vector2(1f, 1f);
+                rowRect.pivot = new Vector2(0.5f, 1f);
+                rowRect.anchoredPosition = new Vector2(0f, -20f - row * 28f);
+                rowRect.sizeDelta = new Vector2(-8f, 26f);
+
+                for (var col = 0; col < 5; col++)
+                {
+                    var index = row * 5 + col;
+                    if (index >= _sellTypeNames.Length) break;
+
+                    // 一行 5 个：可用宽度 ~524，每个 96 宽、间隔 4
+                    var toggle = CreateToggle(rowRect, _sellTypeNames[index], -250f + col * 100f, 96f);
+                    if (toggle == null) continue;
+
+                    var toggleRect = toggle.GetComponent<RectTransform>();
+                    if (toggleRect != null) toggleRect.sizeDelta = new Vector2(96f, 24f);
+
+                    var captured = index;
+                    toggle.onValueChanged.AddListener(new Action<bool>(isOn =>
+                    {
+                        if (isOn) SellTypeFilter.Add(captured);
+                        else SellTypeFilter.Remove(captured);
+                    }));
+
+                    _sellTypeToggles[index] = toggle;
+                }
+            }
+            #endregion
         }
         
+        /// <summary>
+        /// 类别名称直接用游戏自己的 TreasureTypeName（按 subType 索引），
+        /// 避免写死顺序和实际 id 对不上；拿不到时用实测正确的兜底表。
+        /// </summary>
+        private static string[] BuildSellTypeNames()
+        {
+            try
+            {
+                var names = GlobalData.TreasureTypeName;
+                if (names != null && names.Count >= SellTypeCount)
+                {
+                    var arr = new string[SellTypeCount];
+                    for (var i = 0; i < SellTypeCount; i++)
+                    {
+                        var n = names[i];
+                        arr[i] = string.IsNullOrEmpty(n) ? $"类别{i}" : n;
+                    }
+
+                    return arr;
+                }
+            }
+            catch (Exception ex)
+            {
+                if (Instance != null) LOG.Warning("[SmartTrade] 读取珍宝类别名失败: " + ex.Message);
+            }
+
+            return SellTypeFallbackNames;
+        }
+
         private Toggle CreateToggle(Transform parent, string label, float posX, float width)
         {
             var toggleObj = CreateUIObject("Toggle_" + label, parent);
@@ -601,8 +722,8 @@ namespace SmartTrade
                 _contentRect.anchorMin = new Vector2(0f, 0f);
                 _contentRect.anchorMax = new Vector2(1f, 1f);
                 _contentRect.pivot = new Vector2(0.5f, 0.5f);
-                _contentRect.anchoredPosition = new Vector2(0f, -58.5f);
-                _contentRect.sizeDelta = new Vector2(-16f, -182f);
+                _contentRect.anchoredPosition = new Vector2(0f, -91f);
+                _contentRect.sizeDelta = new Vector2(-16f, -246f);
             }
             
             CreateTableHeader(contentObj.transform);

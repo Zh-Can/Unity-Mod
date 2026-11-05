@@ -489,6 +489,7 @@ namespace LunHuiShop;
                     item.treasureData.treasureLv[k] = 5;
                     item.treasureData.identified[k] = true;
                 }
+                item.rareLv = 5;
                 item.treasureData.fullIdentified = true;
                 item.value = item.GetTreasureRealValue();
                 item.CountValueAndWeight();
@@ -517,8 +518,8 @@ namespace LunHuiShop;
             player.itemListData.money -= selectedItem.Price;
             _status = $"{Loc.Get("提示")}：<color=green>{Loc.Get("购买成功")}</color>";
             LyHelper.AddInfoTab($"<color=#red>{Loc.Get("轮回商店")}</color> -> {Loc.Get("消耗")} <color=yellow>{selectedItem.Price} {Loc.Get("银两")}</color>，<color=yellow>{selectedItem.Fame} {Loc.Get("声望")}</color> {Loc.Get("购买成功, 成功获得")}：{item.Name(true)}");
-            player.GetItem(item, false);
-            // player.itemListData.GetItem(item, true);
+            // player.GetItem(item, false);
+            player.itemListData.GetItem(item, false);
         }
         catch (Exception ex)
         {
