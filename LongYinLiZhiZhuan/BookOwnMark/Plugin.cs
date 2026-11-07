@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using MelonLoader;
 using Il2Cpp;
@@ -51,6 +51,7 @@ namespace BookOwnMark
         private static Dropdown _rareLvDropdown = null!;
         private static bool _uiBuilt;
         private static bool _resetting;
+        private static bool _warnedNoTemplate;
 
         private static ItemListController _storageList = null!;   // 仓库界面右侧（玩家仓库）列表
         private static TradeUIController _currentTradeUI = null!;
@@ -126,10 +127,21 @@ namespace BookOwnMark
         public static void RefreshItemList_Postfix(ItemListController __instance)
         {
             if (__instance == null || __instance != _storageList) return;
-            if (__instance.nowItemListType != ItemListType.BookType) return;
-            if (_skillTypeFilter < 0 && _rareLvFilter < 0) return;
 
-            ApplyFilter(__instance);
+            try
+            {
+                // 每次刷新都同步一次下拉，覆盖"打开仓库时本来就停在秘籍分类"的情况
+                SyncFilterUI(__instance);
+
+                if (__instance.nowItemListType != ItemListType.BookType) return;
+                if (_skillTypeFilter < 0 && _rareLvFilter < 0) return;
+
+                ApplyFilter(__instance);
+            }
+            catch (System.Exception ex)
+            {
+                LOG.Warning("[BookOwnMark] 应用筛选失败: " + ex.Message);
+            }
         }
 
         private static void ApplyFilter(ItemListController controller)
@@ -183,32 +195,49 @@ namespace BookOwnMark
             if (_storageList == null) return;
 
             var template = _storageList.sortTypeDropDown;
-            if (template == null) return;
-
-            var parent = template.transform.parent;
-            var templateRect = template.GetComponent<RectTransform>();
-
-            _skillTypeDropdown = CreateDropdownFromTemplate(template, "SkillTypeDropdown", SkillTypeNames);
-            _skillTypeDropdown.transform.SetParent(parent, false);
-            SetupRect(_skillTypeDropdown, templateRect, 90f);
-            _skillTypeDropdown.onValueChanged.AddListener((Action<int>)(index =>
+            if (template == null)
             {
-                _skillTypeFilter = index - 1;
-                RefreshCurrentList();
-            }));
-            SetDropdownScrollSpeed(_skillTypeDropdown, 20f);
+                if (!_warnedNoTemplate)
+                {
+                    _warnedNoTemplate = true;
+                    LOG.Warning("[BookOwnMark] 仓库列表没有 sortTypeDropDown，筛选下拉暂时建不出来");
+                }
+                return;
+            }
 
-            _rareLvDropdown = CreateDropdownFromTemplate(template, "RareLvDropdown", RareLvNames);
-            _rareLvDropdown.transform.SetParent(parent, false);
-            SetupRect(_rareLvDropdown, templateRect, 180f);
-            _rareLvDropdown.onValueChanged.AddListener((Action<int>)(index =>
+            try
             {
-                _rareLvFilter = index - 1;
-                RefreshCurrentList();
-            }));
-            SetDropdownScrollSpeed(_rareLvDropdown, 20f);
+                var parent = template.transform.parent;
+                var templateRect = template.GetComponent<RectTransform>();
 
-            _uiBuilt = true;
+                _skillTypeDropdown = CreateDropdownFromTemplate(template, "SkillTypeDropdown", SkillTypeNames);
+                _skillTypeDropdown.transform.SetParent(parent, false);
+                SetupRect(_skillTypeDropdown, templateRect, 90f);
+                _skillTypeDropdown.onValueChanged.AddListener((Action<int>)(index =>
+                {
+                    _skillTypeFilter = index - 1;
+                    RefreshCurrentList();
+                }));
+                SetDropdownScrollSpeed(_skillTypeDropdown, 20f);
+
+                _rareLvDropdown = CreateDropdownFromTemplate(template, "RareLvDropdown", RareLvNames);
+                _rareLvDropdown.transform.SetParent(parent, false);
+                SetupRect(_rareLvDropdown, templateRect, 180f);
+                _rareLvDropdown.onValueChanged.AddListener((Action<int>)(index =>
+                {
+                    _rareLvFilter = index - 1;
+                    RefreshCurrentList();
+                }));
+                SetDropdownScrollSpeed(_rareLvDropdown, 20f);
+
+                _uiBuilt = true;
+                LOG.Msg("[BookOwnMark] 筛选下拉已创建");
+            }
+            catch (System.Exception ex)
+            {
+                LOG.Warning("[BookOwnMark] 创建筛选下拉失败: " + ex.Message);
+                ResetFilterUI();
+            }
         }
 
         private static void SetupRect(Dropdown dropdown, RectTransform templateRect, float offsetX)
@@ -245,20 +274,60 @@ namespace BookOwnMark
             if (scrollRect != null) scrollRect.scrollSensitivity = speed;
         }
 
+        /// <summary>下拉对象是否还活着：交易界面可能被销毁重建，旧引用会失效</summary>
+        private static bool FilterUIAlive()
+        {
+            try
+            {
+                return _skillTypeDropdown != null && _skillTypeDropdown.gameObject != null
+                       && _rareLvDropdown != null && _rareLvDropdown.gameObject != null;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static void ResetFilterUI()
+        {
+            _uiBuilt = false;
+            _skillTypeDropdown = null!;
+            _rareLvDropdown = null!;
+        }
+
         private static void ShowFilterUI()
         {
-            if (!_uiBuilt) CreateFilterUI();
-            if (!_uiBuilt) return;
-            if (_skillTypeDropdown != null) _skillTypeDropdown.gameObject.SetActive(true);
-            if (_rareLvDropdown != null) _rareLvDropdown.gameObject.SetActive(true);
+            try
+            {
+                // 界面被销毁重建过 → 旧引用失效，直接重建
+                if (!FilterUIAlive()) ResetFilterUI();
+                if (!_uiBuilt) CreateFilterUI();
+                if (!_uiBuilt) return;
+
+                if (_skillTypeDropdown != null) _skillTypeDropdown.gameObject.SetActive(true);
+                if (_rareLvDropdown != null) _rareLvDropdown.gameObject.SetActive(true);
+            }
+            catch (System.Exception ex)
+            {
+                LOG.Warning("[BookOwnMark] 显示筛选下拉失败: " + ex.Message);
+                ResetFilterUI();
+            }
         }
 
         private static void HideFilterUI()
         {
-            if (_skillTypeDropdown != null && _skillTypeDropdown.gameObject != null)
-                _skillTypeDropdown.gameObject.SetActive(false);
-            if (_rareLvDropdown != null && _rareLvDropdown.gameObject != null)
-                _rareLvDropdown.gameObject.SetActive(false);
+            try
+            {
+                if (_skillTypeDropdown != null && _skillTypeDropdown.gameObject != null)
+                    _skillTypeDropdown.gameObject.SetActive(false);
+                if (_rareLvDropdown != null && _rareLvDropdown.gameObject != null)
+                    _rareLvDropdown.gameObject.SetActive(false);
+            }
+            catch
+            {
+                // 界面已经销毁：清掉引用，下次重新创建
+                ResetFilterUI();
+            }
         }
 
         private static void ResetFilterState()
@@ -271,9 +340,39 @@ namespace BookOwnMark
                 if (_skillTypeDropdown != null && _skillTypeDropdown.gameObject != null) _skillTypeDropdown.value = 0;
                 if (_rareLvDropdown != null && _rareLvDropdown.gameObject != null) _rareLvDropdown.value = 0;
             }
+            catch
+            {
+                ResetFilterUI();
+            }
             finally
             {
                 _resetting = false;
+            }
+        }
+
+        /// <summary>
+        /// 按当前分类同步筛选下拉：秘籍分类显示、其它分类隐藏。
+        /// 打开界面 / 列表刷新 / 点击分类 三个入口都走这里，避免只依赖 ChangeListType 的时机。
+        /// </summary>
+        private static void SyncFilterUI(ItemListController list)
+        {
+            if (list == null || list != _storageList) return;
+
+            try
+            {
+                if (list.nowItemListType == ItemListType.BookType)
+                {
+                    ShowFilterUI();
+                }
+                else
+                {
+                    HideFilterUI();
+                    ResetFilterState();
+                }
+            }
+            catch (System.Exception ex)
+            {
+                LOG.Warning("[BookOwnMark] 同步筛选下拉失败: " + ex.Message);
             }
         }
 
@@ -305,8 +404,22 @@ namespace BookOwnMark
             }
 
             _storageList = instance.rightList;
+
+            try
+            {
+                LOG.Msg($"[BookOwnMark] 打开仓库: 左列表分类={instance.leftList?.nowItemListType} " +
+                        $"右列表分类={instance.rightList?.nowItemListType}");
+            }
+            catch
+            {
+                // 诊断日志失败不影响功能
+            }
+
             HideFilterUI();
             ResetFilterState();
+
+            // 如果界面一打开就停在「秘籍」分类，此时没有 ChangeListType 事件，这里补一次
+            SyncFilterUI(_storageList);
         }
 
         [HarmonyPostfix]
@@ -362,16 +475,7 @@ namespace BookOwnMark
         {
             if (__instance == null || __instance != _storageList) return;
 
-            if (__instance.nowItemListType == ItemListType.BookType)
-            {
-                CreateFilterUI();
-                ShowFilterUI();
-            }
-            else
-            {
-                HideFilterUI();
-                ResetFilterState();
-            }
+            SyncFilterUI(__instance);
         }
 
         #endregion
