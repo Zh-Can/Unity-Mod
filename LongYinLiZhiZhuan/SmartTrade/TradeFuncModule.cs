@@ -775,9 +775,9 @@ namespace SmartTrade
                     }
                 }
 
-                Other.ShowInfo($"卖出 {soldCount} 件/{totalSellPrice}文，剩余：未鉴定 {notIdentified}、" +
-                               $"等级限制 {levelBlocked}、类别未选 {typeSkipped}、本地便宜 {cheap}、" +
-                               $"店家钱不足 {noMoney}、未处理 {other}");
+                // Other.ShowInfo($"卖出 {soldCount} 件/{totalSellPrice}文，剩余：未鉴定 {notIdentified}、" +
+                //                $"等级限制 {levelBlocked}、类别未选 {typeSkipped}、本地便宜 {cheap}、" +
+                //                $"店家钱不足 {noMoney}、未处理 {other}");
                 Plugin.LOG.Msg($"[SmartTrade] 自动卖出结束：卖出 {soldCount} 件 共{totalSellPrice}文，" +
                                $"剩余 未鉴定={notIdentified} 等级限制={levelBlocked} 不在背包={notOwned} " +
                                $"类别未选={typeSkipped} 本地便宜={cheap} 店家钱不足={noMoney} 未处理={other}");

@@ -384,10 +384,12 @@ namespace SmartTrade
             #endregion
 
             #region 售卖精良以上Toggle
-            _sellHighQualityToggle = CreateToggle(toolbar1Rect, "☑售卖精良以上", -50, 120f);
+            _sellHighQualityToggle = CreateToggle(toolbar1Rect,
+                SellHighQuality ? "☑售卖精良以上" : "☐售卖精良以上", -50, 120f);
             if (_sellHighQualityToggle != null)
             {
-                _sellHighQualityToggle.isOn = true;
+                // 按配置文件的实际值初始化，不要写死 true（否则会与配置不一致，点一下反而变成关闭）
+                _sellHighQualityToggle.SetIsOnWithoutNotify(SellHighQuality);
     
                 _sellHighQualityToggle.onValueChanged.AddListener(new Action<bool>(isOn => 
                 { 
@@ -408,10 +410,12 @@ namespace SmartTrade
             #endregion
 
             #region 商店修改Toggle
-            _shopModifyToggle = CreateToggle(toolbar1Rect, "☑商店修改", 80, 100f);
+            _shopModifyToggle = CreateToggle(toolbar1Rect,
+                ShopModify ? "☑商店修改" : "☐商店修改", 80, 100f);
             if (_shopModifyToggle != null)
             {
-                _shopModifyToggle.isOn = true;
+                // 同上：配置默认是 false，如果这里写死 true，界面会显示"勾上但功能没开"
+                _shopModifyToggle.SetIsOnWithoutNotify(ShopModify);
     
                 _shopModifyToggle.onValueChanged.AddListener(new Action<bool>(isOn => 
                 { 
