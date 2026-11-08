@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using MelonLoader;
 using Il2Cpp;
@@ -6,7 +6,7 @@ using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
 
-[assembly: MelonInfo(typeof(BookOwnMark.Plugin), "BookOwnMark", "5.0", "Can")]
+[assembly: MelonInfo(typeof(BookOwnMark.Plugin), "BookOwnMark", "5.1", "Can")]
 [assembly: MelonGame("TppStudio", "LongYinLiZhiZhuan")]
 [assembly: MelonPlatformDomain(MelonPlatformDomainAttribute.CompatibleDomains.IL2CPP)]
 
@@ -20,6 +20,10 @@ namespace BookOwnMark
     ///      再调用 CalculateLayout + UpdateVisibleCells(true) 重建布局与可视单元。
     ///   2. 已拥有标记不再改写 itemData.name（虚拟化下只能扫到可视图标），
     ///      改为在 ItemIconController.Update 之后直接改写图标上的名字文本。
+    /// v5.1 新增拍卖会标记：
+    ///   拍卖会的「展品列表」走 ChooseController 的物品选择面板（ChooseType.HeroItem），
+    ///   不经过 TradeUIController，所以单独记一个面板开关；拍卖大会竞价界面的拍品
+    ///   也复用 ItemIconController，只要 auctionPanel 可见就一并标记。标记逻辑与交易界面完全一致。
     /// </summary>
     public class Plugin : MelonMod
     {
@@ -58,12 +62,16 @@ namespace BookOwnMark
         // 单独记录类型，避免在 Update 高频回调里访问可能已销毁的 _currentTradeUI
         private static TradeUIType _markTradeType = TradeUIType.None;
 
+        // 拍卖会「展品列表」面板是否打开（由 PlotController.ShowAuctionItem 打开，
+        // 走的是 ChooseController 的物品选择面板，不会触发 ShowTradeUI）
+        private static bool _auctionItemPanelOpen;
+
         public override void OnInitializeMelon()
         {
             Instance = this;
             var harmony = new HarmonyLib.Harmony("BookOwnMark");
             harmony.PatchAll(typeof(Plugin));
-            LOG.Msg("[BookOwnMark] v5.0 已加载（适配虚拟列表）");
+            LOG.Msg("[BookOwnMark] v5.1 已加载（适配虚拟列表 + 拍卖会标记）");
         }
 
         public override void OnUpdate()
@@ -464,6 +472,7 @@ namespace BookOwnMark
             _currentTradeUI = null!;
             _storageList = null!;
             _markTradeType = TradeUIType.None;
+            _auctionItemPanelOpen = false;
             ResetFilterState();
             HideFilterUI();
         }
@@ -480,6 +489,90 @@ namespace BookOwnMark
 
         #endregion
 
+        #region 拍卖会挂钩
+
+        // 拍卖会「展品列表」：PlotController.ShowAuctionItem -> ChooseController.ShowChoosePanel(HeroItem, {-100})
+        // 这条路不经过 TradeUIController，所以单独记一个开关，标记逻辑照旧复用。
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(PlotController), nameof(PlotController.ShowAuctionItem))]
+        public static void ShowAuctionItem_Postfix()
+        {
+            _auctionItemPanelOpen = true;
+            ScanOwnedBooks();
+
+            try
+            {
+                LOG.Msg($"[BookOwnMark] 查看拍卖会展品: 已拥有 {_ownedBookNames.Count} 本, 特殊 {_speBookNames.Count} 本");
+            }
+            catch
+            {
+                // 日志失败不影响功能
+            }
+        }
+
+        // 选择面板关闭：拍卖展品面板和其它选择面板共用，统一清掉开关
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(ChooseController), nameof(ChooseController.HideChoosePanel))]
+        public static void HideChoosePanel_Prefix()
+        {
+            _auctionItemPanelOpen = false;
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(ChooseController), nameof(ChooseController.UnshowChoosePanel))]
+        public static void UnshowChoosePanel_Prefix()
+        {
+            _auctionItemPanelOpen = false;
+        }
+
+        // 拍卖大会开始时重扫一次：展品里可能有刚入手的秘籍
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(AuctionController), nameof(AuctionController.RestartAuction))]
+        public static void RestartAuction_Postfix()
+        {
+            ScanOwnedBooks();
+        }
+
+        /// <summary>是否需要给物品图标补标记：交易界面 或 拍卖会界面</summary>
+        private static bool ShouldMark(ItemIconController icon)
+        {
+            // 交易界面（原有逻辑）
+            if (_markTradeType != TradeUIType.None && _markTradeType != TradeUIType.Storage) return true;
+
+            try
+            {
+                // 拍卖会「展品列表」：ChooseController 的物品选择面板
+                if (_auctionItemPanelOpen)
+                {
+                    var choose = ChooseController.Instance;
+                    var inChoosePanel = choose != null && ChoosePanelVisible(choose);
+                    // 面板根节点字段万一没接上，退回判断图标是否挂在 ChooseController 下面
+                    if (inChoosePanel || (choose != null && icon.GetComponentInParent<ChooseController>() != null))
+                        return true;
+
+                    // 面板可能被别的路径直接关掉了，没走到 Hide/Unshow，这里兜底复位
+                    _auctionItemPanelOpen = false;
+                }
+
+                // 拍卖大会竞价界面：拍品同样用 ItemIconController 显示
+                var auction = AuctionController.Instance;
+                return auction != null && auction.auctionPanel != null && auction.auctionPanel.activeInHierarchy;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static bool ChoosePanelVisible(ChooseController choose)
+        {
+            if (choose == null) return false;
+            if (choose.choosePanel != null && choose.choosePanel.activeInHierarchy) return true;
+            return choose.chooseRoot != null && choose.chooseRoot.activeInHierarchy;
+        }
+
+        #endregion
+
         #region 已有秘籍标记
 
         // 图标每次绑定后（inited 被重置）由 Update 重新写名字文本，这里在之后补上标记，
@@ -488,8 +581,8 @@ namespace BookOwnMark
         [HarmonyPatch(typeof(ItemIconController), nameof(ItemIconController.Update))]
         public static void ItemIcon_Update_Postfix(ItemIconController __instance)
         {
-            if (_markTradeType == TradeUIType.None || _markTradeType == TradeUIType.Storage) return;
             if (_ownedBookNames.Count == 0 && _speBookNames.Count == 0) return;
+            if (!ShouldMark(__instance)) return;
 
             var item = __instance.itemData;
             if (item == null || item.type != ItemType.Book) return;
