@@ -47,16 +47,6 @@ public class GameDataControllerPatches
             __instance.SureOfferMoneyButtonClicked();
         }
     }
-    /// <summary>
-    /// 藏宝阁容量
-    /// </summary>
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(GameDataController), nameof(GameDataController.GetExternalStorageMaxValue))]
-    public static void GetExternalStorageMaxValue_Postfix(GameDataController __instance, ref int __result)
-    {
-        if (__instance == null || !Plugin.Instance.ExternalStorageFlag.Value) return;
-        __result = 100000000;
-    }
 
     [HarmonyPrefix]
     [HarmonyPatch(typeof(BattleController), nameof(BattleController.StartBattleButtonClicked))]

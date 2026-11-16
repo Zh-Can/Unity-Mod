@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Il2Cpp;
@@ -113,7 +113,9 @@ public class Plugin : MelonMod
     public MelonPreferences_Entry<bool> AskHeroJoinForceFlag = null!; // 请人物加入玩家门派是否收为徒弟
     public MelonPreferences_Entry<bool> AuctionAutoOfferFlag = null!; // 拍卖会自动出价
     public MelonPreferences_Entry<float> GameSpeed = null; // 游戏速度
-    
+    public MelonPreferences_Entry<bool> CustomSkillNumLimitFlag = null!; // 自创武学数量限制解除开关
+    public MelonPreferences_Entry<bool> CustomSkillPoint999Flag = null!; // 自创武学点数设置999开关
+    public MelonPreferences_Entry<bool> CustomSkillIntoShowRoomFlag = null!; // 自创武学可放入藏宝阁
     
     private MelonPreferences_Entry<bool> _useModifier = null!; // 使用组合键
     private MelonPreferences_Entry<KeyCode> _key1 = null!; // 第一个键
@@ -267,6 +269,9 @@ public class Plugin : MelonMod
         BookWriterSelfFlag = MainCategory.CreateEntry("BookWriterSelfFlag", false,  description: "私宅抄书默写开关");
         AskHeroJoinForceFlag = MainCategory.CreateEntry("AskHeroJoinForceFlag", false,  description: "请人物加入玩家门派是否收为徒弟");
         AuctionAutoOfferFlag = MainCategory.CreateEntry("AuctionAutoOfferFlag", false,  description: "拍卖会自动出价");
+        CustomSkillNumLimitFlag = MainCategory.CreateEntry("CustomSkillNumLimitFlag", false,  description: "自创武学数量限制解除开关");
+        CustomSkillPoint999Flag = MainCategory.CreateEntry("CustomSkillPoint999Flag", false,  description: "自创武学点数设置999开关");
+        CustomSkillIntoShowRoomFlag = MainCategory.CreateEntry("CustomSkillIntoShowRoomFlag", false,  description: "自创武学可放入藏宝阁");
         #endregion
       
         var harmony = new HarmonyLib.Harmony("LYMod");
@@ -305,6 +310,8 @@ public class Plugin : MelonMod
         harmony.PatchAll(typeof(TagRemoveConfirmPatches));
         harmony.PatchAll(typeof(BookWriterPatches));
         harmony.PatchAll(typeof(AskHeroJoinForcePatches));
+        harmony.PatchAll(typeof(CustomSkillPatchers));
+        harmony.PatchAll(typeof(ExternalStoragePatches));
         
         LOG.Msg("===================================================");
         LOG.Msg("【LYMod】LYMod is loaded! 默认打开窗体：左alt + e !");
@@ -761,6 +768,8 @@ public class Plugin : MelonMod
             .AddAutoSaveRow("获得金钱倍数:",MoneyTimes, "莫高窟遗忘任意技能", RemoveAnySkill)
             .AddAutoSaveRow("生活经验倍率:", LivingSkillExpRate, "生活潜力倍数:", MaxLivingSkillExpTimes)
             .AddAutoSave("轻功训练不受击", DodgeHitFlag)
+            .AddAutoSaveRow("自创武学次数解除限制", CustomSkillNumLimitFlag, "自创武学点数999", CustomSkillPoint999Flag)
+            .AddAutoSave("自创武学可放入藏宝阁", CustomSkillIntoShowRoomFlag)
             .Space(10)
             .AddLabelRow("突破属性修改方案1：")
             .BeginHorizontal()
