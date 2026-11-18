@@ -63,4 +63,11 @@ public static class HeroHelper
             }
         }
     }
+    
+    public static bool IsPlayerForce(ForceData force)
+    {
+        if (force == null) return false;
+        var player = GameController.Instance?.worldData?.Player();
+        return player != null && player.belongForceID != -1 && force.forceID == player.belongForceID;
+    }
 }

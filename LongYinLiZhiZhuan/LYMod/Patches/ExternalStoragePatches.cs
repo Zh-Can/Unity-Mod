@@ -101,6 +101,55 @@ public class ExternalStoragePatches
     }
 
     /// <summary>
+    /// 隐藏风险：游戏查自创武学是 `customSkills[skillID]` 直接取值，键不存在就抛
+    /// KeyNotFoundException（藏宝阁里残留别的存档的书、或注入还没跑到时都会这样）。
+    /// 这里先按 sidecar 现场补，补不上就给占位武功，保证界面不刷异常。
+    /// 静态武学（id &lt; 20000）原样放行。
+    /// </summary>
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(GameDataController), nameof(GameDataController.GetSkillDataBase))]
+    public static bool GameDataController_GetSkillDataBase_Prefix(int skillID, ref KungfuSkillData __result)
+    {
+        if (skillID < GlobalData.CustomSkillIDStart) return true;
+
+        var dict = GameController.Instance?.worldData?.customSkills;
+        if (dict != null && dict.ContainsKey(skillID)) return true;
+
+        var def = ExternalStorageDefStore.Load(skillID);
+        if (def?.skillData != null && dict != null)
+        {
+            def.skillData.skillID = skillID;
+            dict[skillID] = def;
+            Plugin.LOG.Msg($"[LYMod] 按需补入自创武学: id={skillID} name={def.skillData.name}");
+            return true;
+        }
+
+        __result = Placeholder(skillID);
+        return false;
+    }
+
+    private static readonly Dictionary<int, KungfuSkillData> _placeholders = new();
+
+    /// <summary>查不到定义时给一个占位武功，界面显示"未知武学(id)"而不是抛异常</summary>
+    private static KungfuSkillData Placeholder(int skillID)
+    {
+        if (_placeholders.TryGetValue(skillID, out var cached)) return cached;
+
+        var sk = new KungfuSkillData();
+        sk.skillID = skillID;
+        sk.name = $"未知武学({skillID})";
+
+        _placeholders[skillID] = sk;
+        if (_placeholders.Count <= 20)
+        {
+            Plugin.LOG.Warning($"[LYMod] 武学 id={skillID} 在当前存档查不到定义，先用占位显示" +
+                               "（多半是藏宝阁残留了别的存档的书，或 .bin 丢失）");
+        }
+
+        return sk;
+    }
+
+    /// <summary>
     /// 藏宝阁每次写盘时，把当前列表里所有自创武学秘籍的定义导出成 sidecar 文件。
     /// 挂在这里而不是挂 ItemIntoExternalStorage，是因为不论从哪条路径加进来的
     /// （放入、批量、其它 mod），最后都会走这个方法写盘，一处覆盖全部。
@@ -168,24 +217,15 @@ public class ExternalStoragePatches
     }
 
     /// <summary>
-    /// 读档后触发（和 LoadSavePostPatches 里同名 postfix 并存，Harmony 允许多个 postfix）。
-    /// 此时 worldData 已经就绪，直接把藏宝阁里的自创秘籍对账到当前存档。
+    /// 唯一的对账入口：读档和新开游戏都会走到这里（两条链的公共末段）。
+    ///  - 读档：StartLoadGame → PostLoadFixup → … → GameStartTeleportPlayer(areaID)
+    ///  - 新游戏：StartNewGame → Generate* 系列 → StartNewGameSetting → GameStartTeleportPlayer(areaID)
     /// </summary>
     [HarmonyPostfix]
     [HarmonyPatch(typeof(GameController), nameof(GameController.GameStartTeleportPlayer))]
-    public static void GameController_GameStartTeleportPlayer_Postfix() => TryReconcile("读档");
+    public static void GameController_GameStartTeleportPlayer_Postfix() => TryReconcile("开局传送");
 
-    /// <summary>打开藏宝阁界面时也对一次账：顺便把缺失的 sidecar 补出来，切换存档前就齐了。</summary>
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(ShowRoomController), nameof(ShowRoomController.Init))]
-    public static void ShowRoomController_Init_Postfix() => TryReconcile("打开藏宝阁");
-
-    /// <summary>藏宝阁是全局文件，读盘后再对一次账（存档还没进来时会等读档钩子）。</summary>
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(GameDataController), nameof(GameDataController.LoadExternalStorageData))]
-    public static void GameDataController_LoadExternalStorageData_Postfix() => TryReconcile("藏宝阁读盘");
-
-    /// <summary>worldData 就绪才动，否则留给读档钩子；对账本身是幂等的，重复调用没副作用。</summary>
+    /// <summary>worldData 没就绪就跳过；对账本身幂等，重复调用无副作用。</summary>
     private static void TryReconcile(string reason)
     {
         try
@@ -193,11 +233,11 @@ public class ExternalStoragePatches
             var wd = GameController.Instance?.worldData;
             if (wd == null)
             {
-                Plugin.LOG.Msg($"[LYMod] 藏宝阁同步等待读档（{reason}）");
+                Plugin.LOG.Msg($"[LYMod] 藏宝阁对账跳过：worldData 还没就绪（{reason}）");
                 return;
             }
 
-            Reconcile(wd);
+            Reconcile(wd, reason);
         }
         catch (Exception ex)
         {
@@ -211,7 +251,7 @@ public class ExternalStoragePatches
     ///  - id 被别的武学占了 → 用 AddCustomSkill 分配新 id，改写书的 skillID
     ///  - 找不到定义 → 从藏宝阁移除并记 orphans.log，避免虚空物品/崩溃
     /// </summary>
-    private static void Reconcile(WorldData wd)
+    private static void Reconcile(WorldData wd, string reason)
     {
         if (!Plugin.Instance.CustomSkillIntoShowRoomFlag.Value) return;
 
@@ -223,6 +263,8 @@ public class ExternalStoragePatches
         var injected = 0;
         var remapped = 0;
         var orphans = 0;
+        var books = 0;
+        var customs = 0;
         var dirty = false;
 
         for (var i = storage.allItem.Count - 1; i >= 0; i--)
@@ -238,12 +280,31 @@ public class ExternalStoragePatches
             }
 
             if (item == null || item.type != ItemType.Book) continue;
+            books++;
 
             var book = item.bookData;
             if (book == null) continue;
 
             var id = book.skillID;
-            if (id < GlobalData.CustomSkillIDStart) continue;   // 静态武学，不归我们管
+
+            if (id < GlobalData.CustomSkillIDStart)
+            {
+                // 静态武学：数据表里查不到说明这本书已经坏了（跨版本/被改过），
+                // 留着只会让 UI 抛 KeyNotFoundException，这里按孤儿处理
+                var table = GameDataController.Instance?.kungfuSkillDataBase;
+                if (table != null && !table.ContainsKey(id))
+                {
+                    ExternalStorageDefStore.WriteOrphan(id, item.name);
+                    ExternalStorageDefStore.SaveOrphanItem(id, item);
+                    storage.LoseItem(item, false);
+                    orphans++;
+                    dirty = true;
+                }
+
+                continue;
+            }
+
+            customs++;
 
             CustomSkillData current = null;
             if (dict.ContainsKey(id)) current = dict[id];
@@ -359,10 +420,8 @@ public class ExternalStoragePatches
             GameDataController.Instance?.SaveExternalStorageData();
         }
 
-        if (injected + remapped + orphans > 0)
-        {
-            Plugin.LOG.Msg($"[LYMod] 藏宝阁同步: 注入 {injected} 门、换 id {remapped} 本、清理无定义 {orphans} 本");
-        }
+        Plugin.LOG.Msg($"[LYMod] 藏宝阁对账（{reason}）: 共 {storage.allItem.Count} 件" +
+                       $"（书 {books}、自创 {customs}）；注入 {injected}、换 id {remapped}、清理 {orphans}");
     }
 
     /// <summary>判断两份定义是不是同一门武学（id 会变，靠名字 + 品质 + 类型认）</summary>

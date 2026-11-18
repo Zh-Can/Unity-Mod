@@ -1923,57 +1923,84 @@ public class ForceDataPatches
         }
     }
     
-    // 0钱1粮2木3矿4药5威望
+    // ── 建筑/科技资源零消耗（0钱 1粮 2木 3矿 4药 5威望）──
+    // 语义：玩家门派"付得起 + 照常扣费后余额还原"，内部记账不受影响；只对玩家门派生效，AI 不受影响。
+
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(ForceData), nameof(ForceData.HaveResource),
+        typeof(Il2CppSystem.Collections.Generic.List<float>))]
+    public static bool ForceData_HaveResource_Float_Prefix(ForceData __instance, ref bool __result)
+        => FreeCost.Allow(__instance, ref __result);
+
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(ForceData), nameof(ForceData.HaveResource),
+        typeof(Il2CppSystem.Collections.Generic.List<ResourceData>))]
+    public static bool ForceData_HaveResource_ResList_Prefix(ForceData __instance, ref bool __result)
+        => FreeCost.Allow(__instance, ref __result);
+
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(ForceData), nameof(ForceData.HaveResource), typeof(ResourceData))]
+    public static bool ForceData_HaveResource_One_Prefix(ForceData __instance, ref bool __result)
+        => FreeCost.Allow(__instance, ref __result);
+
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(ForceData), nameof(ForceData.HaveResource), typeof(int), typeof(float))]
+    public static bool ForceData_HaveResource_IdNum_Prefix(ForceData __instance, ref bool __result)
+        => FreeCost.Allow(__instance, ref __result);
+
     [HarmonyPrefix]
     [HarmonyPatch(typeof(ForceData), nameof(ForceData.CostResource),
         typeof(Il2CppSystem.Collections.Generic.List<float>), typeof(bool))]
-    public static bool ForceData_CostResource_Prefix(Il2CppSystem.Collections.Generic.List<float> resourceList,
-        bool showInfo = false)
-    {
-        if (Plugin.Instance.Cost0.Value)
-        {
-            for (var i = 0; i < resourceList.Count; i++) resourceList[i] = 0f;
-        }
-       
-        return true;
-    }
+    public static void ForceData_CostResource_Float_Prefix(ForceData __instance,
+        Il2CppSystem.Collections.Generic.List<float> resourceList,
+        ref Il2CppSystem.Collections.Generic.List<float>? __state)
+        => __state = FreeCost.Borrow(__instance, resourceList);
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(ForceData), nameof(ForceData.CostResource),
+        typeof(Il2CppSystem.Collections.Generic.List<float>), typeof(bool))]
+    public static void ForceData_CostResource_Float_Postfix(ForceData __instance,
+        Il2CppSystem.Collections.Generic.List<float>? __state)
+        => FreeCost.Restore(__instance, __state);
 
     [HarmonyPrefix]
     [HarmonyPatch(typeof(ForceData), nameof(ForceData.CostResource),
         typeof(Il2CppSystem.Collections.Generic.List<ResourceData>), typeof(bool))]
-    public static bool ForceData_CostResource_Prefix1(Il2CppSystem.Collections.Generic.List<ResourceData> resourceList,
-        bool showInfo)
-    {
-        if (Plugin.Instance.Cost0.Value)
-        {
-            var list = new Il2CppSystem.Collections.Generic.List<ResourceData>();
-            foreach (var t in resourceList) list.Add(new ResourceData(t.resourceType, 0));
-            resourceList = list;
-        }
-        return true;
-    }
+    public static void ForceData_CostResource_ResList_Prefix(ForceData __instance,
+        Il2CppSystem.Collections.Generic.List<ResourceData> resourceList,
+        ref Il2CppSystem.Collections.Generic.List<float>? __state)
+        => __state = FreeCost.Borrow(__instance, resourceList);
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(ForceData), nameof(ForceData.CostResource),
+        typeof(Il2CppSystem.Collections.Generic.List<ResourceData>), typeof(bool))]
+    public static void ForceData_CostResource_ResList_Postfix(ForceData __instance,
+        Il2CppSystem.Collections.Generic.List<float>? __state)
+        => FreeCost.Restore(__instance, __state);
 
     [HarmonyPrefix]
     [HarmonyPatch(typeof(ForceData), nameof(ForceData.CostResource), typeof(ResourceData), typeof(bool))]
-    public static bool ForceData_CostResource_Prefix2(ref ResourceData resource, bool showInfo)
-    {
-        if (Plugin.Instance.Cost0.Value)
-        {
-            resource = new ResourceData(resource.resourceType, 0);
-        }
-        return true;
-    }
+    public static void ForceData_CostResource_One_Prefix(ForceData __instance, ResourceData resource,
+        ref Il2CppSystem.Collections.Generic.List<float>? __state)
+        => __state = FreeCost.Borrow(__instance, resource);
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(ForceData), nameof(ForceData.CostResource), typeof(ResourceData), typeof(bool))]
+    public static void ForceData_CostResource_One_Postfix(ForceData __instance,
+        Il2CppSystem.Collections.Generic.List<float>? __state)
+        => FreeCost.Restore(__instance, __state);
 
     [HarmonyPrefix]
     [HarmonyPatch(typeof(ForceData), nameof(ForceData.CostResource), typeof(int), typeof(float), typeof(bool))]
-    public static bool ForceData_CostResource_Prefix3(int id, ref float num, bool showInfo)
-    {
-        if (Plugin.Instance.Cost0.Value)
-        {
-            num = 0;
-        }
-        return true;
-    }
+    public static void ForceData_CostResource_IdNum_Prefix(ForceData __instance, int id, float num,
+        ref Il2CppSystem.Collections.Generic.List<float>? __state)
+        => __state = FreeCost.Borrow(__instance, id, num);
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(ForceData), nameof(ForceData.CostResource), typeof(int), typeof(float), typeof(bool))]
+    public static void ForceData_CostResource_IdNum_Postfix(ForceData __instance,
+        Il2CppSystem.Collections.Generic.List<float>? __state)
+        => FreeCost.Restore(__instance, __state);
     // 门派特性显示在门派总览的信息里
     [HarmonyPostfix]
     [HarmonyPatch(typeof(ForceDetailController), nameof(ForceDetailController.ShowForceDetail))]
